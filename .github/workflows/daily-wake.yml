@@ -11,7 +11,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Start codespace and run entrypoint
+      - name: Start and run agent3
         env:
           GH_PAT: ${{ secrets.GH_PAT }}
         run: |
@@ -28,7 +28,7 @@ jobs:
           curl -s -X POST -H "Authorization: Bearer $GH_PAT" \
             "https://api.github.com/user/codespaces/$CODESPACE/start"
 
-          echo "[agent3] Waiting..."
+          echo "[agent3] Waiting (up to 5 min)..."
           for i in $(seq 1 30); do
             STATE=$(curl -s -H "Authorization: Bearer $GH_PAT" \
               "https://api.github.com/user/codespaces/$CODESPACE" | jq -r '.state')
@@ -37,11 +37,10 @@ jobs:
             sleep 10
           done
 
-          [ "$STATE" != "Available" ] && echo "[agent3] Not ready" && exit 0
+          [ "$STATE" != "Available" ] && echo "[agent3] ⚠️ Not ready" && exit 0
 
           echo "[agent3] Running entrypoint..."
           GH_TOKEN="$GH_PAT" gh codespace ssh -c "$CODESPACE" -- \
-            "cd /workspaces/nex-agents && bash setup/entrypoint.sh" 2>&1 || \
-            echo "[agent3] ⚠️ SSH no disponible"
+            "cd /workspaces/nex-agents && bash setup/entrypoint.sh" 2>&1
 
-          echo "[agent3] ✅ Complete"
+          echo "[agent3] ✅ Done"
