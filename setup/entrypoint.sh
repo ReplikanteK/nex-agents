@@ -10,7 +10,8 @@ export PATH="$HOME/.opencode/bin:$PATH"
 DATE=$(date +%Y-%m-%d)
 
 # ── Auth ──────────────────────────────────────────────
-# GITHUB_TOKEN lo provee Codespaces automáticamente
+# Cargar secrets persistentes (postStartCommand no sourcea .bashrc)
+source "$HOME/.bashrc" 2>/dev/null || true
 export GITHUB_TOKEN="${GITHUB_TOKEN:-}"
 export OPENCODE_API_KEY="${OPENCODE_API_KEY:-}"
 
