@@ -16,7 +16,7 @@ jobs:
         run: |
           CODESPACE=$(curl -s -H "Authorization: Bearer $GH_PAT" \
             "https://api.github.com/user/codespaces" \
-            | jq -r '.codespaces[] | select(.repository.name == "nex-agents" and .state == "shutdown") | .name' \
+            | jq -r '.codespaces[] | select(.repository.name == "nex-agents" and (.state == "Shutdown" or .state == "shutdown")) | .name' \
             | head -1)
 
           if [ -z "$CODESPACE" ]; then
