@@ -41,6 +41,6 @@ jobs:
 
           echo "[agent3] Running entrypoint..."
           GH_TOKEN="$GH_PAT" gh codespace ssh -c "$CODESPACE" -- \
-            "cd /workspaces/nex-agents && bash setup/entrypoint.sh" 2>&1
+            "cd /workspaces/nex-agents && git pull origin main 2>/dev/null && bash setup/entrypoint.sh" 2>&1
 
           echo "[agent3] ✅ Done"
