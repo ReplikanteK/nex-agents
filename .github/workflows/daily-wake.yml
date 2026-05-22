@@ -1,0 +1,30 @@
+name: agent3 daily wake
+
+on:
+  schedule:
+    # Diario a las 10:00 UTC (ajusta según tu zona)
+    - cron: '0 10 * * *'
+  workflow_dispatch:  # permite ejecución manual
+
+jobs:
+  wake-agent3:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Wake codespace via API
+        env:
+          GH_PAT: ${{ secrets.GH_PAT }}
+        run: |
+          # Buscar codespace activo y arrancarlo
+          CODESPACE=$(curl -s -H "Authorization: Bearer $GH_PAT" \
+            "https://api.github.com/user/codespaces" \
+            | jq -r '.codespaces[] | select(.repository.name == "nex-agents" and .state == "shutdown") | .name' \
+            | head -1)
+          
+          if [ -n "$CODESPACE" ]; then
+            echo "[agent3] Starting codespace: $CODESPACE"
+            curl -s -X POST -H "Authorization: Bearer $GH_PAT" \
+              "https://api.github.com/user/codespaces/$CODESPACE/start"
+            echo "[agent3] Codespace started - entrypoint.sh se ejecutará automáticamente"
+          else
+            echo "[agent3] No hay codespace apagado para nex-agents"
+          fi

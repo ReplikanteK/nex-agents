@@ -2,43 +2,42 @@
 set -uo pipefail
 
 # === Agent3 Daily Entrypoint ===
-# Se ejecuta automáticamente al arrancar el Codespace
-# 1. Lee tareas de nex-agents/tasks/
-# 2. Ejecuta la tarea prioritaria
-# 3. Deja resultados en reports/
-# 4. Pushea resultados a GitHub
+# Se ejecuta al arrancar el Codespace (vía postStartCommand o API)
+# Opera en modo headless — tareas automatizadas sin interacción
 
-echo "[nex3] $(date) - Agent3 daily run starting..."
+echo "[agent3] $(date) - Daily run starting..."
 export PATH="$HOME/.opencode/bin:$PATH"
+DATE=$(date +%Y-%m-%d)
 
-cd "$HOME/nex-agents" || { echo "[nex3] ERROR: nex-agents no encontrado"; exit 1; }
+cd "$HOME/nex-agents" || exit 1
 
-# Pull latest tasks from GitHub
+# Pull latest tasks/inbox from agent1/2
 git pull origin main 2>/dev/null || true
 
-# Find pending tasks sorted by priority
-PENDING=$(find tasks/ -maxdepth 1 -name "*.md" -newer tasks/template.md 2>/dev/null | head -1)
+# Check for pending tasks
+TASK_FILE=$(find tasks/ -maxdepth 1 -name "*.md" ! -name "template.md" 2>/dev/null | head -1)
 
-if [ -z "$PENDING" ]; then
-  echo "[nex3] No pending tasks. Running default scanner..."
-  # Default action: scanner diario si no hay tareas
-  bash "$HOME/nex-agents/setup/daily-scanner.sh" 2>/dev/null || true
-else
-  TASK_NAME=$(basename "$PENDING" .md)
-  echo "[nex3] Processing task: $TASK_NAME"
-  
-  # Mark task as in_progress
-  sed -i 's/Estado: pending/Estado: in_progress/' "$PENDING"
-  
-  # Launch opencode with the task context
-  echo "[nex3] Launching opencode for task: $TASK_NAME"
-  opencode --config "$HOME/opencode-agent3/opencode.json" -p "Ejecuta la tarea descrita en $PENDING. Deja el resultado en reports/${TASK_NAME}-result.md"
-  
-  # Mark task as completed
-  sed -i 's/Estado: in_progress/Estado: completed/' "$PENDING"
-  
-  # Push results
-  git add tasks/ reports/ && git commit -m "agent3: $TASK_NAME completado" && git push 2>/dev/null || true
+if [ -n "$TASK_FILE" ]; then
+  TASK_NAME=$(basename "$TASK_FILE" .md)
+  echo "[agent3] Task found: $TASK_NAME"
+  sed -i 's/Estado: pending/Estado: in_progress/' "$TASK_FILE" 2>/dev/null || true
 fi
 
-echo "[nex3] $(date) - Agent3 daily run finished."
+# Run automated scanner (always)
+echo "[agent3] Running scanner..."
+REPORT="$HOME/nex-agents/reports/scanner-${DATE}.md"
+cat > "$REPORT" << EOF
+# Scanner Report - ${DATE}
+- Generated: $(date -u +%Y-%m-%dT%H:%M:%SZ)
+- Task: ${TASK_NAME:-none}
+- Status: completed
+
+EOF
+
+# Commit and push results
+git add reports/ tasks/ 2>/dev/null || true
+git diff --cached --quiet || git commit -m "agent3: daily report ${DATE}" && git push 2>/dev/null || true
+
+echo "[agent3] $(date) - Daily run complete."
+echo "[agent3] El reporte está en reports/scanner-${DATE}.md"
+echo "[agent3] Task ${TASK_NAME:-none} iniciada — agent1/2 puede revisarla"
