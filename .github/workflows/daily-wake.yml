@@ -10,21 +10,46 @@ jobs:
   wake-agent3:
     runs-on: ubuntu-latest
     steps:
-      - name: Start codespace
+      - uses: actions/checkout@v4
+
+      - name: Start codespace and run agent3
         env:
           GH_PAT: ${{ secrets.GH_PAT }}
         run: |
+          echo "[agent3] Looking for stopped codespace..."
+
           CODESPACE=$(curl -s -H "Authorization: Bearer $GH_PAT" \
             "https://api.github.com/user/codespaces" \
             | jq -r '.codespaces[] | select(.repository.name == "nex-agents" and (.state == "Shutdown" or .state == "shutdown")) | .name' \
             | head -1)
 
           if [ -z "$CODESPACE" ]; then
-            echo "[agent3] No codespace to wake"
+            echo "[agent3] No stopped codespace"
             exit 0
           fi
 
-          echo "[agent3] Waking: $CODESPACE"
+          echo "[agent3] Starting: $CODESPACE"
           curl -s -X POST -H "Authorization: Bearer $GH_PAT" \
             "https://api.github.com/user/codespaces/$CODESPACE/start"
-          echo "[agent3] ✅ Started — @reboot cron ejecutará entrypoint.sh"
+
+          echo "[agent3] Waiting for codespace to be ready..."
+          for i in $(seq 1 30); do
+            STATE=$(curl -s -H "Authorization: Bearer $GH_PAT" \
+              "https://api.github.com/user/codespaces/$CODESPACE" | jq -r '.state')
+            echo "  attempt $i: $STATE"
+            [ "$STATE" = "Available" ] && break
+            sleep 10
+          done
+
+          if [ "$STATE" != "Available" ]; then
+            echo "[agent3] ⚠️ Codespace not ready after 5min"
+            exit 0
+          fi
+
+          echo "[agent3] Running entrypoint via SSH..."
+          # gh codespace ssh requiere GH_PAT con scope codespace
+          echo "$GH_PAT" | gh auth login --with-token 2>/dev/null || true
+          gh codespace ssh -c "$CODESPACE" -- "cd /workspaces/nex-agents && bash setup/entrypoint.sh" 2>&1 || \
+            echo "[agent3] ⚠️ SSH falló (esperando VS Code connection)"
+
+          echo "[agent3] ✅ Agent3 task complete"
