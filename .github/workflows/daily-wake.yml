@@ -2,8 +2,8 @@ name: agent3 daily wake
 
 on:
   schedule:
-    # Diario a las 10:00 UTC (ajusta según tu zona)
-    - cron: '0 10 * * *'
+    # 3:33 AM hora española (CEST = UTC+2) → 1:33 UTC
+    - cron: '33 1 * * *'
   workflow_dispatch:  # permite ejecución manual
 
 jobs:
