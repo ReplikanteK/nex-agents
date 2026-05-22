@@ -1,0 +1,5 @@
+*.jsonl
+token*
+.env
+auth.json
+*.key

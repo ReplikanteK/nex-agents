@@ -1,0 +1,21 @@
+{
+  "provider": "opencode",
+  "model": "deepseek-v4-flash-free",
+  "compaction": {
+    "auto": true,
+    "tail_turns": 15
+  },
+  "mcpServers": {
+    "memory": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-memory"],
+      "environment": {
+        "MEMORY_FILE_PATH": "$HOME/opencode-agent3/memoria/memory.jsonl"
+      }
+    },
+    "github": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-github"]
+    }
+  }
+}
