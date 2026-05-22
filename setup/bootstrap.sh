@@ -39,7 +39,20 @@ if [ -f "$HOME/nex-agents/.devcontainer/opencode.json" ]; then
   sed "s|\$HOME|$HOME|g" "$HOME/nex-agents/.devcontainer/opencode.json" > "$HOME/opencode-agent3/opencode.json"
 fi
 
-# 6. opencode config output
+# 6. Configure git auth via gh
+gh auth setup-git 2>/dev/null || true
+
+# 7. Add OPENCODE_API_KEY to bashrc for persistence
+if ! grep -q "OPENCODE_API_KEY" "$HOME/.bashrc" 2>/dev/null; then
+  echo 'export OPENCODE_API_KEY="${OPENCODE_API_KEY:-}"' >> "$HOME/.bashrc"
+fi
+
+# 8. Export GITHUB_TOKEN for MCP GitHub server
+if ! grep -q "GITHUB_TOKEN" "$HOME/.bashrc" 2>/dev/null; then
+  echo 'export GITHUB_TOKEN="${GITHUB_TOKEN:-}"' >> "$HOME/.bashrc"
+fi
+
+# 9. opencode config output
 echo "[nex3] ✅ Setup complete."
 echo "[nex3] Workspace: $HOME/opencode-agent3/"
 echo "[nex3] Config:   $HOME/opencode-agent3/opencode.json"
