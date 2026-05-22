@@ -41,6 +41,13 @@ jobs:
 
           echo "[agent3] Running entrypoint..."
           GH_TOKEN="$GH_PAT" gh codespace ssh -c "$CODESPACE" -- \
-            "cd /workspaces/nex-agents && bash setup/entrypoint.sh" 2>&1
+            'if [ -f /workspaces/nex-agents/setup/entrypoint.sh ]; then
+              cd /workspaces/nex-agents && bash setup/entrypoint.sh
+            else
+              echo "[agent3] Workspace empty, recloning..."
+              rm -rf /workspaces/nex-agents
+              git clone https://github.com/ReplikanteK/nex-agents.git /workspaces/nex-agents 2>/dev/null
+              cd /workspaces/nex-agents && bash setup/entrypoint.sh
+            fi' 2>&1
 
           echo "[agent3] ✅ Done"
