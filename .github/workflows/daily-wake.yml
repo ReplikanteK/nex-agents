@@ -21,24 +21,15 @@ jobs:
           GH_TOKEN: ${{ secrets.GH_PAT }}
         run: |
           CS=$(gh api /user/codespaces --jq '.codespaces[] | select(.repository.name == "nex-agents") | .name' | head -1)
-
           if [ -z "$CS" ]; then
             echo "[agent3] Creating codespace..."
             gh api -X POST /user/codespaces -f repository_id=1246782009 -f ref=main -f geo=EuropeWest -f machine=basicLinux32gb -f idle_timeout_minutes=5 > /dev/null
             sleep 5
             CS=$(gh api /user/codespaces --jq '.codespaces[] | select(.repository.name == "nex-agents") | .name' | tail -1)
-            echo "[agent3] Created: $CS"
           else
             ST=$(gh api "/user/codespaces/$CS" --jq '.state')
-            echo "[agent3] $CS: $ST"
-            if [ "$ST" = "ShuttingDown" ]; then
-              echo "[agent3] Waiting for shutdown..."
-              until ST=$(gh api "/user/codespaces/$CS" --jq '.state'); [ "$ST" = "Shutdown" ]; do sleep 10; done
-            fi
-            if [ "$ST" = "Shutdown" ]; then
-              echo "[agent3] Starting..."
-              gh api -X POST "/user/codespaces/$CS/start" > /dev/null
-            fi
+            while [ "$ST" = "ShuttingDown" ]; do sleep 10; ST=$(gh api "/user/codespaces/$CS" --jq '.state'); done
+            [ "$ST" = "Shutdown" ] && gh api -X POST "/user/codespaces/$CS/start" > /dev/null
           fi
 
           echo "[agent3] Waiting for Available..."
@@ -48,9 +39,8 @@ jobs:
             [ "$ST" = "Available" ] && break
             sleep 10
           done
-
           [ "$ST" != "Available" ] && echo "[agent3] Timeout" && exit 1
 
           echo "[agent3] Running entrypoint..."
-          gh codespace ssh -c "$CS" -- "cd /workspaces/nex-agents && bash setup/entrypoint.sh $GH_PAT" 2>&1
+          gh codespace ssh -c "$CS" -- "cd /workspaces/nex-agents && git pull origin main 2>/dev/null && bash setup/entrypoint.sh $GH_PAT" 2>&1
           echo "[agent3] Done"
