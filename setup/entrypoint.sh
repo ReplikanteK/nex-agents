@@ -140,7 +140,7 @@ if command -v jq &>/dev/null; then
     > "$STATE_FILE"
 fi
 
-# === Weekly task management ===
+# === Backlog: pick pending task ===
 TASK_NAME=""
 TASK_FILE=""
 PENDING_TASK=$(find tasks/ -maxdepth 1 -name "*.md" ! -name "template.md" 2>/dev/null | head -1)
@@ -150,66 +150,9 @@ if [ -n "$PENDING_TASK" ]; then
   TASK_NAME=$(basename "$TASK_FILE" .md)
   echo "[agent3] Pending task: $TASK_NAME"
   sed -i 's/Estado: pending/Estado: in_progress/' "$TASK_FILE" 2>/dev/null || true
-elif [ "$OPENCODE_AVAIL" -eq 1 ]; then
-  # No pending task -> create weekly task based on day
-  case "$DOW" in
-    1) # Monday: scanner semanal
-      TASK_NAME="scanner-${DATE}"
-      TASK_FILE="tasks/${TASK_NAME}.md"
-      cat > "$TASK_FILE" << TASKEOF
-# Task: Scanner semanal + analisis de nuevos targets
-### Origen: agent3 (auto)
-### Prioridad: alta
-### Estado: in_progress
-
-### Objetivo
-Analiza los programas nuevos detectados en el scan de hoy y los ultimos 7 dias.
-Para cada programa nuevo, investiga:
-1. Si tiene repo publico o codigo abierto
-2. Cual es su stack tecnologico principal
-3. Si hay CVEs recientes asociados
-Genera un reporte en reports/ con recomendaciones priorizadas para agent1.
-TASKEOF
-      echo "[agent3] Created weekly Monday task: $TASK_NAME"
-      ;;
-    3) # Wednesday: code review
-      TASK_NAME="code-review-${DATE}"
-      TASK_FILE="tasks/${TASK_NAME}.md"
-      # Pick a random target with potential open source from H1 data
-      RAND_TARGET=$(jq -r '.[].name' "$H1_JSON" 2>/dev/null | shuf | head -1)
-      cat > "$TASK_FILE" << TASKEOF
-# Task: Code review - ${RAND_TARGET:-target}
-### Origen: agent3 (auto)
-### Prioridad: media
-### Estado: in_progress
-
-### Objetivo
-Busca el repo publico de ${RAND_TARGET:-el target seleccionado}.
-Si tiene codigo abierto, revisa los componentes clave (manejo de input, parsing, auth)
-y deja un brief de superficie de ataque para agent1.
-TASKEOF
-      echo "[agent3] Created weekly Wednesday task: $TASK_NAME"
-      ;;
-    5) # Friday: fuzzing / API testing
-      TASK_NAME="fuzzing-${DATE}"
-      TASK_FILE="tasks/${TASK_NAME}.md"
-      cat > "$TASK_FILE" << TASKEOF
-# Task: Fuzzing setup / API testing
-### Origen: agent3 (auto)
-### Prioridad: media
-### Estado: in_progress
-
-### Objetivo
-Identifica targets con componentes en C/C++ o Rust de la lista actual de programas.
-Prepara un brief de que componentes serian interesantes para fuzzing,
-incluyendo: language, parser complexity, input surface, y contacto con el equipo.
-TASKEOF
-      echo "[agent3] Created weekly Friday task: $TASK_NAME"
-      ;;
-    *) # Other days: no task
-      echo "[agent3] No weekly task scheduled for day $DOW"
-      ;;
-  esac
+  sed -i "s/Iniciado:.*/Iniciado: $TS/" "$TASK_FILE" 2>/dev/null || true
+else
+  echo "[agent3] No pending tasks in backlog"
 fi
 
 # === Save state + agent1 JSON ===
@@ -233,9 +176,12 @@ OPENCODE_EXIT=""
 if [ -n "$TASK_FILE" ] && [ "$OPENCODE_AVAIL" -eq 1 ]; then
   OBJECTIVE=$(awk '/### Objetivo/{found=1; next} found && /^###/{exit} found' "$TASK_FILE" | head -20)
   if [ -n "$OBJECTIVE" ]; then
-    echo "[agent3] Running opencode..."
+    echo "[agent3] Running opencode (auto-approve)..."
     echo "[agent3] Objective: ${OBJECTIVE:0:120}..."
-    timeout 600 opencode run "Agent3, ejecuta esta tarea: $OBJECTIVE" -f "$TASK_FILE" 2>&1 || {
+    OPENCODE_DANGEROUSLY_SKIP_PERMISSIONS=true timeout 600 \
+      opencode run --dangerously-skip-permissions \
+        "Execute this task: $OBJECTIVE" \
+        -f "$TASK_FILE" 2>&1 || {
       OPENCODE_EXIT=$?
       echo "[agent3] opencode finished with exit $OPENCODE_EXIT"
     }
