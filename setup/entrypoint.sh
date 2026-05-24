@@ -140,19 +140,78 @@ if command -v jq &>/dev/null; then
     > "$STATE_FILE"
 fi
 
-# === Backlog: pick pending task ===
+# === Task: backlog first, auto-create on schedule days ===
 TASK_NAME=""
 TASK_FILE=""
 PENDING_TASK=$(find tasks/ -maxdepth 1 -name "*.md" ! -name "template.md" 2>/dev/null | head -1)
 
 if [ -n "$PENDING_TASK" ]; then
+  # Backlog takes priority over auto-created tasks
   TASK_FILE="$PENDING_TASK"
   TASK_NAME=$(basename "$TASK_FILE" .md)
   echo "[agent3] Pending task: $TASK_NAME"
   sed -i 's/Estado: pending/Estado: in_progress/' "$TASK_FILE" 2>/dev/null || true
   sed -i "s/Iniciado:.*/Iniciado: $TS/" "$TASK_FILE" 2>/dev/null || true
-else
-  echo "[agent3] No pending tasks in backlog"
+elif [ "$OPENCODE_AVAIL" -eq 1 ]; then
+  case "$DOW" in
+    1) # Monday: new targets analysis + scoring
+      TASK_NAME="recon-${DATE}"
+      TASK_FILE="tasks/${TASK_NAME}.md"
+      cat > "$TASK_FILE" << TASKEOF
+# Task: Weekend new targets analysis
+### Origen: agent3 (auto)
+### Prioridad: alta
+### Estado: in_progress
+### Iniciado: $TS
+
+### Objetivo
+Analiza los targets nuevos detectados en el scan de hoy (diferencia contra el viernes).
+Aplica el scoring framework a los nuevos programas y genera un ranking.
+Busca si tienen repos publicos y evalua su stack tecnologico.
+Output: reports/recon-${DATE}.md con top 3 recomendados para agent1.
+TASKEOF
+      echo "[agent3] Created Monday recon task"
+      ;;
+    3) # Wednesday: deep analysis of a target
+      TASK_NAME="deep-${DATE}"
+      TASK_FILE="tasks/${TASK_NAME}.md"
+      cat > "$TASK_FILE" << TASKEOF
+# Task: Deep analysis
+### Origen: agent3 (auto)
+### Prioridad: media
+### Estado: in_progress
+### Iniciado: $TS
+
+### Objetivo
+Si agent1 dejo una tarea especifica en tasks/, ejecutala.
+Sino, toma el target mejor rankeado del ultimo scan sin analizar.
+Busca su repo publico, revisa componentes clave (input parsing, auth, logging, trust boundary).
+Output: reports/analysis-${DATE}.md con brief de superficie de ataque.
+TASKEOF
+      echo "[agent3] Created Wednesday deep-analysis task"
+      ;;
+    5) # Friday: maintenance + weekend brief
+      TASK_NAME="maintenance-${DATE}"
+      TASK_FILE="tasks/${TASK_NAME}.md"
+      cat > "$TASK_FILE" << TASKEOF
+# Task: Weekly maintenance + weekend brief
+### Origen: agent3 (auto)
+### Prioridad: media
+### Estado: in_progress
+### Iniciado: $TS
+
+### Objetivo
+1. Revisa fechas de reportes activos (Lightspark ~23 Jun, Zendesk rebuttal 3 Jun, etc.)
+2. Resume cambios semanales en el panorama de bounty
+3. Deja brief para agent1 con: status de reportes, targets nuevos de la semana, recomendaciones
+Output: reports/weekend-brief-${DATE}.md
+TASKEOF
+      echo "[agent3] Created Friday maintenance task"
+      ;;
+    *)
+      echo "[agent3] Light day (DOW $DOW) - no auto task"
+      ;;
+  esac
 fi
 
 # === Save state + agent1 JSON ===
