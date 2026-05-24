@@ -20,15 +20,19 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GH_PAT }}
         run: |
-          echo "[agent3] Looking for existing codespace..."
+          echo "[agent3] Looking for codespace..."
 
           CODESPACE=$(gh api /user/codespaces --jq \
-            '.codespaces[] | select(.repository.name == "nex-agents" and .state != "Shutdown") | .name' \
+            '.codespaces[] | select(.repository.name == "nex-agents") | .name' \
             | head -1)
 
           if [ -n "$CODESPACE" ]; then
             STATE=$(gh api "/user/codespaces/$CODESPACE" --jq '.state')
             echo "[agent3] Found: $CODESPACE (state: $STATE)"
+            if [ "$STATE" = "Shutdown" ]; then
+              echo "[agent3] Starting..."
+              gh api -X POST "/user/codespaces/$CODESPACE/start"
+            fi
           else
             echo "[agent3] No codespace — creating one..."
             gh api -X POST /user/codespaces --input - <<JSON > /dev/null
