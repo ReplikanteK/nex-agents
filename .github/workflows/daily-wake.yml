@@ -24,8 +24,13 @@ jobs:
           if [ -z "$CS" ]; then
             echo "[agent3] Creating codespace..."
             gh api -X POST /user/codespaces -f repository_id=1246782009 -f ref=main -f geo=EuropeWest -f machine=basicLinux32gb -f idle_timeout_minutes=5 > /dev/null
-            sleep 5
-            CS=$(gh api /user/codespaces --jq '.codespaces[] | select(.repository.name == "nex-agents") | .name' | tail -1)
+            for i in $(seq 1 30); do
+              sleep 10
+              CS=$(gh api /user/codespaces --jq '.codespaces[] | select(.repository.name == "nex-agents") | .name' | tail -1)
+              [ -n "$CS" ] && break
+              echo "[agent3] Waiting for codespace to appear... $i"
+            done
+            echo "[agent3] Created: $CS"
           else
             ST=$(gh api "/user/codespaces/$CS" --jq '.state')
             while [ "$ST" = "ShuttingDown" ]; do sleep 10; ST=$(gh api "/user/codespaces/$CS" --jq '.state'); done
