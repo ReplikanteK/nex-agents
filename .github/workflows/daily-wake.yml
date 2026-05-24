@@ -20,40 +20,39 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GH_PAT }}
         run: |
-          echo "[agent3] Looking for stopped codespace..."
+          echo "[agent3] Looking for existing codespace..."
 
           CODESPACE=$(gh api /user/codespaces --jq \
-            '.codespaces[] | select(.repository.name == "nex-agents" and .state == "Shutdown") | .name' \
+            '.codespaces[] | select(.repository.name == "nex-agents" and .state != "Shutdown") | .name' \
             | head -1)
 
           if [ -n "$CODESPACE" ]; then
-            echo "[agent3] Starting: $CODESPACE"
-            gh api -X POST "/user/codespaces/$CODESPACE/start"
+            STATE=$(gh api "/user/codespaces/$CODESPACE" --jq '.state')
+            echo "[agent3] Found: $CODESPACE (state: $STATE)"
           else
-            echo "[agent3] No stopped codespace — creating new one..."
-            CODESPACE=$(gh api -X POST /user/codespaces \
-              -f repository_id=1246782009 \
-              -f ref=main \
-              -f geo=EuropeWest \
-              -f machine=basicLinux32gb \
-              -f idle_timeout_minutes=5 \
-              --jq '.name' 2>&1)
-            if echo "$CODESPACE" | grep -q "message\|error\|Invalid\|422"; then
-              echo "[agent3] Failed to create: $CODESPACE"
-              exit 1
-            fi
-            echo "[agent3] Created: $CODESPACE"
+            echo "[agent3] No codespace — creating one..."
+            gh api -X POST /user/codespaces --input - <<JSON > /dev/null
+{"repository_id":1246782009,"ref":"main","geo":"EuropeWest","machine":"basicLinux32gb","idle_timeout_minutes":5}
+JSON
+            sleep 5
+            CODESPACE=$(gh api /user/codespaces --jq \
+              '.codespaces[] | select(.repository.name == "nex-agents") | .name' \
+              | tail -1)
+            STATE=$(gh api "/user/codespaces/$CODESPACE" --jq '.state')
+            echo "[agent3] Created: $CODESPACE (state: $STATE)"
           fi
 
-          echo "[agent3] Waiting for Available (up to 5 min)..."
-          for i in $(seq 1 30); do
-            STATE=$(gh api "/user/codespaces/$CODESPACE" --jq '.state')
-            echo "  attempt $i: $STATE"
-            [ "$STATE" = "Available" ] && break
-            sleep 10
-          done
+          if [ "$STATE" != "Available" ]; then
+            echo "[agent3] Waiting for Available (up to 5 min)..."
+            for i in $(seq 1 30); do
+              sleep 10
+              STATE=$(gh api "/user/codespaces/$CODESPACE" --jq '.state')
+              echo "  attempt $i: $STATE"
+              [ "$STATE" = "Available" ] && break
+            done
+          fi
 
-          [ "$STATE" != "Available" ] && echo "[agent3] Not ready after 5 min" && exit 1
+          [ "$STATE" != "Available" ] && echo "[agent3] Not ready" && exit 1
 
           echo "[agent3] Running entrypoint..."
           gh codespace ssh -c "$CODESPACE" -- \
