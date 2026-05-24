@@ -16,7 +16,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Start or create agent3 codespace
+      - name: Find or create agent3 codespace
         env:
           GH_TOKEN: ${{ secrets.GH_PAT }}
         run: |
@@ -31,20 +31,17 @@ jobs:
             gh api -X POST "/user/codespaces/$CODESPACE/start"
           else
             echo "[agent3] No stopped codespace — creating new one..."
-            CREATE_JSON=$(gh api -X POST /user/codespaces \
-              --field "repository_id=1246782009" \
-              --field "ref=main" \
-              --field "geo=EuropeWest" \
-              --field "machine=basicLinux32gb" \
-              --field "idle_timeout_minutes=5" 2>&1)
-            if echo "$CREATE_JSON" | grep -q "message.*error\|message.*Invalid\|422"; then
-              echo "[agent3] Failed to create: $CREATE_JSON"
+            CODESPACE=$(gh api -X POST /user/codespaces \
+              -f repository_id=1246782009 \
+              -f ref=main \
+              -f geo=EuropeWest \
+              -f machine=basicLinux32gb \
+              -f idle_timeout_minutes=5 \
+              --jq '.name' 2>&1)
+            if echo "$CODESPACE" | grep -q "message\|error\|Invalid\|422"; then
+              echo "[agent3] Failed to create: $CODESPACE"
               exit 1
             fi
-            CODESPACE=$(echo "$CREATE_JSON" | gh api -X POST /user/codespaces \
-              -f repository_id=1246782009 -f ref=main \
-              -f geo=EuropeWest -f machine=basicLinux32gb \
-              -f idle_timeout_minutes=5 --jq '.name' 2>&1)
             echo "[agent3] Created: $CODESPACE"
           fi
 
