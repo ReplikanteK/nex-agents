@@ -16,37 +16,40 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Manage codespace
+      - name: Run agent3
         env:
           GH_TOKEN: ${{ secrets.GH_PAT }}
         run: |
           CS=$(gh api /user/codespaces --jq '.codespaces[] | select(.repository.name == "nex-agents") | .name' | head -1)
 
           if [ -z "$CS" ]; then
-            echo "[agent3] No codespace — creating..."
+            echo "[agent3] Creating codespace..."
             gh api -X POST /user/codespaces -f repository_id=1246782009 -f ref=main -f geo=EuropeWest -f machine=basicLinux32gb -f idle_timeout_minutes=5 > /dev/null
-            for i in $(seq 1 30); do
-              sleep 10
-              CS=$(gh api /user/codespaces --jq '.codespaces[] | select(.repository.name == "nex-agents") | .name' | tail -1)
-              ST=$(gh api "/user/codespaces/$CS" --jq '.state')
-              echo "[agent3] $i: $ST"
-              [ "$ST" = "Available" ] && break
-            done
+            sleep 5
+            CS=$(gh api /user/codespaces --jq '.codespaces[] | select(.repository.name == "nex-agents") | .name' | tail -1)
+            echo "[agent3] Created: $CS"
           else
             ST=$(gh api "/user/codespaces/$CS" --jq '.state')
-            echo "[agent3] Found $CS ($ST)"
+            echo "[agent3] $CS: $ST"
+            if [ "$ST" = "ShuttingDown" ]; then
+              echo "[agent3] Waiting for shutdown..."
+              until ST=$(gh api "/user/codespaces/$CS" --jq '.state'); [ "$ST" = "Shutdown" ]; do sleep 10; done
+            fi
             if [ "$ST" = "Shutdown" ]; then
+              echo "[agent3] Starting..."
               gh api -X POST "/user/codespaces/$CS/start" > /dev/null
-              for i in $(seq 1 30); do
-                sleep 10
-                ST=$(gh api "/user/codespaces/$CS" --jq '.state')
-                echo "[agent3] $i: $ST"
-                [ "$ST" = "Available" ] && break
-              done
             fi
           fi
 
-          [ "$ST" != "Available" ] && echo "[agent3] Not ready" && exit 1
+          echo "[agent3] Waiting for Available..."
+          for i in $(seq 1 45); do
+            ST=$(gh api "/user/codespaces/$CS" --jq '.state')
+            echo "[agent3] $i: $ST"
+            [ "$ST" = "Available" ] && break
+            sleep 10
+          done
+
+          [ "$ST" != "Available" ] && echo "[agent3] Timeout" && exit 1
 
           echo "[agent3] Running entrypoint..."
           gh codespace ssh -c "$CS" -- "cd /workspaces/nex-agents && bash setup/entrypoint.sh $GH_PAT" 2>&1
