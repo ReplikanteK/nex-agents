@@ -16,48 +16,53 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Find or create agent3 codespace
+      - name: Find codespace
         env:
           GH_TOKEN: ${{ secrets.GH_PAT }}
         run: |
-          echo "[agent3] Looking for codespace..."
+          CODESPACE=$(gh api /user/codespaces --jq '.codespaces[] | select(.repository.name == "nex-agents") | .name' | head -1)
+          echo "CODESPACE=$CODESPACE" >> $GITHUB_ENV
 
-          CODESPACE=$(gh api /user/codespaces --jq \
-            '.codespaces[] | select(.repository.name == "nex-agents") | .name' \
-            | head -1)
-
-          if [ -n "$CODESPACE" ]; then
-            STATE=$(gh api "/user/codespaces/$CODESPACE" --jq '.state')
-            echo "[agent3] Found: $CODESPACE (state: $STATE)"
-            if [ "$STATE" = "Shutdown" ]; then
-              echo "[agent3] Starting..."
-              gh api -X POST "/user/codespaces/$CODESPACE/start"
-            fi
-          else
-            echo "[agent3] No codespace — creating one..."
-            printf '{"repository_id":1246782009,"ref":"main","geo":"EuropeWest","machine":"basicLinux32gb","idle_timeout_minutes":5}' | gh api -X POST /user/codespaces --input - > /dev/null
-            sleep 5
-            CODESPACE=$(gh api /user/codespaces --jq \
-              '.codespaces[] | select(.repository.name == "nex-agents") | .name' \
-              | tail -1)
-            STATE=$(gh api "/user/codespaces/$CODESPACE" --jq '.state')
-            echo "[agent3] Created: $CODESPACE (state: $STATE)"
+      - name: Start if Shutdown
+        if: env.CODESPACE != ''
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT }}
+        run: |
+          STATE=$(gh api "/user/codespaces/${{ env.CODESPACE }}" --jq '.state')
+          echo "STATE=$STATE" >> $GITHUB_ENV
+          echo "[agent3] Found: ${{ env.CODESPACE }} (state: $STATE)"
+          if [ "$STATE" = "Shutdown" ]; then
+            gh api -X POST "/user/codespaces/${{ env.CODESPACE }}/start"
+          elif [ "$STATE" = "Available" ]; then
+            echo "[agent3] Already running"
           fi
 
-          if [ "$STATE" != "Available" ]; then
-            echo "[agent3] Waiting for Available (up to 5 min)..."
-            for i in $(seq 1 30); do
-              sleep 10
-              STATE=$(gh api "/user/codespaces/$CODESPACE" --jq '.state')
-              echo "  attempt $i: $STATE"
-              [ "$STATE" = "Available" ] && break
-            done
-          fi
+      - name: Create if no codespace
+        if: env.CODESPACE == ''
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT }}
+        run: |
+          echo "[agent3] No codespace. Creating..."
+          gh api -X POST /user/codespaces -f repository_id=1246782009 -f ref=main -f geo=EuropeWest -f machine=basicLinux32gb -f idle_timeout_minutes=5
 
-          [ "$STATE" != "Available" ] && echo "[agent3] Not ready" && exit 1
+      - name: Wait for Available
+        if: env.CODESPACE != '' && env.STATE != 'Available'
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT }}
+        run: |
+          for i in $(seq 1 15); do
+            sleep 20
+            STATE=$(gh api "/user/codespaces/${{ env.CODESPACE }}" --jq '.state')
+            echo "  attempt $i: $STATE"
+            [ "$STATE" = "Available" ] && exit 0
+          done
+          echo "[agent3] Timeout" && exit 1
 
+      - name: Run entrypoint
+        if: env.CODESPACE != '' && env.STATE == 'Available'
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT }}
+        run: |
           echo "[agent3] Running entrypoint..."
-          gh codespace ssh -c "$CODESPACE" -- \
-            "cd /workspaces/nex-agents && bash setup/entrypoint.sh $GH_PAT" 2>&1
-
+          gh codespace ssh -c "${{ env.CODESPACE }}" -- "cd /workspaces/nex-agents && bash setup/entrypoint.sh $GH_PAT" 2>&1
           echo "[agent3] Done"
