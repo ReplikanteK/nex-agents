@@ -20,14 +20,23 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
+      - name: Cleanup orphan codespaces
+        continue-on-error: true
+        run: |
+          echo "[agent3] Cleaning orphan codespaces..."
+          gh api /user/codespaces --jq '.codespaces[] | select(.repository.name == "nex-agents" and (.state == "Available" or .state == "Queued")) | .name' 2>/dev/null | while read CS; do
+            [ -n "$CS" ] && gh api -X POST "/user/codespaces/$CS/stop" > /dev/null && echo "[agent3] Stopped orphan: $CS"
+          done
+
       - name: Run agent3
+        id: agent3
         env:
           GH_TOKEN: ${{ secrets.GH_PAT }}
         run: |
           CS=$(gh api /user/codespaces --jq '.codespaces[] | select(.repository.name == "nex-agents") | .name' | head -1)
           if [ -z "$CS" ]; then
             echo "[agent3] Creating codespace..."
-            CS=$(echo '{"repository_id":1246782009,"ref":"main","geo":"EuropeWest","machine":"basicLinux32gb","idle_timeout_minutes":5}' | gh api /user/codespaces --input - -X POST --jq '.name')
+            CS=$(echo '{"repository_id":1246782009,"ref":"main","geo":"EuropeWest","machine":"basicLinux32gb","idle_timeout_minutes":15}' | gh api /user/codespaces --input - -X POST --jq '.name')
             echo "[agent3] Created: $CS"
           else
             ST=$(gh api "/user/codespaces/$CS" --jq '.state')
@@ -47,3 +56,21 @@ jobs:
           echo "[agent3] Running entrypoint..."
           gh codespace ssh -c "$CS" -- "cd /workspaces/nex-agents && bash setup/entrypoint.sh $GH_PAT" 2>&1
           echo "[agent3] Done"
+
+      - name: Always cleanup
+        if: always()
+        continue-on-error: true
+        run: |
+          echo "[agent3] Final cleanup..."
+          gh api /user/codespaces --jq '.codespaces[] | select(.repository.name == "nex-agents" and (.state == "Available" or .state == "Queued")) | .name' 2>/dev/null | while read CS; do
+            [ -n "$CS" ] && gh api -X POST "/user/codespaces/$CS/stop" > /dev/null && echo "[agent3] Cleaned: $CS"
+          done
+
+      - name: Create failure issue
+        if: failure()
+        continue-on-error: true
+        run: |
+          gh issue create \
+            --title "agent3: run failed $(date +%Y-%m-%d)" \
+            --body "Agent3 daily run failed at $(date -u +%Y-%m-%dT%H:%M:%SZ). Check workflow logs." \
+            --label "bug"
