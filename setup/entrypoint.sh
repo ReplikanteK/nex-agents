@@ -141,75 +141,88 @@ if command -v jq &>/dev/null; then
 fi
 
 # === Task: backlog first, auto-create on schedule days ===
+TASKS_DONE=0
+MAX_TASKS_PER_RUN=2
 TASK_NAME=""
 TASK_FILE=""
-PENDING_TASK=$(find tasks/ -maxdepth 1 -name "*.md" ! -name "template.md" 2>/dev/null | head -1)
 
-if [ -n "$PENDING_TASK" ]; then
-  # Backlog takes priority over auto-created tasks
-  TASK_FILE="$PENDING_TASK"
-  TASK_NAME=$(basename "$TASK_FILE" .md)
-  echo "[agent3] Pending task: $TASK_NAME"
-  sed -i 's/Estado: pending/Estado: in_progress/' "$TASK_FILE" 2>/dev/null || true
-  sed -i "s/Iniciado:.*/Iniciado: $TS/" "$TASK_FILE" 2>/dev/null || true
-elif [ "$OPENCODE_AVAIL" -eq 1 ]; then
-  case "$DOW" in
-    1) # Monday: new targets analysis + scoring
-      TASK_NAME="recon-${DATE}"
-      TASK_FILE="tasks/${TASK_NAME}.md"
-      cat > "$TASK_FILE" << TASKEOF
-# Task: Weekend new targets analysis
+process_task() {
+  local file="$1"
+  TASK_FILE="$file"
+  TASK_NAME=$(basename "$file" .md)
+  echo "[agent3] Task: $TASK_NAME"
+  sed -i 's/Estado: pending/Estado: in_progress/' "$file" 2>/dev/null || true
+  sed -i "s/Iniciado:.*/Iniciado: $TS/" "$file" 2>/dev/null || true
+}
+
+auto_create_task() {
+  local name="$1" desc="$2" output="$3"
+  TASK_NAME="$name"
+  TASK_FILE="tasks/${name}.md"
+  cat > "$TASK_FILE" << TASKEOF
+# Task: $desc
 ### Origen: agent3 (auto)
 ### Prioridad: alta
 ### Estado: in_progress
 ### Iniciado: $TS
 
-### Objetivo
-Analiza los targets nuevos detectados en el scan de hoy (diferencia contra el viernes).
-Aplica el scoring framework a los nuevos programas y genera un ranking.
-Busca si tienen repos publicos y evalua su stack tecnologico.
-Output: reports/recon-${DATE}.md con top 3 recomendados para agent1.
+$output
 TASKEOF
-      echo "[agent3] Created Monday recon task"
-      ;;
-    3) # Wednesday: deep analysis of a target
-      TASK_NAME="deep-${DATE}"
-      TASK_FILE="tasks/${TASK_NAME}.md"
-      cat > "$TASK_FILE" << TASKEOF
-# Task: Deep analysis
-### Origen: agent3 (auto)
-### Prioridad: media
-### Estado: in_progress
-### Iniciado: $TS
+  echo "[agent3] Created: $name"
+}
 
-### Objetivo
-Si agent1 dejo una tarea especifica en tasks/, ejecutala.
-Sino, toma el target mejor rankeado del ultimo scan sin analizar.
-Busca su repo publico, revisa componentes clave (input parsing, auth, logging, trust boundary).
-Output: reports/analysis-${DATE}.md con brief de superficie de ataque.
-TASKEOF
-      echo "[agent3] Created Wednesday deep-analysis task"
+# --- Try to pick first task ---
+PENDING_TASK=$(find tasks/ -maxdepth 1 -name "*.md" ! -name "template.md" 2>/dev/null | head -1)
+if [ -n "$PENDING_TASK" ]; then
+  process_task "$PENDING_TASK"
+elif [ "$OPENCODE_AVAIL" -eq 1 ]; then
+  case "$DOW" in
+    1)
+      auto_create_task "recon-${DATE}" "Weekend new targets analysis" \
+"### Objetivo
+Analiza los targets nuevos del fin de semana. Aplica scoring framework a los nuevos programas.
+Busca repos publicos, evalua stack tecnologico, genera ranking top 3.
+Output: reports/recon-${DATE}.md"
       ;;
-    5) # Friday: maintenance + weekend brief
-      TASK_NAME="maintenance-${DATE}"
-      TASK_FILE="tasks/${TASK_NAME}.md"
-      cat > "$TASK_FILE" << TASKEOF
-# Task: Weekly maintenance + weekend brief
-### Origen: agent3 (auto)
-### Prioridad: media
-### Estado: in_progress
-### Iniciado: $TS
-
-### Objetivo
-1. Revisa fechas de reportes activos (Lightspark ~23 Jun, Zendesk rebuttal 3 Jun, etc.)
-2. Resume cambios semanales en el panorama de bounty
-3. Deja brief para agent1 con: status de reportes, targets nuevos de la semana, recomendaciones
-Output: reports/weekend-brief-${DATE}.md
-TASKEOF
-      echo "[agent3] Created Friday maintenance task"
+    2)
+      auto_create_task "codereview-${DATE}" "Code review of target" \
+"### Objetivo
+Toma el target mejor rankeado del ultimo recon que tenga repo publico.
+Revisa: input parsing, auth logic, logging de datos sensibles, trust boundary crossings.
+Output: reports/codereview-${DATE}.md con superficie de ataque."
+      ;;
+    3)
+      auto_create_task "deep-${DATE}" "Deep analysis / fuzzing setup" \
+"### Objetivo
+Si hay task en backlog ejecutalo. Sino, identifica targets con componentes C/C++/Rust.
+Prepara brief de fuzzing: language, parser complexity, input surface.
+Output: reports/deep-${DATE}.md"
+      ;;
+    4)
+      auto_create_task "apiweb-${DATE}" "API / web security recon" \
+"### Objetivo
+Analiza targets con APIs publicas o aplicaciones web.
+Revisa: autenticacion, rate limiting, CORS, GraphQL endpoints, JWT handling.
+Output: reports/apiweb-${DATE}.md"
+      ;;
+    5)
+      auto_create_task "maintenance-${DATE}" "Weekly maintenance + brief" \
+"### Objetivo
+1. Revisa fechas de reportes activos (Lightspark ~23 Jun, Zendesk 3 Jun, Firefox Relay)
+2. Resume cambios semanales en bounty landscape
+3. Deja brief estructurado para agent1
+Output: reports/maintenance-${DATE}.md"
+      ;;
+    6)
+      auto_create_task "deepdive-${DATE}" "Deep dive vulnerability patterns" \
+"### Objetivo
+Investiga un patron de vulnerabilidad especifico en un target con codigo abierto.
+Busca: SSRF via URL parsing, symlink traversal, auto-creation abuse, o memory corruption.
+Documenta hallazgos y deja PoC si aplica.
+Output: reports/deepdive-${DATE}.md"
       ;;
     *)
-      echo "[agent3] Light day (DOW $DOW) - no auto task"
+      echo "[agent3] Light day (DOW $DOW)"
       ;;
   esac
 fi
@@ -231,26 +244,37 @@ cat > "$AGENT1_JSON" << JSONEOF
 JSONEOF
 
 # === Execute task with opencode ===
+run_opencode_task() {
+  local file="$1"
+  local max_time="${2:-1200}"
+  local objective
+  objective=$(awk '/### Objetivo/{found=1; next} found && /^###/{exit} found' "$file" | head -30)
+  [ -z "$objective" ] && echo "[agent3] No objective in $file" && return 1
+
+  echo "[agent3] Running opencode (${max_time}s timeout)..."
+  echo "[agent3] Objective: ${objective:0:120}..."
+  OPENCODE_DANGEROUSLY_SKIP_PERMISSIONS=true timeout "$max_time" \
+    opencode run --dangerously-skip-permissions \
+      "Execute this task: $objective" \
+      -f "$file" 2>&1 || true
+  sed -i 's/Estado: in_progress/Estado: completed/' "$file" 2>/dev/null || true
+  TASKS_DONE=$((TASKS_DONE + 1))
+}
+
 OPENCODE_EXIT=""
 if [ -n "$TASK_FILE" ] && [ "$OPENCODE_AVAIL" -eq 1 ]; then
-  OBJECTIVE=$(awk '/### Objetivo/{found=1; next} found && /^###/{exit} found' "$TASK_FILE" | head -20)
-  if [ -n "$OBJECTIVE" ]; then
-    echo "[agent3] Running opencode (auto-approve)..."
-    echo "[agent3] Objective: ${OBJECTIVE:0:120}..."
-    OPENCODE_DANGEROUSLY_SKIP_PERMISSIONS=true timeout 600 \
-      opencode run --dangerously-skip-permissions \
-        "Execute this task: $OBJECTIVE" \
-        -f "$TASK_FILE" 2>&1 || {
-      OPENCODE_EXIT=$?
-      echo "[agent3] opencode finished with exit $OPENCODE_EXIT"
-    }
-    # Mark task completed if opencode ran
-    sed -i 's/Estado: in_progress/Estado: completed/' "$TASK_FILE" 2>/dev/null || true
-  else
-    echo "[agent3] Could not parse objective from task file"
-  fi
+  run_opencode_task "$TASK_FILE"
+
+  # Process backlog: if more tasks pending, execute up to MAX_TASKS_PER_RUN
+  while [ "$TASKS_DONE" -lt "$MAX_TASKS_PER_RUN" ]; do
+    NEXT_TASK=$(find tasks/ -maxdepth 1 -name "*.md" ! -name "template.md" 2>/dev/null | head -1)
+    [ -z "$NEXT_TASK" ] && break
+    echo "[agent3] Backlog: processing next task..."
+    run_opencode_task "$NEXT_TASK"
+  done
+
 elif [ -n "$TASK_FILE" ] && [ "$OPENCODE_AVAIL" -eq 0 ]; then
-  echo "[agent3] Task pending but opencode not available. Marking as completed."
+  echo "[agent3] Task pending but opencode not available"
   sed -i 's/Estado: in_progress/Estado: completed/' "$TASK_FILE" 2>/dev/null || true
 fi
 
