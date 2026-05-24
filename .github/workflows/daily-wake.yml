@@ -23,13 +23,7 @@ jobs:
           CS=$(gh api /user/codespaces --jq '.codespaces[] | select(.repository.name == "nex-agents") | .name' | head -1)
           if [ -z "$CS" ]; then
             echo "[agent3] Creating codespace..."
-            gh api -X POST /user/codespaces -f repository_id=1246782009 -f ref=main -f geo=EuropeWest -f machine=basicLinux32gb -f idle_timeout_minutes=5 > /dev/null
-            for i in $(seq 1 30); do
-              sleep 10
-              CS=$(gh api /user/codespaces --jq '.codespaces[] | select(.repository.name == "nex-agents") | .name' | tail -1)
-              [ -n "$CS" ] && break
-              echo "[agent3] Waiting for codespace to appear... $i"
-            done
+            CS=$(echo '{"repository_id":1246782009,"ref":"main","geo":"EuropeWest","machine":"basicLinux32gb","idle_timeout_minutes":5}' | gh api /user/codespaces --input - -X POST --jq '.name')
             echo "[agent3] Created: $CS"
           else
             ST=$(gh api "/user/codespaces/$CS" --jq '.state')
