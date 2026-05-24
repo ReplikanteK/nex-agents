@@ -1,10 +1,7 @@
 #!/usr/bin/env bash
 set -uo pipefail
 
-# === Agent3 Daily Entrypoint ===
-# Usage: bash setup/entrypoint.sh [GH_PAT]
-
-GH_PAT="${1:-$GITHUB_TOKEN}"
+GH_PAT="${1:-${GITHUB_TOKEN:-}}"
 [ -z "$GH_PAT" ] && echo "[agent3] No token available" && exit 1
 export GH_TOKEN="$GH_PAT"
 
@@ -14,13 +11,13 @@ DATE=$(date +%Y-%m-%d)
 
 if [ ! -d .git ]; then
   if [ -d /workspaces/nex-agents/.git ]; then
-    cd /workspaces/nex-agents
+    cd /workspaces/nex-agents || { echo "[agent3] FAIL: cannot find /workspaces/nex-agents"; exit 1; }
   elif [ -d "$HOME/nex-agents/.git" ]; then
-    cd "$HOME/nex-agents"
+    cd "$HOME/nex-agents" || { echo "[agent3] FAIL: cannot find $HOME/nex-agents"; exit 1; }
   else
     echo "[agent3] Cloning repo..."
     gh repo clone ReplikanteK/nex-agents "$HOME/nex-agents" 2>/dev/null
-    cd "$HOME/nex-agents" 2>/dev/null || { echo "[agent3] FAIL: cannot find repo"; exit 1; }
+    cd "$HOME/nex-agents" 2>/dev/null || { echo "[agent3] FAIL: cannot clone repo"; exit 1; }
   fi
 fi
 
