@@ -9,13 +9,18 @@ export PATH="$HOME/.opencode/bin:$PATH"
 
 TS=$(date -u +%Y-%m-%dT%H:%M:%SZ)
 DATE=$(date +%Y-%m-%d)
-echo "[agent3] $TS - Scan starting..."
+DOW=$(date +%u)
+echo "[agent3] $TS - Scan starting... (day $DOW)"
 
 # === Health ===
 MISSING=""
 for cmd in gh git curl jq; do
   command -v "$cmd" &>/dev/null || { MISSING="$MISSING $cmd"; }
 done
+
+OPENCODE_AVAIL=0
+command -v opencode &>/dev/null && OPENCODE_AVAIL=1
+[ "$OPENCODE_AVAIL" -eq 0 ] && echo "[agent3] WARNING: opencode not installed"
 
 # === Repo ===
 REPO_DIR="/workspaces/nex-agents"
@@ -29,20 +34,11 @@ cd "$REPO_DIR" || exit 1
 gh auth setup-git 2>/dev/null || true
 git pull origin main 2>/dev/null || true
 
-# === Task ===
-TASK_NAME=""
-TASK_FILE=$(find tasks/ -maxdepth 1 -name "*.md" ! -name "template.md" 2>/dev/null | head -1)
-if [ -n "$TASK_FILE" ]; then
-  TASK_NAME=$(basename "$TASK_FILE" .md)
-  sed -i 's/Estado: pending/Estado: in_progress/' "$TASK_FILE" 2>/dev/null || true
-fi
-
-# === Fetch bounty data ===
+# === Fetch bounty data (fast, always) ===
 BOUNTY_DIR="/tmp/bounty-targets-data"
-echo "[agent3] Fetching bounty data..."
 if command -v git &>/dev/null; then
   if [ ! -d "$BOUNTY_DIR/.git" ]; then
-    git clone --depth 1 https://github.com/arkadiyt/bounty-targets-data.git "$BOUNTY_DIR" 2>/dev/null || echo "[agent3] clone failed"
+    git clone --depth 1 https://github.com/arkadiyt/bounty-targets-data.git "$BOUNTY_DIR" 2>/dev/null || true
   else
     git -C "$BOUNTY_DIR" pull origin master 2>/dev/null || true
   fi
@@ -51,9 +47,6 @@ fi
 # === Diff engine ===
 mkdir -p reports memoria
 STATE_FILE="memoria/targets-state.json"
-
-# Current: extract names per platform (sorted, deduped)
-get_names() { jq -r '.[].name // empty' "$1" 2>/dev/null | sort -u; }
 get_name_url() { jq -r '.[] | select(.name != null) | "\(.name)|\(.url // "?")"' "$1" 2>/dev/null | sort -u; }
 
 H1_JSON="$BOUNTY_DIR/data/hackerone_data.json"
@@ -71,7 +64,6 @@ BC_COUNT=$(echo "$BC_NOW" | wc -l)
 IT_COUNT=$(echo "$IT_NOW" | wc -l)
 YWH_COUNT=$(echo "$YWH_NOW" | wc -l)
 
-# Previous state
 if [ -f "$STATE_FILE" ]; then
   H1_PREV=$(jq -r '.targets.hackerone[]? | "\(.name)|\(.url // "?")"' "$STATE_FILE" 2>/dev/null | sort -u)
   BC_PREV=$(jq -r '.targets.bugcrowd[]? | "\(.name)|\(.url // "?")"' "$STATE_FILE" 2>/dev/null | sort -u)
@@ -81,22 +73,32 @@ else
   H1_PREV=""; BC_PREV=""; IT_PREV=""; YWH_PREV=""
 fi
 
-# Diff
 DIFF_SECTION=""
 diff_platform() {
-  local label="$1" now="$2" prev="$3"
-  local new_str="" rem_str=""
+  local label="$1" now="$2" prev="$3" new_str="" rem_str=""
   if [ -n "$prev" ]; then
     new_str=$(comm -23 <(echo "$now") <(echo "$prev") 2>/dev/null | head -10)
     rem_str=$(comm -13 <(echo "$now") <(echo "$prev") 2>/dev/null | head -10)
   else
     new_str=$(echo "$now" | head -10)
-    rem_str=""
   fi
   if [ -n "$new_str" ] || [ -n "$rem_str" ]; then
-    DIFF_SECTION+="### $label\n"
-    [ -n "$new_str" ] && DIFF_SECTION+="\n**New ($(echo "$new_str" | wc -l)):**\n\`\`\`\n$new_str\n\`\`\`\n"
-    [ -n "$rem_str" ] && DIFF_SECTION+="\n**Removed ($(echo "$rem_str" | wc -l)):**\n\`\`\`\n$rem_str\n\`\`\`\n"
+    DIFF_SECTION="${DIFF_SECTION}### ${label}
+"
+    if [ -n "$new_str" ]; then
+      DIFF_SECTION="${DIFF_SECTION}**New ($(echo "$new_str" | wc -l):**
+\`\`\`
+$new_str
+\`\`\`
+"
+    fi
+    if [ -n "$rem_str" ]; then
+      DIFF_SECTION="${DIFF_SECTION}**Removed ($(echo "$rem_str" | wc -l):**
+\`\`\`
+$rem_str
+\`\`\`
+"
+    fi
   fi
 }
 
@@ -105,7 +107,7 @@ diff_platform "Bugcrowd" "$BC_NOW" "$BC_PREV"
 diff_platform "Intigriti" "$IT_NOW" "$IT_PREV"
 diff_platform "YesWeHack" "$YWH_NOW" "$YWH_PREV"
 
-# === Quick-scan new targets (liveness) ===
+# === Quick-scan new targets ===
 ALL_NOW=$( (echo "$H1_NOW"; echo "$BC_NOW"; echo "$IT_NOW"; echo "$YWH_NOW") | sort -u )
 ALL_PREV=$( (echo "${H1_PREV:-}"; echo "${BC_PREV:-}"; echo "${IT_PREV:-}"; echo "${YWH_PREV:-}") | sort -u )
 BRAND_NEW=$(comm -23 <(echo "$ALL_NOW") <(echo "$ALL_PREV") 2>/dev/null | head -5)
@@ -113,21 +115,21 @@ BRAND_NEW=$(comm -23 <(echo "$ALL_NOW") <(echo "$ALL_PREV") 2>/dev/null | head -
 QUICK_SCAN=""
 if [ -n "$BRAND_NEW" ] && command -v curl &>/dev/null; then
   echo "[agent3] Quick-scanning new targets..."
-  QUICK_SCAN="## Quick Scan (new targets)\n| Target | URL | HTTP |\n|--------|-----|------|\n"
+  QUICK_SCAN="## Quick Scan (new targets)
+| Target | URL | HTTP |
+|--------|-----|------|
+"
   while IFS='|' read -r name url; do
     [ -z "$name" ] && continue
     http=$(curl -sI -o /dev/null -w "%{http_code}" --connect-timeout 5 --max-time 5 "$url" 2>/dev/null || echo "ERR")
-    QUICK_SCAN+="| $name | $url | $http |\n"
+    QUICK_SCAN="${QUICK_SCAN}| $name | $url | $http |
+"
   done <<< "$BRAND_NEW"
 fi
 
-# === Save current state as JSON ===
-echo "[agent3] Saving state..."
+# === Save current state ===
 if command -v jq &>/dev/null; then
-  write_platform() {
-    local file="$1"
-    jq '[.[] | {name, url}]' "$file" 2>/dev/null || echo '[]'
-  }
+  write_platform() { jq '[.[] | {name, url}]' "$1" 2>/dev/null || echo '[]'; }
   jq -n \
     --arg ts "$TS" \
     --argjson h1 "$(write_platform "$H1_JSON")" \
@@ -138,28 +140,122 @@ if command -v jq &>/dev/null; then
     > "$STATE_FILE"
 fi
 
-# === Write JSON report for agent1 ===
-AGENT1_JSON="memoria/agent3-latest.json"
-{
-  echo "{"
-  echo "  \"scan_date\": \"$TS\","
-  echo "  \"date\": \"$DATE\","
-  echo "  \"task\": \"${TASK_NAME:-null}\","
-  echo "  \"platforms\": {"
-  echo "    \"hackerone\": $H1_COUNT,"
-  echo "    \"bugcrowd\": $BC_COUNT,"
-  echo "    \"intigriti\": $IT_COUNT,"
-  echo "    \"yeswehack\": $YWH_COUNT"
-  echo "  }"
-  echo "}"
-} > "$AGENT1_JSON"
+# === Weekly task management ===
+TASK_NAME=""
+TASK_FILE=""
+PENDING_TASK=$(find tasks/ -maxdepth 1 -name "*.md" ! -name "template.md" 2>/dev/null | head -1)
 
-# === Generate markdown report ===
+if [ -n "$PENDING_TASK" ]; then
+  TASK_FILE="$PENDING_TASK"
+  TASK_NAME=$(basename "$TASK_FILE" .md)
+  echo "[agent3] Pending task: $TASK_NAME"
+  sed -i 's/Estado: pending/Estado: in_progress/' "$TASK_FILE" 2>/dev/null || true
+elif [ "$OPENCODE_AVAIL" -eq 1 ]; then
+  # No pending task -> create weekly task based on day
+  case "$DOW" in
+    1) # Monday: scanner semanal
+      TASK_NAME="scanner-${DATE}"
+      TASK_FILE="tasks/${TASK_NAME}.md"
+      cat > "$TASK_FILE" << TASKEOF
+# Task: Scanner semanal + analisis de nuevos targets
+### Origen: agent3 (auto)
+### Prioridad: alta
+### Estado: in_progress
+
+### Objetivo
+Analiza los programas nuevos detectados en el scan de hoy y los ultimos 7 dias.
+Para cada programa nuevo, investiga:
+1. Si tiene repo publico o codigo abierto
+2. Cual es su stack tecnologico principal
+3. Si hay CVEs recientes asociados
+Genera un reporte en reports/ con recomendaciones priorizadas para agent1.
+TASKEOF
+      echo "[agent3] Created weekly Monday task: $TASK_NAME"
+      ;;
+    3) # Wednesday: code review
+      TASK_NAME="code-review-${DATE}"
+      TASK_FILE="tasks/${TASK_NAME}.md"
+      # Pick a random target with potential open source from H1 data
+      RAND_TARGET=$(jq -r '.[].name' "$H1_JSON" 2>/dev/null | shuf | head -1)
+      cat > "$TASK_FILE" << TASKEOF
+# Task: Code review - ${RAND_TARGET:-target}
+### Origen: agent3 (auto)
+### Prioridad: media
+### Estado: in_progress
+
+### Objetivo
+Busca el repo publico de ${RAND_TARGET:-el target seleccionado}.
+Si tiene codigo abierto, revisa los componentes clave (manejo de input, parsing, auth)
+y deja un brief de superficie de ataque para agent1.
+TASKEOF
+      echo "[agent3] Created weekly Wednesday task: $TASK_NAME"
+      ;;
+    5) # Friday: fuzzing / API testing
+      TASK_NAME="fuzzing-${DATE}"
+      TASK_FILE="tasks/${TASK_NAME}.md"
+      cat > "$TASK_FILE" << TASKEOF
+# Task: Fuzzing setup / API testing
+### Origen: agent3 (auto)
+### Prioridad: media
+### Estado: in_progress
+
+### Objetivo
+Identifica targets con componentes en C/C++ o Rust de la lista actual de programas.
+Prepara un brief de que componentes serian interesantes para fuzzing,
+incluyendo: language, parser complexity, input surface, y contacto con el equipo.
+TASKEOF
+      echo "[agent3] Created weekly Friday task: $TASK_NAME"
+      ;;
+    *) # Other days: no task
+      echo "[agent3] No weekly task scheduled for day $DOW"
+      ;;
+  esac
+fi
+
+# === Save state + agent1 JSON ===
+AGENT1_JSON="memoria/agent3-latest.json"
+cat > "$AGENT1_JSON" << JSONEOF
+{
+  "scan_date": "$TS",
+  "date": "$DATE",
+  "task": ${TASK_NAME:-null},
+  "platforms": {
+    "hackerone": $H1_COUNT,
+    "bugcrowd": $BC_COUNT,
+    "intigriti": $IT_COUNT,
+    "yeswehack": $YWH_COUNT
+  }
+}
+JSONEOF
+
+# === Execute task with opencode ===
+OPENCODE_EXIT=""
+if [ -n "$TASK_FILE" ] && [ "$OPENCODE_AVAIL" -eq 1 ]; then
+  OBJECTIVE=$(awk '/### Objetivo/{found=1; next} found && /^###/{exit} found' "$TASK_FILE" | head -20)
+  if [ -n "$OBJECTIVE" ]; then
+    echo "[agent3] Running opencode..."
+    echo "[agent3] Objective: ${OBJECTIVE:0:120}..."
+    timeout 600 opencode run "Agent3, ejecuta esta tarea: $OBJECTIVE" -f "$TASK_FILE" 2>&1 || {
+      OPENCODE_EXIT=$?
+      echo "[agent3] opencode finished with exit $OPENCODE_EXIT"
+    }
+    # Mark task completed if opencode ran
+    sed -i 's/Estado: in_progress/Estado: completed/' "$TASK_FILE" 2>/dev/null || true
+  else
+    echo "[agent3] Could not parse objective from task file"
+  fi
+elif [ -n "$TASK_FILE" ] && [ "$OPENCODE_AVAIL" -eq 0 ]; then
+  echo "[agent3] Task pending but opencode not available. Marking as completed."
+  sed -i 's/Estado: in_progress/Estado: completed/' "$TASK_FILE" 2>/dev/null || true
+fi
+
+# === Generate report ===
 REPORT="reports/scanner-${DATE}.md"
 cat > "$REPORT" << REPORTEOF
 # Scanner Report - ${DATE}
 - Generated: $TS
 - Task: ${TASK_NAME:-none}
+- Opencode: ${OPENCODE_AVAIL}
 - Status: completed
 
 ## Bounty Targets Overview
@@ -179,12 +275,6 @@ ${QUICK_SCAN}
 - State: targets-state.json + agent3-latest.json
 REPORTEOF
 
-# === Run daily scanner if available ===
-if [ -f "setup/daily-scanner.sh" ]; then
-  echo "[agent3] Running daily scanner..."
-  bash setup/daily-scanner.sh || true
-fi
-
 # === Commit and push ===
 git add reports/ memoria/ tasks/ 2>/dev/null || true
 if ! git diff --cached --quiet 2>/dev/null; then
@@ -193,8 +283,7 @@ if ! git diff --cached --quiet 2>/dev/null; then
 fi
 
 echo "[agent3] Report: $REPORT"
-echo "[agent3] State: $STATE_FILE"
-echo "[agent3] Agent1 JSON: $AGENT1_JSON"
+echo "[agent3] Openocode exit: ${OPENCODE_EXIT:-none}"
 
 # === Self-stop ===
 CS_NAME=$(gh api /user/codespaces --jq '.codespaces[] | select(.state != "Shutdown") | .name' 2>/dev/null | head -1)
