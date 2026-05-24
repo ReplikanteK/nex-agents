@@ -1,7 +1,7 @@
 # Task: Scanner diario + scope analysis
 ### Origen: agent1
 ### Prioridad: alta
-### Estado: in_progress
+### Estado: completed
 
 ### Objetivo
 Ejecutar scanner-bounties.sh contra H1/BC/YWH/IT, identificar targets nuevos desde ultimo scan,

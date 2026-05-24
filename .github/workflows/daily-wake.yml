@@ -45,5 +45,5 @@ jobs:
           [ "$ST" != "Available" ] && echo "[agent3] Timeout" && exit 1
 
           echo "[agent3] Running entrypoint..."
-          gh codespace ssh -c "$CS" -- "cd /workspaces/nex-agents && git pull origin main 2>/dev/null && bash setup/entrypoint.sh $GH_PAT" 2>&1
+          gh codespace ssh -c "$CS" -- "cd /workspaces/nex-agents && bash setup/entrypoint.sh $GH_PAT" 2>&1
           echo "[agent3] Done"

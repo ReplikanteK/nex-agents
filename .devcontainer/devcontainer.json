@@ -5,7 +5,6 @@
     "ghcr.io/devcontainers/features/node:1": {}
   },
   "postCreateCommand": "bash setup/bootstrap.sh",
-  "postStartCommand": "bash setup/entrypoint.sh",
   "customizations": {
     "vscode": {
       "extensions": [],
