@@ -21,6 +21,7 @@ if [ ! -d .git ]; then
   fi
 fi
 
+gh auth setup-git 2>/dev/null || true
 git pull origin main 2>/dev/null || true
 
 TASK_FILE=$(find tasks/ -maxdepth 1 -name "*.md" ! -name "template.md" 2>/dev/null | head -1)
