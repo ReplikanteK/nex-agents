@@ -17,37 +17,33 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Start or create agent3 codespace
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT }}
         run: |
           echo "[agent3] Looking for stopped codespace..."
 
-          CODESPACE=$(curl -s -H "Authorization: Bearer $GH_PAT" \
-            "https://api.github.com/user/codespaces" \
-            | jq -r '.codespaces[] | select(.repository.name == "nex-agents" and (.state == "Shutdown" or .state == "shutdown")) | .name' \
+          CODESPACE=$(gh api /user/codespaces --jq \
+            '.codespaces[] | select(.repository.name == "nex-agents" and .state == "Shutdown") | .name' \
             | head -1)
 
           if [ -n "$CODESPACE" ]; then
-            echo "[agent3] Found stopped: $CODESPACE"
-            curl -s -X POST -H "Authorization: Bearer $GH_PAT" \
-              "https://api.github.com/user/codespaces/$CODESPACE/start"
+            echo "[agent3] Starting: $CODESPACE"
+            gh api -X POST "/user/codespaces/$CODESPACE/start"
           else
             echo "[agent3] No stopped codespace — creating new one..."
-            CREATE_RESULT=$(curl -s -X POST -H "Authorization: Bearer $GH_PAT" \
-              -H "Content-Type: application/json" \
-              -d '{"repository_id":"","ref":"main","geo":"EuropeWest","machine":"basicLinux32gb","idle_timeout_minutes":5}' \
-              "https://api.github.com/user/codespaces")
-            CODESPACE=$(echo "$CREATE_RESULT" | jq -r '.name // empty')
-            if [ -z "$CODESPACE" ]; then
-              echo "[agent3] Failed to create codespace:"
-              echo "$CREATE_RESULT" | jq '.message // .'
+            CODESPACE=$(gh codespace create --repo ReplikanteK/nex-agents --branch main \
+              --machine basicLinux32gb --idle-timeout 5m \
+              --json --jq '.name' 2>&1 | tail -1)
+            if echo "$CODESPACE" | grep -q "Error\|error\|failed"; then
+              echo "[agent3] Failed to create codespace: $CODESPACE"
               exit 1
             fi
-            echo "[agent3] Created codespace: $CODESPACE"
+            echo "[agent3] Created: $CODESPACE"
           fi
 
           echo "[agent3] Waiting for Available (up to 5 min)..."
           for i in $(seq 1 30); do
-            STATE=$(curl -s -H "Authorization: Bearer $GH_PAT" \
-              "https://api.github.com/user/codespaces/$CODESPACE" | jq -r '.state')
+            STATE=$(gh api "/user/codespaces/$CODESPACE" --jq '.state')
             echo "  attempt $i: $STATE"
             [ "$STATE" = "Available" ] && break
             sleep 10
@@ -55,8 +51,8 @@ jobs:
 
           [ "$STATE" != "Available" ] && echo "[agent3] Not ready after 5 min" && exit 1
 
-          echo "[agent3] Running entrypoint via SSH..."
-          GH_TOKEN="$GH_PAT" gh codespace ssh -c "$CODESPACE" -- \
+          echo "[agent3] Running entrypoint..."
+          gh codespace ssh -c "$CODESPACE" -- \
             "cd /workspaces/nex-agents && bash setup/entrypoint.sh $GH_PAT" 2>&1
 
           echo "[agent3] Done"
