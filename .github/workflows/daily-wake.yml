@@ -35,9 +35,7 @@ jobs:
             fi
           else
             echo "[agent3] No codespace — creating one..."
-            gh api -X POST /user/codespaces --input - <<JSON > /dev/null
-{"repository_id":1246782009,"ref":"main","geo":"EuropeWest","machine":"basicLinux32gb","idle_timeout_minutes":5}
-JSON
+            printf '{"repository_id":1246782009,"ref":"main","geo":"EuropeWest","machine":"basicLinux32gb","idle_timeout_minutes":5}' | gh api -X POST /user/codespaces --input - > /dev/null
             sleep 5
             CODESPACE=$(gh api /user/codespaces --jq \
               '.codespaces[] | select(.repository.name == "nex-agents") | .name' \
