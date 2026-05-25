@@ -1,5 +1,5 @@
 {
-  "last_scan": "2026-05-25T08:32:45Z",
+  "last_scan": "2026-05-25T08:34:46Z",
   "targets": {
     "hackerone": [
       {
@@ -2911,6 +2911,10 @@
         "url": "https://www.intigriti.com/programs/kuleuven/kuleuvenrdp/detail"
       },
       {
+        "name": "Kinepolis Group",
+        "url": "https://www.intigriti.com/programs/kinepolis/website/detail"
+      },
+      {
         "name": "Kiwa Vulnerability Disclosure Program",
         "url": "https://www.intigriti.com/programs/kiwa/kiwavdp/detail"
       },
@@ -2977,6 +2981,10 @@
       {
         "name": "Orbia Responsible Disclosure",
         "url": "https://www.intigriti.com/programs/orbia/orbiavdp/detail"
+      },
+      {
+        "name": "PDQ bug bounty program",
+        "url": "https://www.intigriti.com/programs/pdq/pdqcomprivate/detail"
       },
       {
         "name": "PeopleCert VDP",
