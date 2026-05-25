@@ -1,8 +1,6 @@
 name: agent3 daily wake
 
 on:
-  push:
-    branches: [main]
   schedule:
     - cron: '33 1 * * *'
   workflow_dispatch:
@@ -54,7 +52,7 @@ jobs:
           [ "$ST" != "Available" ] && echo "[agent3] Timeout" && exit 1
 
           echo "[agent3] Running entrypoint..."
-          gh codespace ssh -c "$CS" -- "cd /workspaces/nex-agents && bash setup/entrypoint.sh $GH_PAT" 2>&1
+          timeout 1500 gh codespace ssh -c "$CS" -- "cd /workspaces/nex-agents && bash setup/entrypoint.sh $GH_PAT" 2>&1
           echo "[agent3] Done"
 
       - name: Always cleanup
