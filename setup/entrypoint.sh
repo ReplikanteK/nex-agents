@@ -239,7 +239,7 @@ cat > "$AGENT1_JSON" << JSONEOF
 {
   "scan_date": "$TS",
   "date": "$DATE",
-  "task": ${TASK_NAME:-null},
+  "task": "${TASK_NAME:-null}",
   "platforms": {
     "hackerone": $H1_COUNT,
     "bugcrowd": $BC_COUNT,
