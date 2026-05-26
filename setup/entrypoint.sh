@@ -20,7 +20,13 @@ done
 
 OPENCODE_AVAIL=0
 command -v opencode &>/dev/null && OPENCODE_AVAIL=1
-[ "$OPENCODE_AVAIL" -eq 0 ] && echo "[agent3] WARNING: opencode not installed"
+if [ "$OPENCODE_AVAIL" -eq 0 ]; then
+  echo "[agent3] opencode not installed. Installing..."
+  curl -fsSL https://opencode.ai/install | bash
+  export PATH="$HOME/.opencode/bin:$PATH"
+  command -v opencode &>/dev/null && OPENCODE_AVAIL=1
+  [ "$OPENCODE_AVAIL" -eq 0 ] && echo "[agent3] WARNING: opencode install failed"
+fi
 
 # === Repo ===
 REPO_DIR="/workspaces/nex-agents"
