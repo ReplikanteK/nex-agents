@@ -52,7 +52,7 @@ jobs:
           [ "$ST" != "Available" ] && echo "[agent3] Timeout" && exit 1
 
           echo "[agent3] Running entrypoint..."
-          timeout 1500 gh codespace ssh -c "$CS" -- "cd /workspaces/nex-agents && git pull origin main && bash setup/entrypoint.sh $GH_PAT" 2>&1
+          timeout 1500 gh codespace ssh -c "$CS" -- "cd /workspaces/nex-agents && git fetch origin && git reset --hard origin/main && bash setup/entrypoint.sh $GH_PAT" 2>&1
           echo "[agent3] Done"
 
       - name: Always cleanup
@@ -67,8 +67,7 @@ jobs:
       - name: Create failure issue
         if: failure()
         continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
-          gh issue create \
-            --title "agent3: run failed $(date +%Y-%m-%d)" \
-            --body "Agent3 daily run failed at $(date -u +%Y-%m-%dT%H:%M:%SZ). Check workflow logs." \
-            --label "bug"
+          gh issue create             --title "agent3: run failed $(date +%Y-%m-%d)"             --body "Agent3 daily run failed at $(date -u +%Y-%m-%dT%H:%M:%SZ). Check workflow logs."             --label "bug" 2>/dev/null || true
