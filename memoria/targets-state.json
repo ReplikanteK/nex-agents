@@ -1,5 +1,5 @@
 {
-  "last_scan": "2026-05-25T09:01:40Z",
+  "last_scan": "2026-05-26T09:40:43Z",
   "targets": {
     "hackerone": [
       {
@@ -2779,10 +2779,6 @@
         "url": "https://www.intigriti.com/programs/innovapost/innovapost/detail"
       },
       {
-        "name": "Challenge 0526",
-        "url": "https://www.intigriti.com/programs/intigriti/challenge0526/detail"
-      },
-      {
         "name": "Citymesh Responsible Vulnerability Disclosure Program",
         "url": "https://www.intigriti.com/programs/citymesh/responsiblevulnerabilitydisclosureprogram/detail"
       },
@@ -2907,12 +2903,12 @@
         "url": "https://www.intigriti.com/programs/intel/intel/detail"
       },
       {
-        "name": "KU Leuven Responsible Disclosure Program",
-        "url": "https://www.intigriti.com/programs/kuleuven/kuleuvenrdp/detail"
+        "name": "Intergamma",
+        "url": "https://www.intigriti.com/programs/intergamma/intergamma/detail"
       },
       {
-        "name": "Kinepolis Group",
-        "url": "https://www.intigriti.com/programs/kinepolis/website/detail"
+        "name": "KU Leuven Responsible Disclosure Program",
+        "url": "https://www.intigriti.com/programs/kuleuven/kuleuvenrdp/detail"
       },
       {
         "name": "Kiwa Vulnerability Disclosure Program",
@@ -2983,20 +2979,12 @@
         "url": "https://www.intigriti.com/programs/orbia/orbiavdp/detail"
       },
       {
-        "name": "PDQ bug bounty program",
-        "url": "https://www.intigriti.com/programs/pdq/pdqcomprivate/detail"
-      },
-      {
         "name": "PeopleCert VDP",
         "url": "https://www.intigriti.com/programs/peoplecert/peoplecert/detail"
       },
       {
         "name": "Personio",
         "url": "https://www.intigriti.com/programs/personio/personio/detail"
-      },
-      {
-        "name": "Port of Antwerp-Bruges",
-        "url": "https://www.intigriti.com/programs/portofantwerp/portofantwerp/detail"
       },
       {
         "name": "Proof.com VDP",
@@ -3173,6 +3161,10 @@
       {
         "name": "Watsons",
         "url": "https://www.intigriti.com/programs/aswatson/watsons/detail"
+      },
+      {
+        "name": "Wolt",
+        "url": "https://www.intigriti.com/programs/wolt/wolt/detail"
       },
       {
         "name": "Wärtsilä Vulnerability Disclosure Program",

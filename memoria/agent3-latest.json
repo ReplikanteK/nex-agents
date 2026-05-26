@@ -1,11 +1,11 @@
 {
-  "scan_date": "2026-05-25T09:01:40Z",
-  "date": "2026-05-25",
-  "task": null,
+  "scan_date": "2026-05-26T09:40:43Z",
+  "date": "2026-05-26",
+  "task": codereview-2026-05-26,
   "platforms": {
     "hackerone": 456,
     "bugcrowd": 220,
-    "intigriti": 123,
+    "intigriti": 121,
     "yeswehack": 65
   }
 }
