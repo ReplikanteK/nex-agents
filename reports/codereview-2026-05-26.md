@@ -1,8 +1,9 @@
 # Code Review Report — 2026-05-26
-**Target:** Supabase (Auth Service)
-**Repo:** `supabase/auth` (https://github.com/supabase/auth)
+**Target:** Stripe (Smokescreen)
+**Repo:** `stripe/smokescreen` (https://github.com/stripe/smokescreen)
 **Language:** Go
-**Commit:** latest HEAD as of 2026-05-26
+**Commit:** 7d45971
+**Ranking:** #1 (score 120.8) — offers_bounties=true, eff=92%, managed=true
 **Scope:** Input parsing, auth logic, logging of sensitive data, trust boundary crossings
 
 ---
@@ -11,126 +12,154 @@
 
 ### 1. Input Parsing
 
-#### 1.1 JSON Body Parsing
-- `retrieveRequestParams` (internal/api/helpers.go:84) unmarshals JSON into generic structs via `json.Unmarshal`. No schema validation beyond Go type system — extra fields in JSON are silently accepted.
-- `SignupParams`, `PasswordGrantParams`, `UserUpdateParams` accept arbitrary `map[string]interface{}` fields (e.g., `Data`, `UserMetaData`), which flow directly into the database and JWT claims.
-- Request body limited to 1MB (`internal/api/api.go:178`) via `limitRequestBody`, preventing memory exhaustion.
+#### 1.1 Host/Port Parsing
+- `hostport.New()` and `hostport.NewWithScheme()` (`pkg/smokescreen/hostport/hostport.go:52-113`) parse proxy request targets from raw user input. Accepts hostnames, IPv4, IPv6 addresses, and FQDNs.
+- `HasPort()` (hostport.go:116) uses `strings.LastIndex` to detect port presence — IPv6 addresses like `[::1]:8080` are properly handled via `net.SplitHostPort`, but raw IPv6 without brackets (e.g., `::1`) is first checked by `net.ParseIP` (hostport.go:81-85), which correctly identifies IPv6. Edge case: malformed IPv6 with port can produce unexpected parsing.
+- `NormalizeHost()` (hostport.go:125-170) applies a custom IDNA profile with `StrictDomainName(false)`, allowing underscores in domain names. While permissive, the character whitelist (hostport.go:162) restricts to `[a-z0-9.-_]` — any character outside this set produces an error. No risk of injection into DNS resolution.
 
-#### 1.2 Email/Phone Validation
-- Email validation is done via `validateEmail()` before signup but is not applied to login or token endpoints — `FindUserByEmailAndAudience` does case-insensitive matching but no format validation.
-- Phone number formatting via `formatPhoneNumber()` (`token.go:103`) is applied in password grant but not consistently across all phone-related handlers.
+#### 1.2 X-Upstream-Https-Proxy Header (SSRF Risk)
+- Client-supplied `X-Upstream-Https-Proxy` header (`smokescreen.go:1316`) is parsed by `url.Parse()` (`smokescreen.go:1363`) and the hostname is passed to ACL `Decide()` (`smokescreen.go:1388`). If a malicious upstream proxy is allowed by ACL, the attacker can chain SSRF through it.
+- The parsed URL's hostname is validated only by the ACL — no validation of scheme, userinfo, or path. An upstream proxy URL like `https://attacker-controlled.com:8080` would be accepted if the domain matches an ACL rule's `allowed_external_proxies`.
 
-#### 1.3 Redirect URL Validation (Open Redirect Risk)
-- `GetReferrer` / `getRedirectTo` (internal/utilities/request.go:75-89) reads `redirect_to` header/param and falls back to `Referer` header, validated against a `URIAllowListMap`.
-- Validation accepts loopback IPs (request.go:119) but **blocks decimal IP addresses** (request.go:115-117) — an improvement over common patterns, but allowlist misconfigurations could still allow open redirect.
-- OAuth callback errors are returned in URL fragments (external.go:808-823), which can leak error details to third parties via `Referer` headers.
+#### 1.3 Trace/Role Headers
+- `X-Smokescreen-Trace-ID` and `X-Smokescreen-Role` headers are accepted as input (`smokescreen.go:695`, `smokescreen.go:787-788`). These are stripped before forwarding to the destination, but are used internally for logging and role assignment. An attacker could inject arbitrary trace IDs to confuse log analysis.
 
-#### 1.4 Host Header Validation
-- `isValidExternalHost` middleware (middleware.go:278) checks `X-Forwarded-Host` and `Host` against `config.Mailer.ExternalHosts`. If no allowlist is configured, defaults to `config.API.ExternalURL`. If neither matches, a log message is written but the request proceeds — this can lead to host confusion attacks if the external URL is misconfigured.
+#### 1.4 DNS Resolution
+- `resolveTCPAddr()` (`smokescreen.go:329-363`) resolves hostnames via a configurable resolver. The resolver address is validated via `net.SplitHostPort` (`config.go:329`) but the DNS protocol itself is not authenticated — a MitM on the DNS channel can poison resolution and redirect traffic.
+- IPv6 embedding detection (`smokescreen.go:270-272`) blocks NAT64, 6to4, and Teredo prefixes to prevent SSRF via IPv4 address embedding in IPv6 addresses.
 
 #### 1.5 Rate Limiting
-- `performRateLimiting` (middleware.go:123) uses `sbff.GetIPAddress()` first, falls back to a configurable rate limit header. If no header value is present, rate limiting is silently disabled with a warning log (middleware.go:83-86). This means misconfigured deployments can bypass rate limits.
+- Token bucket rate limiter (`rate_limiter.go:27-54`) protects against request floods. `MaxRequestBurst` defaults to `2x MaxRequestRate` when not set (`config.go:363`). No per-role or per-IP rate limiting — single global rate limit.
+- `MaxConcurrentRequests` uses a channel-based semaphore (`rate_limiter.go:84-93`). When at capacity, returns 503 immediately — no queuing.
+
+#### 1.6 Self-Connection Detection
+- `addrIsLocalIp()` (`smokescreen.go:287-296`) and `InitializeSelfConnectionDetection()` (`config.go:410-428`) gather all local IPs at startup to prevent the proxy from connecting to itself — mitigates recursive proxy SSRF.
 
 ---
 
 ### 2. Auth Logic
 
-#### 2.1 JWT Authentication
-- `requireAuthentication` (internal/api/auth.go:20-36): Bearer token extracted via regex `(?i)^bearer (\S+$)` (api.go:37). JWT parsed with configurable valid signing methods.
-- Key selection uses `kid` header (auth.go:83-94) — falls back to HMAC secret if alg is HS256 and no kid matches. **Attack vector**: an attacker who obtains or guesses a `kid` that maps to a known public key could forge tokens if the corresponding private key is compromised or if JWKS endpoint leaks keys.
-- `parseJWTClaims` (auth.go:77-110): JWT validation uses `jwt.NewParser` with `WithValidMethods` — this prevents algorithm confusion attacks (e.g., RS256→HS256).
-- No built-in token revocation except through session/refresh token rotation — access tokens are valid until expiry.
+#### 2.1 mTLS-Based Role Extraction
+- `defaultRoleFromRequest()` (`main.go:16-24`) extracts the client role from the TLS client certificate's CommonName (CN). Requires TLS + client certificate. If TLS is missing or no certificate is provided, returns `MissingRoleError`.
+- `getRole()` (`smokescreen.go:1236-1259`) wraps role extraction with `AllowMissingRole` fallback — when enabled, unauthenticated clients get an empty role and the default ACL rule.
 
-#### 2.2 Admin Authentication
-- `requireAdminCredentials` (middleware.go:187-199) extracts bearer token and calls `requireAdmin`, which checks `claims.Role` against `config.JWT.AdminRoles` (auth.go:54-64). **Issue**: admin roles are derived solely from the JWT `role` claim — if an access token is leaked or forged with an admin role, no additional verification (e.g., IP allowlist, MFA) is performed.
+#### 2.2 ACL Authorization
+- `checkACLsForRequest()` (`smokescreen.go:1305-1435`) is the central authorization gate. Evaluates client role against `EgressACL.Decide()`.
+- Three enforcement policies (`policy.go:22-26`):
+  - **Open**: Allow all egress for this role (lowest security)
+  - **Report**: Allow + log + metrics (monitoring mode)
+  - **Enforce**: Deny unlisted domains (highest security)
+- Global allow/deny lists (`acl.go:30-31`) override per-role rules.
 
-#### 2.3 Password Authentication
-- `ResourceOwnerPasswordGrant` (token.go:71-212): Password validated via `user.Authenticate()` which uses `crypto.CompareHashAndPassword` — supports bcrypt, argon2, and Firebase Scrypt.
-- `MaxPasswordLength = 72` (password.go:13): passwords longer than 72 chars are rejected before bcrypt truncation — good.
-- HIBP integration is optional (fail-open by default, configurable to fail-closed in password.go:56-68) — pwned password check can be bypassed if HIBP is unreachable.
-- Weak password error returns specific reasons (`pwned`, `length`, `characters`) — this information disclosure helps attackers refine password guessing.
+#### 2.3 Domain Glob Matching
+- `HostMatchesGlob()` (`acl.go:364-400`) matches hostnames against glob patterns. Normalizes to Punycode/ASCII before comparison. Wildcards only at prefix (`*.example.com`).
+- Critical path: ACL decision in `checkACLsForRequest()` `smokescreen.go:1384-1401` — any error from `Decide()` results in a deny decision (fail-closed), which is correct.
 
-#### 2.4 Refresh Token Rotation
-- Refresh token rotation supports v1 (database-backed) and v2 (HMAC-signed) tokens (tokens/service.go).
-- `RefreshTokenReuseInterval` (configurable) allows brief reuse (service.go:389-391) for UX but opens a window for token replay.
-- Counter-based detection for concurrent refreshes (service.go:492-537) handles "fail-to-save" and "concurrent-refresh" scenarios gracefully.
-- **Attack vector**: If `RefreshTokenRotationEnabled` is false AND `RefreshTokenAllowReuse` is true, refresh tokens can be replayed indefinitely.
+#### 2.4 MITM Authorization
+- When a CONNECT request matches MITM-configured domains (`acl.go:153-164`), the proxy intercepts TLS. The role from CONNECT is reused for subsequent HTTP requests over the MITM tunnel (`smokescreen.go:771-774`).
+- `isConnectMitm` flag (`smokescreen.go:94`) prevents role reuse across non-MITM HTTP requests — mitigates a scenario where a client establishes a CONNECT tunnel with role A, then sends HTTP proxy requests through it impersonating role A.
 
-#### 2.5 MFA / Factor Verification
-- Factors (TOTP, Phone, WebAuthn) can be enrolled and verified. AAL (Authenticator Assurance Level) tracked per session.
-- Session downgrade from AAL2→AAL1 is prevented via `session.CalculateAALAndAMR()`.
-- MFA challenge has configurable expiry (default 300s).
+#### 2.5 Role Caching Across MITM Requests
+- MITM requests reuse the role from the CONNECT phase (`smokescreen.go:1339-1343`) but re-evaluate ACL against the new destination. This means a client with role A that opens a MITM tunnel to `allowed.example.com` cannot access `denied.example.com` through the same tunnel.
 
-#### 2.6 OAuth / SSO / SAML
-- OAuth client authentication supports multiple methods (`client_secret_basic`, `client_secret_post`, `none`). `token_endpoint_auth_method` is configurable per client.
-- SAML ACS endpoint processes arbitrary SAML assertions — relies on `SAMLEnabled` guard but assertion validation details are in `samlacs.go` / `samlassertion.go`.
-- Custom OAuth/OIDC providers store encrypted secrets in the database — decrypted at runtime (`loadCustomProvider`, external.go:722).
+#### 2.6 Upstream Proxy Selection
+- `selectUpstreamProxy()` (`smokescreen.go:1268-1278`) has a 3-tier priority: `UpstreamProxySelector` callback > client `X-Upstream-Https-Proxy` header > direct connection.
+- **Trust concern**: The `UpstreamProxySelector` is a trusted callback that returns arbitrary URLs. The documentation warns "returned URLs are NOT validated" (`config.go:167`). A compromised or misconfigured selector can route traffic through attacker proxies.
+
+#### 2.7 Missing: Token/Password Authentication
+- Smokescreen has no built-in token or password authentication. The only authentication mechanism is mTLS client certificates. If `RoleFromRequest` is not configured, or if TLS is not used, all clients get the default ACL rule (or `AllowMissingRole` behavior).
 
 ---
 
 ### 3. Logging of Sensitive Data
 
-#### 3.1 Request Logging
-- `request-logger.go:48-68`: Logs `method`, `path`, `remote_addr`, `referer`, `grant_type` (for `/token`). No request body or headers (auth tokens) are logged in standard logs — good.
-- User-Agent and IP address are stored in sessions (tokens/service.go:609-621) — this is intended audit data.
+#### 3.1 Standard Request Logging
+- `newContext()` (`smokescreen.go:686-715`) creates a log entry with: request ID (`xid`), remote address, proxy type, requested host, start time, and trace ID. If TLS is available, logs X.509 certificate CN and OU.
+- **CN/OU logging**: The client certificate's Common Name and Organizational Unit are logged in every request. These may identify the client service/role but are not secret. No sensitive claim information is exposed.
 
-#### 3.2 SQL / Database Logging
-- `logging.go:94-124`: SQL logging can include query arguments when `LOG_SQL_ALL` is configured. If enabled, sensitive data (passwords, tokens, emails) in SQL queries could appear in logs.
-- Logging configuration is read from environment — if debug SQL logging is inadvertently enabled in production, it leaks query data.
+#### 3.2 Decision/ACL Logging
+- `logProxy()` (`smokescreen.go:900-934`) logs decision reason, allow/deny status, enforce-would-deny, content length, DNS lookup time, and error messages.
+- Deny reason messages can include resolved IP addresses and classification reasons (e.g., "Deny: Private Range"). No user secrets in standard deny messages.
 
-#### 3.3 Error Logging
-- `HandleResponseError` (errors.go:80-218) logs error details with `WithError()`. For 5xx errors, `errorID` is logged. Internal error messages are logged via `WithInternalMessage()` but not sent to the client.
-- WeakPasswordError returns specific reasons (`reasons` field) to the API client — this is by design but leaks password policy violation details.
+#### 3.3 Detailed HTTP Logging (MITM)
+- When `DetailedHttpLogs` is enabled for a MITM domain (`smokescreen.go:582-586`), the proxy logs: request URL, HTTP method, and request headers.
+- **High severity**: `redactHeaders()` (`smokescreen.go:1437-1463`) redacts headers not in an explicit allowlist. However, if enabled without configuring `DetailedHttpLogsFullHeaders`, all headers are redacted to `[REDACTED]`. If configured too broadly, sensitive headers (Authorization, Cookie, X-API-Key) could leak to logs.
 
-#### 3.4 Audit Logs
-- Audit log entries are stored in the database with user ID, action, and metadata (including provider type, IP, etc.). These are intended for security auditing but represent a sensitive data store that must be protected.
-- `NewAuditLogEntry` is called for login, signup, token refresh, and other auth events — the metadata map can include arbitrary keys.
+#### 3.4 Error/Diagnostic Logging
+- `rejectResponse()` (`smokescreen.go:606-670`) can include the resolved address and classification reason in the response body. The `AdditionalErrorMessageOnDeny` config allows custom messages appended to deny responses.
+- `logProxy()` logs errors at Error level, denies at Warn level, and allows at Info level. Error messages from DNS resolution, connection timeouts, and ACL failures are logged with full detail.
 
-#### 3.5 Headers
-- Custom response headers `sb-auth-user-id`, `sb-auth-session-id`, `sb-auth-refresh-token-prefix`, `sb-auth-refresh-token-counter` are set in responses. The `sb-auth-refresh-token-prefix` header leaks the first 5 characters of the refresh token (tokens/service.go:468) — a minor information disclosure.
+#### 3.5 Metrics Exposure
+- StatsD and Prometheus metrics (`config.go:539-565`) expose: decision counts, resolver statistics, rate limit hits, tunnel concurrency, connection timing.
+- Prometheus endpoint is on a separate listener (default: `0.0.0.0:9810/metrics`). If exposed on a shared interface without network isolation, ACL decision patterns can be deduced.
+
+#### 3.6 Connection Tracking Logging
+- `conntrack.InstrumentedConn` (`smokescreen.go:549`) wraps CONNECT connections and logs connection lifecycle events. At shutdown, all tracked connections are enumerated and closed (smokescreen.go:1221-1224).
+
+#### 3.7 TLS Setup Logging
+- `SetupCrls()` and `SetupTls()` (`config.go:475-632`) log CRL file paths, CA subject key IDs, and certificate loading status. File paths are not secrets, but the configuration reveals which CAs are trusted.
+
+#### 3.8 Stats Socket
+- Unix domain socket for connection tracking (`config.go:93-94`) with configurable file mode (default `0700`). Permissions restrict access to the owner, but any process on the host with access can read connection tracking data.
 
 ---
 
 ### 4. Trust Boundary Crossings
 
-#### 4.1 External OAuth Providers
-- OAuth callback (external.go:131-289) processes data from external providers (Google, GitHub, Apple, etc.) and creates/links user accounts based on provider claims.
-- `createAccountFromExternalIdentity` (external.go:292-447) handles 4 decision paths: `LinkAccount`, `CreateAccount`, `AccountExists`, `MultipleAccounts`. A misconfigured linking domain could allow account takeover via provider email mismatch.
-- `processInvite` (external.go:449-515) checks invited email against provider emails — if no match, returns an error that includes the list of provider emails in the internal message (external.go:471).
+#### 4.1 Core Trust Boundary: ACL Decision
+- The central trust boundary is `checkIfRequestShouldBeProxied()` (`smokescreen.go:1280-1303`). The ACL `Decide()` function determines whether a request crosses from the client's trust domain to an external host.
+- ACL configuration is loaded from disk via YAML (`yaml_loader.go:49-72`). This is a trusted configuration file — any compromise of this file compromises all authorization decisions.
 
-#### 4.2 Webhook Hooks
-- `hookshttp.go` and `hookspgfunc.go` execute custom hooks (HTTP and Postgres function) that can be triggered on auth events.
-- `CustomAccessToken` hook (tokens/service.go:719-737) allows an external HTTP call or Postgres function to modify JWT claims. Claims are validated against a JSON schema (`MinimumViableTokenSchema`) — good, but the schema allows `additionalProperties: true` for `app_metadata` and `user_metadata`, meaning arbitrary data can be injected into tokens.
-- `PasswordVerificationAttempt` hook (token.go:154-176) can reject logins and force logout — a hook failure or malicious hook could cause mass account lockout.
+#### 4.2 DNS Resolution Boundary
+- DNS resolution (`resolveTCPAddr` at smokescreen.go:329-363) crosses a trust boundary into the DNS system. A compromised or spoofed DNS resolver can redirect traffic to attacker-controlled IPs.
+- The `Network` config (`"ip"`, `"ip4"`, `"ip6"`) controls which address families are used. If set to `"ip6"` and the destination only has IPv4, resolution fails — this can be a DoS vector if ACL allows a host but DNS can't resolve it.
 
-#### 4.3 SAML
-- SAML ACS endpoint accepts POST with SAMLResponse — this is a classic trust boundary crossing. Assertion signature verification is critical. The SAML implementation (`samlacs.go`, `samlassertion.go`) must properly validate signatures, audience, and timestamps.
-- SAML relay state includes flow state ID — if an attacker can obtain a valid relay state, they may be able to replay SAML responses.
+#### 4.3 Upstream Proxy Boundary
+- When `X-Upstream-Https-Proxy` or `UpstreamProxySelector` is configured, the proxy crosses into an upstream proxy's trust domain (`smokescreen.go:1268-1278`, `smokescreen.go:1316-1382`). The upstream proxy receives the full proxied request.
+- **No validation of upstream proxy TLS**: The upstream proxy URL is used as-is. If an attacker can control the upstream proxy (or MitM the connection to it), they can intercept all proxied traffic.
 
-#### 4.4 Custom OAuth Providers
-- `loadCustomProvider` (external.go:689-797) loads provider configurations from the database, decrypts client secrets, and creates OAuth/OIDC provider instances.
-- Custom providers support `AcceptableClientIDs` — a security measure to verify the issuer's token audience, but this is optional and provider-specific.
+#### 4.4 MITM TLS Interception Boundary
+- When MITM is enabled for a domain (`smokescreen.go:987-1011`), Smokescreen generates TLS certificates on-the-fly using a configured CA (`config_loader.go:200-219`). This is a significant trust boundary crossing — Smokescreen acts as a trusted CA for intercepted connections.
+- The MITM CA key material is loaded from disk and held in memory for the lifetime of the process. If the process memory is compromised, all intercepted TLS sessions can be decrypted.
 
-#### 4.5 Rate Limiting Trust Boundary
-- Rate limiting relies on `sbff.GetIPAddress()` (internal/sbff/) which parses the `Sb-Forwarded-For` header. If this header can be spoofed (e.g., if the service is exposed directly without a proxy stripping the header), rate limits can be bypassed.
+#### 4.5 Filesystem Boundaries
+- **ACL YAML file**: Read at startup (`yaml_loader.go:50`).
+- **TLS certificates and keys**: Loaded from file paths (`config.go:602-631`).
+- **CRL files**: Loaded and parsed (`config.go:476-537`).
+- **Stats socket**: Unix domain socket created on the filesystem (`config.go:93`).
+- All file reads occur at startup with the process's effective permissions. Hot-reload is not supported for most configuration (no SIGHUP handling for ACL/TLS reload).
 
-#### 4.6 OpenID Connect Discovery
-- `/.well-known/openid-configuration` and `/.well-known/jwks.json` endpoints are public (api.go:198-204). The JWKS endpoint exposes public signing keys. While this is standard OIDC behavior, it means anyone can verify JWT signatures — this is by design but means leaked tokens can be validated offline.
+#### 4.6 Metrics Endpoint Boundary
+- Prometheus `/metrics` endpoint (`config.go:558-565`) is public by default (`0.0.0.0:9810`). No authentication on the metrics endpoint. While this is standard practice, it exposes internal decision-making data.
+- StatsD metrics are sent to `127.0.0.1:8200` by default. If configured to a remote address, metrics data (including role names and decision counts) traverses the network.
+
+#### 4.7 `RoleFromRequest` and `UpstreamProxySelector` Callbacks
+- These are user-provided Go callbacks embedded in the proxy's process (`config.go:87,168`). They execute with the proxy's full authority. A vulnerability in these callbacks (e.g., code injection via malicious input) can compromise the entire proxy.
+- `PostDecisionRequestHandler` (`config.go:150`) runs after ACL decisions. If an attacker can trigger an error in this handler, the request is denied — potential DoS vector.
+
+#### 4.8 Healthcheck Endpoint
+- Optional custom `http.Handler` for healthchecks (`config.go:97`). Executes within the proxy process. If implemented unsafely (e.g., reflecting input), can introduce vulnerabilities.
+
+#### 4.9 Shutdown Signal Handling
+- `runServer()` (`smokescreen.go:1132`) listens for `SIGUSR2`, `SIGTERM`, `SIGHUP` to trigger graceful shutdown. No SIGHUP configuration reload — signals only control lifecycle.
 
 ---
 
-## Summary of Key Findings
+### Summary of Key Findings
 
 | Severity | Finding | Location |
 |----------|---------|----------|
-| High | Admin role derived solely from JWT claim — no additional verification | `internal/api/auth.go:54-64` |
-| High | Custom Access Token hook allows arbitrary claim injection (schema limited but metadata objects are open) | `internal/tokens/service.go:719-737` |
-| Medium | SQL debug logging can leak sensitive data when `LOG_SQL_ALL` is enabled | `internal/observability/logging.go:94-124` |
-| Medium | Open redirect possible if URI allowlist is misconfigured | `internal/utilities/request.go:75-89` |
-| Medium | Rate limiting silently disabled when header is missing | `internal/api/middleware.go:83-86` |
-| Medium | `sb-auth-refresh-token-prefix` header leaks 5 chars of refresh token | `internal/tokens/service.go:468` |
-| Medium | Refresh token reuse interval creates brief replay window | `internal/tokens/service.go:389-391` |
-| Low | Host header validation logs but does not reject unlisted hosts | `internal/api/middleware.go:319-343` |
-| Low | Weak password reasons leaked to client | `internal/api/password.go:70-74` |
-| Low | OAuth callback errors leak via URL fragments | `internal/api/external.go:808-823` |
-| Low | Extra JSON fields silently accepted in request bodies | `internal/api/helpers.go:84-95` |
+| **High** | MITM CA key material held in memory for lifetime; process compromise decrypts all intercepted TLS | `config_loader.go:200-219` |
+| **High** | `UpstreamProxySelector` callback returns arbitrary URLs without validation — misconfiguration or compromise enables traffic routing to attacker proxies | `config.go:163-168`, `smokescreen.go:1268-1278` |
+| **Medium** | `DetailedHttpLogs` (MITM) can leak sensitive request headers (Authorization, Cookie) if allowlist is configured too broadly | `smokescreen.go:582-586`, `smokescreen.go:1437-1463` |
+| **Medium** | No authentication on Prometheus metrics endpoint (default `0.0.0.0:9810`) — ACL decision patterns exposed | `config.go:558-565` |
+| **Medium** | Client-supplied `X-Upstream-Https-Proxy` header parsed and used without scheme/credential validation | `smokescreen.go:1316-1382` |
+| **Medium** | Role reuse across MITM CONNECT→HTTP relies on `isConnectMitm` boolean; logic error could allow role privilege escalation via non-MITM HTTP proxy | `smokescreen.go:93-94, 771-774, 1329-1351` |
+| **Medium** | DNS resolver not authenticated — MitM on DNS channel can redirect traffic | `resolveTCPAddr` at `smokescreen.go:329-363` |
+| **Low** | No per-role rate limiting — single global rate limit can be exhausted by one misbehaving client | `rate_limiter.go:57-74` |
+| **Low** | `AllowMissingRole` with `open` ACL policy gives unauthenticated clients full egress access | `main.go:16-24`, `smokescreen.go:1249-1250` |
+| **Low** | Stats socket accessible to any process on host with matching permissions (default `0700`) | `config.go:93-94, 241-247` |
+| **Low** | Self-connection detection logs all local IPs at startup — minor information disclosure | `config.go:410-428` |
+| **Low** | No hot-reload for ACL, TLS, or CRL configuration — requires process restart for changes | `yaml_loader.go:49-72`, `config.go:475-632` |
+| **Info** | X.509 certificate CN and OU logged on every request — by design for role identification | `smokescreen.go:698-704` |
+| **Info** | `postDecisionRequestHandler` error causes request denial — potential DoS if handler is unreliable | `smokescreen.go:816-821` |
