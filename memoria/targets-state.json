@@ -1,5 +1,5 @@
 {
-  "last_scan": "2026-05-27T05:57:57Z",
+  "last_scan": "2026-05-28T05:53:54Z",
   "targets": {
     "hackerone": [
       {
@@ -9,6 +9,10 @@
       {
         "name": "Clear Street Disclosure Program",
         "url": "https://hackerone.com/clear_street_vdp"
+      },
+      {
+        "name": "Gogo VDP",
+        "url": "https://hackerone.com/gogo_vdp"
       },
       {
         "name": "Coupang Taiwan",
@@ -2269,6 +2273,10 @@
         "url": "https://bugcrowd.com/engagements/mallofemirates"
       },
       {
+        "name": "Marvelution",
+        "url": "https://bugcrowd.com/engagements/marvelutionbv"
+      },
+      {
         "name": "Mastercard Public Bug Bounty ",
         "url": "https://bugcrowd.com/engagements/mastercard"
       },
@@ -2815,10 +2823,6 @@
         "url": "https://www.intigriti.com/programs/dpgm/dpgmedia/detail"
       },
       {
-        "name": "DataCamp",
-        "url": "https://www.intigriti.com/programs/datacamp/datacamp/detail"
-      },
-      {
         "name": "De Morgen",
         "url": "https://www.intigriti.com/programs/dpgm/demorgen/detail"
       },
@@ -2871,6 +2875,10 @@
         "url": "https://www.intigriti.com/programs/lansweeper/fing/detail"
       },
       {
+        "name": "Grafana Labs - Vulnerability Disclosure Program (VDP)",
+        "url": "https://www.intigriti.com/programs/grafanalabs/grafanalabsvdp/detail"
+      },
+      {
         "name": "HRS Group VDP",
         "url": "https://www.intigriti.com/programs/hrsgroup/hrsgroupvdp/detail"
       },
@@ -2915,10 +2923,6 @@
         "url": "https://www.intigriti.com/programs/intel/intel/detail"
       },
       {
-        "name": "Intergamma",
-        "url": "https://www.intigriti.com/programs/intergamma/intergamma/detail"
-      },
-      {
         "name": "KU Leuven Responsible Disclosure Program",
         "url": "https://www.intigriti.com/programs/kuleuven/kuleuvenrdp/detail"
       },
@@ -2957,10 +2961,6 @@
       {
         "name": "Mobile Vikings",
         "url": "https://www.intigriti.com/programs/mv/mobilevikings/detail"
-      },
-      {
-        "name": "Monzo Public Bug Bounty Program",
-        "url": "https://www.intigriti.com/programs/monzobank/monzopublicbugbountyprogram/detail"
       },
       {
         "name": "Moralis VDP",
