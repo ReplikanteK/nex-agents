@@ -397,7 +397,9 @@ cat > "$REPORT" << REPORTEOF
 | YesWeHack | ${YWH_COUNT} |
 
 ## Top Candidates (scored)
-$(jq -r '.[] | "\(.score) | \(.platform) | \(.name) | \(.language) | \(.stars)⭐ | \(.repo)"' "$RANKED_FILE" 2>/dev/null | head -5 | awk -F'|' '{printf "| %s | %s | %s | %s | %s | %s |\n", $1, $2, $3, $4, $5, $6}' || echo "*No GitHub repos found in scope*")
+| Score | Platform | Target | Lang | Stars | Surface | Repo |
+|-------|----------|--------|------|-------|---------|------|
+$(jq -r '.[] | "\(.score) | \(.platform) | \(.name) | \(.language) | \(.stars) | \(.surface_type) | \(.repo)"' "$RANKED_FILE" 2>/dev/null | head -5 | while IFS='|' read -r score plat name lang stars stype repo; do stype_label="prod"; [ "$stype" = "3" ] && stype_label="infra"; [ "$stype" = "5" ] && stype_label="cli"; [ "$stype" = "8" ] && stype_label="sdk"; printf "| %s | %s | %s | %s | %s⭐ | %s | %s |\n" "$score" "$plat" "$name" "$lang" "$stars" "$stype_label" "$repo"; done || echo "*No GitHub repos found in scope*")
 
 ## Target Changes
 ${DIFF_SECTION:-*No changes detected.*}
