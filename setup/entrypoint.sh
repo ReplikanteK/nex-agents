@@ -56,7 +56,7 @@ if command -v git &>/dev/null; then
 fi
 
 # === Diff engine ===
-mkdir -p reports memoria
+mkdir -p reports memoria tasks/done
 STATE_FILE="memoria/targets-state.json"
 get_name_url() { jq -r '.[] | select(.name != null) | "\(.name)|\(.url // "?")"' "$1" 2>/dev/null | sort -u; }
 
@@ -119,10 +119,10 @@ RANKED_FILE="memoria/targets-ranked.json"
 SCORED_CANDIDATES="[]"
 
 # Extract all unique scopes with github.com URLs from the raw data
-# We look in the original bounty-targets-data JSON for asset identifiers
+# Note: field is targets.in_scope[].asset_identifier, NOT top-level .assets
 extract_github_repos() {
   local json="$1"
-  jq -r '[.[] | select(.name != null) | {name: .name, url: .url, assets: (.assets // [])}] | .[] | select(.assets[] | test("github\\.com"; "i")) | {name, repo: (.assets[] | select(test("github\\.com"; "i")))}' "$json" 2>/dev/null
+  jq -r '[.[] | select(.targets.in_scope != null) | {name: .name, url: .url, assets: [.targets.in_scope[].asset_identifier]}] | .[] | select(.assets[] | test("github\\.com"; "i")) | {name, repo: (.assets[] | select(test("github\\.com"; "i")))}' "$json" 2>/dev/null
 }
 
 score_target() {
@@ -176,8 +176,8 @@ for platform in hackerone bugcrowd intigriti yeswehack; do
   esac
   [ ! -f "$JSON" ] && continue
 
-  # Extract name + github URL from each program's assets
-  jq -c '.[] | select(.assets != null) | {name, url, assets: .assets}' "$JSON" 2>/dev/null | while read -r prog; do
+  # Extract name + github URL from each program's in-scope targets
+  jq -c '.[] | select(.targets.in_scope != null) | {name, url, assets: [.targets.in_scope[].asset_identifier]}' "$JSON" 2>/dev/null | while read -r prog; do
     pname=$(echo "$prog" | jq -r '.name')
     purl=$(echo "$prog" | jq -r '.url')
     assets=$(echo "$prog" | jq -r '.assets[]' 2>/dev/null)
@@ -274,8 +274,8 @@ TASKEOF
   echo "[agent3] Created: $name"
 }
 
-# Check pending backlog first
-PENDING_TASK=$(find tasks/ -maxdepth 1 -name "*.md" ! -name "template.md" 2>/dev/null | head -1)
+# Check pending backlog first (skip completed tasks and files in tasks/done/)
+PENDING_TASK=$(find tasks/ -maxdepth 1 -name "*.md" ! -name "template.md" -exec grep -L 'Estado:.*completed' {} \; 2>/dev/null | head -1)
 if [ -n "$PENDING_TASK" ]; then
   process_task "$PENDING_TASK"
 elif [ "$TOP_SCORE" -ge 70 ] && [ "$OPENCODE_AVAIL" -eq 1 ]; then
@@ -314,20 +314,22 @@ Output: reports/maintenance-${DATE}.md" ;;
   esac
 fi
 
-# === Save agent3-latest.json ===
+# === Save agent3-latest.json (safe: use --arg + tonumber to avoid empty var crashes) ===
+TOP_NAME=$(echo "${TOP_CANDIDATES:-}" | jq -r '.name // ""' 2>/dev/null || echo "")
+RANKED_JSON=$(jq '.[:3] | map({name, platform, repo, language, score})' "${RANKED_FILE:-memoria/targets-ranked.json}" 2>/dev/null || echo '[]')
 jq -n \
   --arg ts "$TS" \
   --arg date "$DATE" \
-  --arg task "${TASK_NAME:-null}" \
-  --argjson h1 $H1_COUNT \
-  --argjson bc $BC_COUNT \
-  --argjson it $IT_COUNT \
-  --argjson yw $YWH_COUNT \
-  --arg top_name "$(echo "$TOP_CANDIDATES" | jq -r '.name // "none"')" \
-  --argjson top_score $TOP_SCORE \
-  --argjson candidates "$(jq '.[:3] | map({name, platform, repo, language, score})' "$RANKED_FILE" 2>/dev/null || echo '[]')" \
-  '{scan_date: $ts, date: $date, task: $task, platforms: {hackerone: $h1, bugcrowd: $bc, intigriti: $it, yeswehack: $yw}, top_candidate: {name: $top_name, score: $top_score}, ranked_targets: $candidates}' \
-  > "memoria/agent3-latest.json"
+  --arg task "${TASK_NAME:-}" \
+  --arg h1 "${H1_COUNT:-0}" \
+  --arg bc "${BC_COUNT:-0}" \
+  --arg it "${IT_COUNT:-0}" \
+  --arg yw "${YWH_COUNT:-0}" \
+  --arg top_name "$TOP_NAME" \
+  --arg top_score "${TOP_SCORE:-0}" \
+  --argjson candidates "$RANKED_JSON" \
+  '{scan_date: $ts, date: $date, task: $task, platforms: {hackerone: ($h1|tonumber), bugcrowd: ($bc|tonumber), intigriti: ($it|tonumber), yeswehack: ($yw|tonumber)}, top_candidate: {name: $top_name, score: ($top_score|tonumber)}, ranked_targets: $candidates}' \
+  > "memoria/agent3-latest.json" 2>/dev/null || echo "{\"error\":\"generation_failed\",\"date\":\"$DATE\"}" > "memoria/agent3-latest.json"
 
 # === Execute task ===
 run_opencode_task() {
@@ -342,6 +344,7 @@ run_opencode_task() {
     "Execute this task: $objective" \
     -f "$file" 2>&1 || true
   sed -i 's/Estado: in_progress/Estado: completed/' "$file" 2>/dev/null || true
+  mv "$file" tasks/done/ 2>/dev/null || true
   TASKS_DONE=$((TASKS_DONE + 1))
 }
 
@@ -350,6 +353,7 @@ if [ -n "$TASK_FILE" ] && [ "$OPENCODE_AVAIL" -eq 1 ]; then
 elif [ -n "$TASK_FILE" ] && [ "$OPENCODE_AVAIL" -eq 0 ]; then
   echo "[agent3] Task pending but opencode not available"
   sed -i 's/Estado: in_progress/Estado: completed/' "$TASK_FILE" 2>/dev/null || true
+  mv "$TASK_FILE" tasks/done/ 2>/dev/null || true
 fi
 
 # === Generate scanner report ===
