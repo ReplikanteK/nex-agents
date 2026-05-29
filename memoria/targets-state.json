@@ -1,5 +1,5 @@
 {
-  "last_scan": "2026-05-28T05:53:54Z",
+  "last_scan": "2026-05-29T05:54:47Z",
   "targets": {
     "hackerone": [
       {
@@ -1455,10 +1455,6 @@
         "url": "https://hackerone.com/databricks"
       },
       {
-        "name": "Coalition, Inc.",
-        "url": "https://hackerone.com/coalition"
-      },
-      {
         "name": "Elastic",
         "url": "https://hackerone.com/elastic"
       },
@@ -2791,10 +2787,6 @@
         "url": "https://www.intigriti.com/programs/innovapost/innovapost/detail"
       },
       {
-        "name": "Capital.com",
-        "url": "https://www.intigriti.com/programs/capitalcom/capitalcom/detail"
-      },
-      {
         "name": "Citymesh Responsible Vulnerability Disclosure Program",
         "url": "https://www.intigriti.com/programs/citymesh/responsiblevulnerabilitydisclosureprogram/detail"
       },
@@ -2821,6 +2813,10 @@
       {
         "name": "DPG Media",
         "url": "https://www.intigriti.com/programs/dpgm/dpgmedia/detail"
+      },
+      {
+        "name": "DataCamp",
+        "url": "https://www.intigriti.com/programs/datacamp/datacamp/detail"
       },
       {
         "name": "De Morgen",
@@ -2963,6 +2959,10 @@
         "url": "https://www.intigriti.com/programs/mv/mobilevikings/detail"
       },
       {
+        "name": "Monzo Public Bug Bounty Program",
+        "url": "https://www.intigriti.com/programs/monzobank/monzopublicbugbountyprogram/detail"
+      },
+      {
         "name": "Moralis VDP",
         "url": "https://www.intigriti.com/programs/moralis/moralisio/detail"
       },
@@ -3069,10 +3069,6 @@
       {
         "name": "Social Deal",
         "url": "https://www.intigriti.com/programs/socialdeal/socialdeal/detail"
-      },
-      {
-        "name": "Soundtrack Your Brand",
-        "url": "https://www.intigriti.com/programs/syb/soundtrackyourbrand/detail"
       },
       {
         "name": "Speakap Responsible Disclosure",
