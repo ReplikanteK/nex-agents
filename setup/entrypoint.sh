@@ -125,42 +125,62 @@ extract_github_repos() {
   jq -r '[.[] | select(.targets.in_scope != null) | {name: .name, url: .url, assets: [.targets.in_scope[].asset_identifier]}] | .[] | select(.assets[] | test("github\\.com"; "i")) | {name, repo: (.assets[] | select(test("github\\.com"; "i")))}' "$json" 2>/dev/null
 }
 
+# Categorize repo type by description and topics (0-15 pts)
+# Public product=15, SDK/Lib=8, CLI=5, Infra tool=3
+categorize_repo() {
+  local desc="$1" topics="$2"
+  [ -z "$desc" ] && [ -z "$topics" ] && echo 15 && return
+  local dl=$(echo "$desc" | tr '[:upper:]' '[:lower:]')
+  local tl=$(echo "$topics" | tr '[:upper:]' '[:lower:]')
+  # Infrastructure/internal tool keywords
+  if echo "$dl" | grep -qiE '(proxy|infrastructure|internal.*tool|sidecar|daemon|egress)'; then echo 3; return; fi
+  if echo "$tl" | grep -qiE '(proxy|infrastructure|daemon)'; then echo 3; return; fi
+  # CLI/Dev tool
+  if echo "$dl" | grep -qiE '(cli|command.line|dev.tool)'; then echo 5; return; fi
+  if echo "$tl" | grep -qiE '(cli|command-line)'; then echo 5; return; fi
+  # SDK/Library/Client
+  if echo "$dl" | grep -qiE '(sdk|library|client.lib|api.wrapper|toolkit)'; then echo 8; return; fi
+  if echo "$tl" | grep -qiE '(sdk|library)'; then echo 8; return; fi
+  # Default: public-facing product
+  echo 15
+}
+
 score_target() {
-  local name="$1" repo="$2" lang="$3" size="$4" stars="$5" pushed="$6" bounty="$7"
+  local name="$1" repo="$2" lang="$3" size="$4" stars="$5" pushed="$6" bounty="$7" surface_type="$8"
   # Bounty economics (0-25)
   local eco=10; [[ "$bounty" == "paid" ]] && eco=20
-  # Code accessibility (0-25): language match + size + active
+  # Code accessibility (0-20): language match + size + active
   local code=0
   case "$lang" in
-    "Python") code=22 ;;
-    "Go")     code=20 ;;
-    "C"|"C++"|"Rust") code=18 ;;
-    "TypeScript"|"JavaScript") code=14 ;;
-    "Java")   code=12 ;;
-    *)        code=8 ;;
+    "Python") code=18 ;;
+    "Go")     code=16 ;;
+    "C"|"C++"|"Rust") code=14 ;;
+    "TypeScript"|"JavaScript") code=10 ;;
+    "Java")   code=8 ;;
+    *)        code=6 ;;
   esac
   # >50k lines penalty
-  [ "$size" -gt 50000 ] && code=$((code - 8))
+  [ "$size" -gt 50000 ] && code=$((code - 6))
   # Stale repo penalty (>6 months)
   local stale=$(date -d "$pushed" +%s 2>/dev/null || echo 0)
   local now=$(date +%s)
   [ $(( (now - stale) / 86400 )) -gt 180 ] && code=$((code - 4))
   [ "$code" -lt 0 ] && code=0
 
-  # Attack surface (0-25): stars as proxy for complexity
-  local surface=10
-  [ "$stars" -lt 1000 ] && surface=20
-  [ "$stars" -lt 500 ] && surface=22
-  [ "$stars" -gt 10000 ] && surface=12
+  # Attack surface (0-20): stars as proxy for complexity
+  local surface=8
+  [ "$stars" -lt 1000 ] && surface=16
+  [ "$stars" -lt 500 ] && surface=18
+  [ "$stars" -gt 10000 ] && surface=10
 
-  # Likelihood (0-25): active + small + our languages
-  local like=10
-  [ "$size" -lt 30000 ] && like=$((like + 5))
-  [ "$size" -lt 10000 ] && like=$((like + 5))
-  case "$lang" in "Python"|"Go"|"C"|"C++") like=$((like + 5)) ;; esac
-  [ "$like" -gt 25 ] && like=25
+  # Likelihood (0-20): active + small + our languages
+  local like=8
+  [ "$size" -lt 30000 ] && like=$((like + 4))
+  [ "$size" -lt 10000 ] && like=$((like + 4))
+  case "$lang" in "Python"|"Go"|"C"|"C++") like=$((like + 4)) ;; esac
+  [ "$like" -gt 20 ] && like=20
 
-  local total=$((eco + code + surface + like))
+  local total=$((eco + code + surface + like + surface_type))
   echo "$total"
 }
 
@@ -195,6 +215,8 @@ for platform in hackerone bugcrowd intigriti yeswehack; do
       size=$(echo "$api_resp" | jq -r '.size // 0')
       stars=$(echo "$api_resp" | jq -r '.stargazers_count // 0')
       pushed=$(echo "$api_resp" | jq -r '.pushed_at // ""')
+      desc=$(echo "$api_resp" | jq -r '.description // ""')
+      topics=$(echo "$api_resp" | jq -r '.topics // [] | join(",")')
       message=$(echo "$api_resp" | jq -r '.message // ""')
       [ "$message" = "Not Found" ] && continue
 
@@ -207,9 +229,10 @@ for platform in hackerone bugcrowd intigriti yeswehack; do
         yeswehack) bounty_status="paid" ;;
       esac
 
-      score=$(score_target "$pname" "$ghurl" "$lang" "$size" "$stars" "$pushed" "$bounty_status")
+      surface_type=$(categorize_repo "$desc" "$topics")
+      score=$(score_target "$pname" "$ghurl" "$lang" "$size" "$stars" "$pushed" "$bounty_status" "$surface_type")
 
-      entry="{\"name\":\"$pname\",\"platform\":\"$BPLABEL\",\"url\":\"$purl\",\"repo\":\"$ghurl\",\"language\":\"$lang\",\"size_kb\":$size,\"stars\":$stars,\"pushed_at\":\"$pushed\",\"score\":$score,\"bounty\":\"$bounty_status\",\"scored_at\":\"$TS\"}"
+      entry="{\"name\":\"$pname\",\"platform\":\"$BPLABEL\",\"url\":\"$purl\",\"repo\":\"$ghurl\",\"language\":\"$lang\",\"size_kb\":$size,\"stars\":$stars,\"pushed_at\":\"$pushed\",\"score\":$score,\"surface_type\":$surface_type,\"bounty\":\"$bounty_status\",\"scored_at\":\"$TS\"}"
       if [ "$first" = true ]; then echo "$entry" >> "$RANKED_FILE.tmp"; first=false; else echo ",$entry" >> "$RANKED_FILE.tmp"; fi
     done
   done
