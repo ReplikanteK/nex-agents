@@ -1,5 +1,5 @@
 {
-  "last_scan": "2026-05-29T05:54:47Z",
+  "last_scan": "2026-05-30T05:30:45Z",
   "targets": {
     "hackerone": [
       {
@@ -1455,6 +1455,10 @@
         "url": "https://hackerone.com/databricks"
       },
       {
+        "name": "Coalition, Inc.",
+        "url": "https://hackerone.com/coalition"
+      },
+      {
         "name": "Elastic",
         "url": "https://hackerone.com/elastic"
       },
@@ -1527,10 +1531,6 @@
         "url": "https://hackerone.com/roblox"
       },
       {
-        "name": "Stellar.org",
-        "url": "https://hackerone.com/stellar"
-      },
-      {
         "name": "Dyson",
         "url": "https://hackerone.com/dyson"
       },
@@ -1581,10 +1581,6 @@
       {
         "name": "Quora",
         "url": "https://hackerone.com/quora"
-      },
-      {
-        "name": "Brave Software",
-        "url": "https://hackerone.com/brave"
       },
       {
         "name": "PortSwigger Web Security",
@@ -2787,6 +2783,10 @@
         "url": "https://www.intigriti.com/programs/innovapost/innovapost/detail"
       },
       {
+        "name": "Capital.com",
+        "url": "https://www.intigriti.com/programs/capitalcom/capitalcom/detail"
+      },
+      {
         "name": "Citymesh Responsible Vulnerability Disclosure Program",
         "url": "https://www.intigriti.com/programs/citymesh/responsiblevulnerabilitydisclosureprogram/detail"
       },
@@ -2813,10 +2813,6 @@
       {
         "name": "DPG Media",
         "url": "https://www.intigriti.com/programs/dpgm/dpgmedia/detail"
-      },
-      {
-        "name": "DataCamp",
-        "url": "https://www.intigriti.com/programs/datacamp/datacamp/detail"
       },
       {
         "name": "De Morgen",
@@ -2849,10 +2845,6 @@
       {
         "name": "Dropbox Vulnerability Disclosure Program ",
         "url": "https://www.intigriti.com/programs/dropbox/dropbox-vdp/detail"
-      },
-      {
-        "name": "Dstny",
-        "url": "https://www.intigriti.com/programs/dstny/dstnybugbounty/detail"
       },
       {
         "name": "EURid",
@@ -2959,10 +2951,6 @@
         "url": "https://www.intigriti.com/programs/mv/mobilevikings/detail"
       },
       {
-        "name": "Monzo Public Bug Bounty Program",
-        "url": "https://www.intigriti.com/programs/monzobank/monzopublicbugbountyprogram/detail"
-      },
-      {
         "name": "Moralis VDP",
         "url": "https://www.intigriti.com/programs/moralis/moralisio/detail"
       },
@@ -2997,10 +2985,6 @@
       {
         "name": "Orbia Responsible Disclosure",
         "url": "https://www.intigriti.com/programs/orbia/orbiavdp/detail"
-      },
-      {
-        "name": "PDQ bug bounty program",
-        "url": "https://www.intigriti.com/programs/pdq/pdqcomprivate/detail"
       },
       {
         "name": "PeopleCert VDP",
