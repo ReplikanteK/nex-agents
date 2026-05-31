@@ -1,5 +1,5 @@
 {
-  "last_scan": "2026-05-30T05:30:45Z",
+  "last_scan": "2026-05-31T05:58:24Z",
   "targets": {
     "hackerone": [
       {
@@ -2783,10 +2783,6 @@
         "url": "https://www.intigriti.com/programs/innovapost/innovapost/detail"
       },
       {
-        "name": "Capital.com",
-        "url": "https://www.intigriti.com/programs/capitalcom/capitalcom/detail"
-      },
-      {
         "name": "Citymesh Responsible Vulnerability Disclosure Program",
         "url": "https://www.intigriti.com/programs/citymesh/responsiblevulnerabilitydisclosureprogram/detail"
       },
@@ -2845,6 +2841,10 @@
       {
         "name": "Dropbox Vulnerability Disclosure Program ",
         "url": "https://www.intigriti.com/programs/dropbox/dropbox-vdp/detail"
+      },
+      {
+        "name": "Dstny",
+        "url": "https://www.intigriti.com/programs/dstny/dstnybugbounty/detail"
       },
       {
         "name": "EURid",
