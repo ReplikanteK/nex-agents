@@ -1,5 +1,5 @@
 {
-  "last_scan": "2026-05-31T05:58:24Z",
+  "last_scan": "2026-06-01T06:32:01Z",
   "targets": {
     "hackerone": [
       {
@@ -2819,10 +2819,6 @@
         "url": "https://www.intigriti.com/programs/dpgm/devolkskrant/detail"
       },
       {
-        "name": "Delen Private Bank",
-        "url": "https://www.intigriti.com/programs/delenprivatebank/privatebankdelen/detail"
-      },
-      {
         "name": "DigitalOcean",
         "url": "https://www.intigriti.com/programs/digitalocean/digitalocean/detail"
       },
@@ -2985,6 +2981,10 @@
       {
         "name": "Orbia Responsible Disclosure",
         "url": "https://www.intigriti.com/programs/orbia/orbiavdp/detail"
+      },
+      {
+        "name": "PDQ bug bounty program",
+        "url": "https://www.intigriti.com/programs/pdq/pdqcomprivate/detail"
       },
       {
         "name": "PeopleCert VDP",
