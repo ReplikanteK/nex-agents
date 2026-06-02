@@ -1,5 +1,5 @@
 {
-  "last_scan": "2026-06-01T06:32:01Z",
+  "last_scan": "2026-06-02T06:18:01Z",
   "targets": {
     "hackerone": [
       {
@@ -1083,10 +1083,6 @@
         "url": "https://hackerone.com/cedars-sinai"
       },
       {
-        "name": "N45HT",
-        "url": "https://hackerone.com/n45ht"
-      },
-      {
         "name": "hostinger ",
         "url": "https://hackerone.com/hostinger"
       },
@@ -1391,10 +1387,6 @@
         "url": "https://hackerone.com/paypal"
       },
       {
-        "name": "MariaDB",
-        "url": "https://hackerone.com/mariadb"
-      },
-      {
         "name": "Chaturbate",
         "url": "https://hackerone.com/chaturbate"
       },
@@ -1581,6 +1573,10 @@
       {
         "name": "Quora",
         "url": "https://hackerone.com/quora"
+      },
+      {
+        "name": "Brave Software",
+        "url": "https://hackerone.com/brave"
       },
       {
         "name": "PortSwigger Web Security",
@@ -2723,10 +2719,6 @@
         "url": "https://www.intigriti.com/programs/dpgm/algemeendagblad/detail"
       },
       {
-        "name": "Allegro",
-        "url": "https://www.intigriti.com/programs/allegro/allegrobugbounty/detail"
-      },
-      {
         "name": "Anaconda Vulnerability Disclosure Program",
         "url": "https://www.intigriti.com/programs/anacondainc/anacondavdp/detail"
       },
@@ -2783,6 +2775,10 @@
         "url": "https://www.intigriti.com/programs/innovapost/innovapost/detail"
       },
       {
+        "name": "Capital.com",
+        "url": "https://www.intigriti.com/programs/capitalcom/capitalcom/detail"
+      },
+      {
         "name": "Citymesh Responsible Vulnerability Disclosure Program",
         "url": "https://www.intigriti.com/programs/citymesh/responsiblevulnerabilitydisclosureprogram/detail"
       },
@@ -2819,6 +2815,10 @@
         "url": "https://www.intigriti.com/programs/dpgm/devolkskrant/detail"
       },
       {
+        "name": "Delen Private Bank",
+        "url": "https://www.intigriti.com/programs/delenprivatebank/privatebankdelen/detail"
+      },
+      {
         "name": "DigitalOcean",
         "url": "https://www.intigriti.com/programs/digitalocean/digitalocean/detail"
       },
@@ -2853,10 +2853,6 @@
       {
         "name": "Exoscale Bug Bounty",
         "url": "https://www.intigriti.com/programs/exoscale/excoscalebugbounty/detail"
-      },
-      {
-        "name": "Fing Bug Bounty Program",
-        "url": "https://www.intigriti.com/programs/lansweeper/fing/detail"
       },
       {
         "name": "Grafana Labs - Vulnerability Disclosure Program (VDP)",
