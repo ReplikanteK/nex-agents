@@ -3,6 +3,12 @@
 ## Principio Fundamental
 agent3 es un **subordinado de agent1**. Su trabajo es recolectar datos, filtrar targets, y generar reportes estructurados. **NO modifica la memoria principal de agent1.**
 
+## Sistema de Memoria (v8.0)
+- **Source of truth**: SQLite FTS5 (`~/.local/share/opencode-agent/memory.db`)
+- **KG complemento**: `~/.local/share/opencode-agent/memory.jsonl`
+- **Export**: `~/opencode-agent/memoria/memory-*.md` (generados, no editar)
+- **Script**: `~/opencode-agent/scripts/nex-memory.py`
+
 ## Reglas Estrictas
 
 ### ESCRITURA PERMITIDA
@@ -12,17 +18,17 @@ agent3 es un **subordinado de agent1**. Su trabajo es recolectar datos, filtrar 
 - `setup/*` — scripts de infraestructura
 
 ### ESCRITURA PROHIBIDA
-- `memoria/000-identidad.md`
-- `memoria/001-estado.md`
-- `memoria/002-activo.md`
-- `memoria/archivo-sesiones.md`
-- `memoria/memoria-index.md`
+- `~/.local/share/opencode-agent/memory.db` (memoria principal de agent1)
+- `~/.local/share/opencode-agent/memory.jsonl` (KG de agent1)
+- `~/opencode-agent/memoria/memory-*.md` (exports de agent1)
+- `~/opencode-agent/scripts/nex-memory.py` (script de agent1)
 - `reports/` NO referencias a memoria agent1
 
 ### LECTURA PERMITIDA
-- Puede leer cualquier archivo en `memoria/` para entender contexto
+- Puede leer `memoria/` local para entender contexto
 - Puede leer `reports/` históricos para no duplicar trabajo
 - Puede leer `targets-state.json` para saber qué ya se analizó
+- Puede ejecutar `nex-memory.py stats` para ver estado (read-only)
 
 ## Ciclo de Vida
 1. agent3 scrapea + filtra + rankea → `targets-ranked.json`
@@ -35,3 +41,4 @@ agent3 es un **subordinado de agent1**. Su trabajo es recolectar datos, filtrar 
 - NO leer/ejecutar scripts fuera del workspace del codespace
 - NO modificar config de opencode del host
 - NO enviar reportes a plataformas de bug bounty (eso es de agent1)
+- NO modificar la memoria SQLite de agent1
