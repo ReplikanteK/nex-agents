@@ -147,41 +147,42 @@ categorize_repo() {
 
 score_target() {
   local name="$1" repo="$2" lang="$3" size="$4" stars="$5" pushed="$6" bounty="$7" surface_type="$8"
-  # Bounty economics (0-35): primary motivator
-  local eco=15; [[ "$bounty" == "paid" ]] && eco=30
-  # Code accessibility (0-20): language match
+  # Pre-filter: discard if no bounty
+  [ "$bounty" != "paid" ] && echo 0 && return
+
+  # Code accessibility (0-35): language match
   local code=0
   case "$lang" in
-    "Python") code=18 ;;
-    "Go")     code=16 ;;
-    "C"|"C++"|"Rust") code=14 ;;
-    "TypeScript"|"JavaScript") code=10 ;;
-    "Java")   code=8 ;;
-    *)        code=6 ;;
+    "Python") code=30 ;;
+    "Go")     code=26 ;;
+    "C"|"C++"|"Rust") code=22 ;;
+    "TypeScript"|"JavaScript") code=16 ;;
+    "Java")   code=12 ;;
+    *)        code=8 ;;
   esac
-  # Size: bonus for small, mild penalty for large (isolated vulns exist but harder)
-  [ "$size" -lt 10000 ] && code=$((code + 2))
-  [ "$size" -gt 100000 ] && code=$((code - 2))
+  # Size: bonus for small, mild penalty for large
+  [ "$size" -lt 10000 ] && code=$((code + 3))
+  [ "$size" -gt 100000 ] && code=$((code - 3))
   [ "$size" -gt 50000 ] && [ "$size" -le 100000 ] && code=$((code - 1))
-  # Stale: mild penalty only (>12 months)
+  # Stale: mild penalty (>12 months)
   local stale=$(date -d "$pushed" +%s 2>/dev/null || echo 0)
   local now=$(date +%s)
   [ $(( (now - stale) / 86400 )) -gt 365 ] && code=$((code - 2))
   [ "$code" -lt 0 ] && code=0
 
-  # Attack surface (0-20): stars as proxy for complexity
-  local surface=8
-  [ "$stars" -lt 1000 ] && surface=16
-  [ "$stars" -lt 500 ] && surface=18
-  [ "$stars" -gt 10000 ] && surface=10
+  # Attack surface (0-30): stars as proxy for complexity
+  local surface=12
+  [ "$stars" -lt 1000 ] && surface=24
+  [ "$stars" -lt 500 ] && surface=27
+  [ "$stars" -gt 10000 ] && surface=15
 
-  # Likelihood (0-10): active + our languages
-  local like=4
-  case "$lang" in "Python"|"Go"|"C"|"C++") like=$((like + 4)) ;; esac
-  [ "$size" -lt 30000 ] && like=$((like + 2))
-  [ "$like" -gt 10 ] && like=10
+  # Likelihood (0-15): active + our languages
+  local like=6
+  case "$lang" in "Python"|"Go"|"C"|"C++") like=$((like + 6)) ;; esac
+  [ "$size" -lt 30000 ] && like=$((like + 3))
+  [ "$like" -gt 15 ] && like=15
 
-  local total=$((eco + code + surface + like + surface_type))
+  local total=$((code + surface + like + surface_type))
   echo "$total"
 }
 
