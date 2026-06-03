@@ -159,8 +159,10 @@ score_target() {
     "Java")   code=8 ;;
     *)        code=6 ;;
   esac
-  # Size: bonus for small targets, no penalty for large (isolated vulns exist)
+  # Size: bonus for small, mild penalty for large (isolated vulns exist but harder)
   [ "$size" -lt 10000 ] && code=$((code + 2))
+  [ "$size" -gt 100000 ] && code=$((code - 2))
+  [ "$size" -gt 50000 ] && [ "$size" -le 100000 ] && code=$((code - 1))
   # Stale: mild penalty only (>12 months)
   local stale=$(date -d "$pushed" +%s 2>/dev/null || echo 0)
   local now=$(date +%s)
@@ -173,11 +175,11 @@ score_target() {
   [ "$stars" -lt 500 ] && surface=18
   [ "$stars" -gt 10000 ] && surface=10
 
-  # Likelihood (0-15): active + our languages
-  local like=6
-  case "$lang" in "Python"|"Go"|"C"|"C++") like=$((like + 5)) ;; esac
-  [ "$size" -lt 30000 ] && like=$((like + 4))
-  [ "$like" -gt 15 ] && like=15
+  # Likelihood (0-10): active + our languages
+  local like=4
+  case "$lang" in "Python"|"Go"|"C"|"C++") like=$((like + 4)) ;; esac
+  [ "$size" -lt 30000 ] && like=$((like + 2))
+  [ "$like" -gt 10 ] && like=10
 
   local total=$((eco + code + surface + like + surface_type))
   echo "$total"
