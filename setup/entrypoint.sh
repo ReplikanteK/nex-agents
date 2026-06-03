@@ -147,9 +147,9 @@ categorize_repo() {
 
 score_target() {
   local name="$1" repo="$2" lang="$3" size="$4" stars="$5" pushed="$6" bounty="$7" surface_type="$8"
-  # Bounty economics (0-25)
-  local eco=10; [[ "$bounty" == "paid" ]] && eco=20
-  # Code accessibility (0-20): language match + size + active
+  # Bounty economics (0-35): primary motivator
+  local eco=15; [[ "$bounty" == "paid" ]] && eco=30
+  # Code accessibility (0-20): language match
   local code=0
   case "$lang" in
     "Python") code=18 ;;
@@ -159,12 +159,12 @@ score_target() {
     "Java")   code=8 ;;
     *)        code=6 ;;
   esac
-  # >50k lines penalty
-  [ "$size" -gt 50000 ] && code=$((code - 6))
-  # Stale repo penalty (>6 months)
+  # Size: bonus for small targets, no penalty for large (isolated vulns exist)
+  [ "$size" -lt 10000 ] && code=$((code + 2))
+  # Stale: mild penalty only (>12 months)
   local stale=$(date -d "$pushed" +%s 2>/dev/null || echo 0)
   local now=$(date +%s)
-  [ $(( (now - stale) / 86400 )) -gt 180 ] && code=$((code - 4))
+  [ $(( (now - stale) / 86400 )) -gt 365 ] && code=$((code - 2))
   [ "$code" -lt 0 ] && code=0
 
   # Attack surface (0-20): stars as proxy for complexity
@@ -173,12 +173,11 @@ score_target() {
   [ "$stars" -lt 500 ] && surface=18
   [ "$stars" -gt 10000 ] && surface=10
 
-  # Likelihood (0-20): active + small + our languages
-  local like=8
+  # Likelihood (0-15): active + our languages
+  local like=6
+  case "$lang" in "Python"|"Go"|"C"|"C++") like=$((like + 5)) ;; esac
   [ "$size" -lt 30000 ] && like=$((like + 4))
-  [ "$size" -lt 10000 ] && like=$((like + 4))
-  case "$lang" in "Python"|"Go"|"C"|"C++") like=$((like + 4)) ;; esac
-  [ "$like" -gt 20 ] && like=20
+  [ "$like" -gt 15 ] && like=15
 
   local total=$((eco + code + surface + like + surface_type))
   echo "$total"
@@ -264,7 +263,7 @@ if [ -n "$BRAND_NEW" ] && command -v curl &>/dev/null; then
 fi
 
 # =====================================================================
-# TASK SELECTION: only if candidate ≥ 70
+# TASK SELECTION: only if candidate ≥ 65 (lowered from 70 for better coverage)
 # =====================================================================
 TASKS_DONE=0
 MAX_TASKS_PER_RUN=1
@@ -301,7 +300,7 @@ TASKEOF
 PENDING_TASK=$(find tasks/ -maxdepth 1 -name "*.md" ! -name "template.md" -exec grep -L 'Estado:.*completed' {} \; 2>/dev/null | head -1)
 if [ -n "$PENDING_TASK" ]; then
   process_task "$PENDING_TASK"
-elif [ "$TOP_SCORE" -ge 70 ] && [ "$OPENCODE_AVAIL" -eq 1 ]; then
+elif [ "$TOP_SCORE" -ge 65 ] && [ "$OPENCODE_AVAIL" -eq 1 ]; then
   TARGET_NAME=$(echo "$TOP_CANDIDATES" | jq -r '.name')
   TARGET_REPO=$(echo "$TOP_CANDIDATES" | jq -r '.repo')
   TARGET_LANG=$(echo "$TOP_CANDIDATES" | jq -r '.language')
@@ -324,7 +323,7 @@ Lenguaje: $TARGET_LANG. Aplica patrones del skill correspondiente.
 Output: $REVIEW_FILE"
 
 elif [ "$OPENCODE_AVAIL" -eq 1 ]; then
-  echo "[agent3] No target with score ≥70. Light day."
+  echo "[agent3] No target with score ≥65. Light day."
   case "$DOW" in
     5)
       auto_create_task "maintenance-${DATE}" "Weekly maintenance" \
