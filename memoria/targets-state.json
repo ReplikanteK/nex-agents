@@ -1,7 +1,11 @@
 {
-  "last_scan": "2026-06-03T06:31:05Z",
+  "last_scan": "2026-06-04T06:23:08Z",
   "targets": {
     "hackerone": [
+      {
+        "name": "PhonePe",
+        "url": "https://hackerone.com/phonepe_vdp"
+      },
       {
         "name": "McGraw Hill",
         "url": "https://hackerone.com/mcgrawhill"
@@ -2053,6 +2057,10 @@
         "url": "https://bugcrowd.com/engagements/dell-product"
       },
       {
+        "name": "DevAcrobats",
+        "url": "https://bugcrowd.com/engagements/devacrobats-market"
+      },
+      {
         "name": "Directly",
         "url": "https://bugcrowd.com/engagements/directly"
       },
@@ -2165,6 +2173,10 @@
         "url": "https://bugcrowd.com/engagements/indeed"
       },
       {
+        "name": "Inprowiser Bug Bounty",
+        "url": "https://bugcrowd.com/engagements/inprowiser"
+      },
+      {
         "name": "Intercom",
         "url": "https://bugcrowd.com/engagements/intercom"
       },
@@ -2197,6 +2209,10 @@
         "url": "https://bugcrowd.com/engagements/kaleido"
       },
       {
+        "name": "Kantega SSO",
+        "url": "https://bugcrowd.com/engagements/kantega"
+      },
+      {
         "name": "Keeper Security Public Bounty Program",
         "url": "https://bugcrowd.com/engagements/keepersecurity"
       },
@@ -2223,6 +2239,10 @@
       {
         "name": "Latitude Financial Services Bug Bounty ",
         "url": "https://bugcrowd.com/engagements/latitude-financial-service-bugbounty"
+      },
+      {
+        "name": "LaunchDarkly Managed Bug Bounty Engagement",
+        "url": "https://bugcrowd.com/engagements/launchdarkly-mbb-og"
       },
       {
         "name": "Electroneum Legacy Blockchain: EOL",
@@ -2483,6 +2503,10 @@
       {
         "name": "Refined",
         "url": "https://bugcrowd.com/engagements/refined2"
+      },
+      {
+        "name": "Release Management (by Y2 ENGR)",
+        "url": "https://bugcrowd.com/engagements/releasemanagement"
       },
       {
         "name": "SAP Invitational Bug Bounty Program",
@@ -3057,10 +3081,6 @@
       {
         "name": "SimScale",
         "url": "https://www.intigriti.com/programs/simscale/simscale/detail"
-      },
-      {
-        "name": "Skoda Auto Bug Bounty Program",
-        "url": "https://www.intigriti.com/programs/skodaauto/skodaautoprivatebugbountyprogram/detail"
       },
       {
         "name": "Social Deal",
