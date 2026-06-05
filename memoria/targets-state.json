@@ -1,5 +1,5 @@
 {
-  "last_scan": "2026-06-04T06:23:08Z",
+  "last_scan": "2026-06-05T06:03:15Z",
   "targets": {
     "hackerone": [
       {
@@ -2751,10 +2751,6 @@
         "url": "https://www.intigriti.com/programs/dpgm/algemeendagblad/detail"
       },
       {
-        "name": "Allegro",
-        "url": "https://www.intigriti.com/programs/allegro/allegrobugbounty/detail"
-      },
-      {
         "name": "Altera",
         "url": "https://www.intigriti.com/programs/altera/altera/detail"
       },
@@ -2815,10 +2811,6 @@
         "url": "https://www.intigriti.com/programs/innovapost/innovapost/detail"
       },
       {
-        "name": "Capital.com",
-        "url": "https://www.intigriti.com/programs/capitalcom/capitalcom/detail"
-      },
-      {
         "name": "Citymesh Responsible Vulnerability Disclosure Program",
         "url": "https://www.intigriti.com/programs/citymesh/responsiblevulnerabilitydisclosureprogram/detail"
       },
@@ -2853,10 +2845,6 @@
       {
         "name": "De Volkskrant",
         "url": "https://www.intigriti.com/programs/dpgm/devolkskrant/detail"
-      },
-      {
-        "name": "Delen Private Bank",
-        "url": "https://www.intigriti.com/programs/delenprivatebank/privatebankdelen/detail"
       },
       {
         "name": "DigitalOcean",
@@ -2981,6 +2969,10 @@
       {
         "name": "Mobile Vikings",
         "url": "https://www.intigriti.com/programs/mv/mobilevikings/detail"
+      },
+      {
+        "name": "Monzo Public Bug Bounty Program",
+        "url": "https://www.intigriti.com/programs/monzobank/monzopublicbugbountyprogram/detail"
       },
       {
         "name": "Moralis VDP",
