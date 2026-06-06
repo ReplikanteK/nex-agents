@@ -1,5 +1,5 @@
 {
-  "last_scan": "2026-06-05T06:03:15Z",
+  "last_scan": "2026-06-06T05:35:28Z",
   "targets": {
     "hackerone": [
       {
@@ -1587,10 +1587,6 @@
         "url": "https://hackerone.com/quora"
       },
       {
-        "name": "Brave Software",
-        "url": "https://hackerone.com/brave"
-      },
-      {
         "name": "PortSwigger Web Security",
         "url": "https://hackerone.com/portswigger"
       },
@@ -2751,6 +2747,10 @@
         "url": "https://www.intigriti.com/programs/dpgm/algemeendagblad/detail"
       },
       {
+        "name": "Allegro",
+        "url": "https://www.intigriti.com/programs/allegro/allegrobugbounty/detail"
+      },
+      {
         "name": "Altera",
         "url": "https://www.intigriti.com/programs/altera/altera/detail"
       },
@@ -2839,12 +2839,20 @@
         "url": "https://www.intigriti.com/programs/dpgm/dpgmedia/detail"
       },
       {
+        "name": "DataCamp",
+        "url": "https://www.intigriti.com/programs/datacamp/datacamp/detail"
+      },
+      {
         "name": "De Morgen",
         "url": "https://www.intigriti.com/programs/dpgm/demorgen/detail"
       },
       {
         "name": "De Volkskrant",
         "url": "https://www.intigriti.com/programs/dpgm/devolkskrant/detail"
+      },
+      {
+        "name": "Delen Private Bank",
+        "url": "https://www.intigriti.com/programs/delenprivatebank/privatebankdelen/detail"
       },
       {
         "name": "DigitalOcean",
@@ -2947,10 +2955,6 @@
         "url": "https://www.intigriti.com/programs/aswatson/kruidvat/detail"
       },
       {
-        "name": "Lansweeper Bug Bounty Program",
-        "url": "https://www.intigriti.com/programs/lansweeper/lansweeper1/detail"
-      },
-      {
         "name": "Libelle",
         "url": "https://www.intigriti.com/programs/dpgm/libelle/detail"
       },
@@ -2965,14 +2969,6 @@
       {
         "name": "Marionnaud",
         "url": "https://www.intigriti.com/programs/aswatson/marionnaud/detail"
-      },
-      {
-        "name": "Mobile Vikings",
-        "url": "https://www.intigriti.com/programs/mv/mobilevikings/detail"
-      },
-      {
-        "name": "Monzo Public Bug Bounty Program",
-        "url": "https://www.intigriti.com/programs/monzobank/monzopublicbugbountyprogram/detail"
       },
       {
         "name": "Moralis VDP",
