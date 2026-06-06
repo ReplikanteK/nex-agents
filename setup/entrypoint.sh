@@ -111,18 +111,28 @@ write_platform() { jq '[.[] | {name, url}]' "$1" 2>/dev/null || echo '[]'; }
 jq -n --arg ts "$TS" --argjson h1 "$(write_platform "$H1_JSON")" --argjson bc "$(write_platform "$BC_JSON")" --argjson it "$(write_platform "$IT_JSON")" --argjson yw "$(write_platform "$YWH_JSON")" '{last_scan: $ts, targets: {hackerone: $h1, bugcrowd: $bc, intigriti: $it, yeswehack: $yw}}' > "$STATE_FILE"
 
 # =====================================================================
-# NEW: GitHub Enrichment + Scoring Pipeline
+# GitHub Enrichment + Scoring Pipeline
 # =====================================================================
 echo "[agent3] Enriching targets with GitHub API..."
 
 RANKED_FILE="memoria/targets-ranked.json"
 SCORED_CANDIDATES="[]"
+ENRICH_LOG="memoria/enrich-log-${DATE}.txt"
+echo "[agent3] Enrichment log: $ENRICH_LOG" > "$ENRICH_LOG"
 
-# Extract all unique scopes with github.com URLs from the raw data
-# Note: field is targets.in_scope[].asset_identifier, NOT top-level .assets
-extract_github_repos() {
-  local json="$1"
-  jq -r '[.[] | select(.targets.in_scope != null) | {name: .name, url: .url, assets: [.targets.in_scope[].asset_identifier]}] | .[] | select(.assets[] | test("github\\.com"; "i")) | {name, repo: (.assets[] | select(test("github\\.com"; "i")))}' "$json" 2>/dev/null
+# Extract github.com URLs from in_scope targets
+# Handles different field names per platform:
+#   H1: asset_identifier | BC: target, uri | IT: endpoint | YWH: target
+extract_gh_urls() {
+  local json="$1" platform="$2"
+  jq -r '
+    [.[] | select(.targets.in_scope != null) |
+     {name: .name, url: .url,
+      assets: [.targets.in_scope[] |
+        (.asset_identifier // .target // .uri // .endpoint // "") | select(length > 0)]}]
+    | .[] | select(.assets | length > 0) |
+    {name, purl: .url, assets}
+  ' "$json" 2>/dev/null
 }
 
 # Categorize repo type by description and topics (0-15 pts)
@@ -189,6 +199,11 @@ score_target() {
 # Iterate over all platforms and find targets with GitHub repos
 echo "[" > "$RANKED_FILE.tmp"
 first=true
+api_calls=0
+api_ok=0
+api_fail=0
+github_found=0
+
 for platform in hackerone bugcrowd intigriti yeswehack; do
   case "$platform" in
     hackerone) JSON="$H1_JSON"; BPLABEL="H1" ;;
@@ -196,50 +211,61 @@ for platform in hackerone bugcrowd intigriti yeswehack; do
     intigriti) JSON="$IT_JSON"; BPLABEL="IT" ;;
     yeswehack) JSON="$YWH_JSON"; BPLABEL="YWH" ;;
   esac
-  [ ! -f "$JSON" ] && continue
+  [ ! -f "$JSON" ] && { echo "[agent3] WARN: $JSON not found, skipping $platform" >> "$ENRICH_LOG"; continue; }
 
-  # Extract name + github URL from each program's in-scope targets
-  jq -c '.[] | select(.targets.in_scope != null) | {name, url, assets: [.targets.in_scope[].asset_identifier]}' "$JSON" 2>/dev/null | while read -r prog; do
+  echo "[agent3] Processing $platform ($JSON)..." >> "$ENRICH_LOG"
+
+  extract_gh_urls "$JSON" "$platform" | while read -r prog; do
     pname=$(echo "$prog" | jq -r '.name')
-    purl=$(echo "$prog" | jq -r '.url')
-    assets=$(echo "$prog" | jq -r '.assets[]' 2>/dev/null)
-    echo "$assets" | while read -r asset; do
-      # Match github.com URLs
-      ghurl=$(echo "$asset" | grep -io 'https\?://github.com/[A-Za-z0-9_.-]\+/[A-Za-z0-9_.-]\+' 2>/dev/null || true)
-      [ -z "$ghurl" ] && continue
-      # Normalize: remove trailing .git, trailing /
-      ghurl=$(echo "$ghurl" | sed 's/\.git$//; s/\/$//')
-      owner_repo=$(echo "$ghurl" | sed 's|https\?://github.com/||')
+    purl=$(echo "$prog" | jq -r '.purl')
+    assets_raw=$(echo "$prog" | jq -r '.assets[]' 2>/dev/null)
+    [ -z "$assets_raw" ] && continue
 
-      # Query GitHub API
+    echo "$assets_raw" | while read -r asset; do
+      ghurl=$(echo "$asset" | grep -io 'https\?://github\.com/[A-Za-z0-9_.-]\+/[A-Za-z0-9_.-]\+' 2>/dev/null || true)
+      [ -z "$ghurl" ] && continue
+      ghurl=$(echo "$ghurl" | sed 's/\.git$//; s/\/$//')
+      owner_repo=$(echo "$ghurl" | sed 's|https\?://github\.com/||')
+
+      api_calls=$((api_calls + 1))
       api_resp=$(curl -s -H "Authorization: token $GH_PAT" "https://api.github.com/repos/$owner_repo" 2>/dev/null)
+      message=$(echo "$api_resp" | jq -r '.message // ""' 2>/dev/null)
+
+      if [ "$message" = "Not Found" ] || [ -z "$message" ] && [ -z "$api_resp" ]; then
+        api_fail=$((api_fail + 1))
+        echo "[agent3] SKIP $owner_repo: $message" >> "$ENRICH_LOG"
+        continue
+      fi
+      if [ "$message" = "API rate limit exceeded" ]; then
+        echo "[agent3] RATE LIMIT HIT after $api_calls calls. Stopping enrichment." >> "$ENRICH_LOG"
+        echo "[agent3] Rate limit hit after $api_calls calls" >&2
+        break 2
+      fi
+
+      api_ok=$((api_ok + 1))
       lang=$(echo "$api_resp" | jq -r '.language // "unknown"')
       size=$(echo "$api_resp" | jq -r '.size // 0')
       stars=$(echo "$api_resp" | jq -r '.stargazers_count // 0')
       pushed=$(echo "$api_resp" | jq -r '.pushed_at // ""')
       desc=$(echo "$api_resp" | jq -r '.description // ""')
       topics=$(echo "$api_resp" | jq -r '.topics // [] | join(",")')
-      message=$(echo "$api_resp" | jq -r '.message // ""')
-      [ "$message" = "Not Found" ] && continue
 
-      bounty_status="unknown"
-      # H1/BC managed programs almost always paid
-      case "$platform" in
-        hackerone) bounty_status="paid" ;;
-        bugcrowd)  bounty_status="paid" ;;
-        intigriti) bounty_status="paid" ;;
-        yeswehack) bounty_status="paid" ;;
-      esac
+      github_found=$((github_found + 1))
 
+      bounty_status="paid"
       surface_type=$(categorize_repo "$desc" "$topics")
       score=$(score_target "$pname" "$ghurl" "$lang" "$size" "$stars" "$pushed" "$bounty_status" "$surface_type")
 
-      entry="{\"name\":\"$pname\",\"platform\":\"$BPLABEL\",\"url\":\"$purl\",\"repo\":\"$ghurl\",\"language\":\"$lang\",\"size_kb\":$size,\"stars\":$stars,\"pushed_at\":\"$pushed\",\"score\":$score,\"surface_type\":$surface_type,\"bounty\":\"$bounty_status\",\"scored_at\":\"$TS\"}"
+      echo "[agent3] SCORE: $pname ($BPLABEL) -> $score (lang=$lang stars=$stars surface=$surface_type)" >> "$ENRICH_LOG"
+
+      entry="{\"name\":$(echo "$pname" | jq -Rs .),\"platform\":\"$BPLABEL\",\"url\":\"$purl\",\"repo\":\"$ghurl\",\"language\":\"$lang\",\"size_kb\":$size,\"stars\":$stars,\"pushed_at\":\"$pushed\",\"score\":$score,\"surface_type\":$surface_type,\"bounty\":\"$bounty_status\",\"scored_at\":\"$TS\"}"
       if [ "$first" = true ]; then echo "$entry" >> "$RANKED_FILE.tmp"; first=false; else echo ",$entry" >> "$RANKED_FILE.tmp"; fi
     done
   done
 done
 echo "]" >> "$RANKED_FILE.tmp"
+
+echo "[agent3] Enrichment done: $api_calls API calls, $api_ok OK, $api_fail failed, $github_found repos scored" | tee -a "$ENRICH_LOG"
 
 # Sort by score descending and take top 10
 jq -s 'add | sort_by(-.score) | .[:10]' "$RANKED_FILE.tmp" 2>/dev/null > "$RANKED_FILE" || echo '[]' > "$RANKED_FILE"
@@ -247,8 +273,12 @@ rm -f "$RANKED_FILE.tmp"
 
 TOP_CANDIDATES=$(jq -r '.[0] // empty' "$RANKED_FILE" 2>/dev/null)
 TOP_SCORE=$(echo "$TOP_CANDIDATES" | jq -r '.score // 0' 2>/dev/null)
+RANKED_COUNT=$(jq 'length' "$RANKED_FILE" 2>/dev/null || echo 0)
 
+echo "[agent3] Ranked targets: $RANKED_COUNT"
 echo "[agent3] Top candidate: $(echo "$TOP_CANDIDATES" | jq -r '.name // "none"') (score: $TOP_SCORE)"
+echo "[agent3] Top 3:" >> "$ENRICH_LOG"
+jq -r '.[:3][] | "  \(.score) \(.name) (\(.language), \(.stars) stars, \(.repo))"' "$RANKED_FILE" 2>/dev/null >> "$ENRICH_LOG"
 
 # === Quick-scan new targets (same as before, for report) ===
 ALL_NOW=$( (echo "$H1_NOW"; echo "$BC_NOW"; echo "$IT_NOW"; echo "$YWH_NOW") | sort -u)
@@ -411,6 +441,9 @@ ${QUICK_SCAN}
 - Tools: gh git curl jq
 - Missing: ${MISSING:-none}
 - State: targets-state.json + agent3-latest.json + targets-ranked.json
+
+## Enrichment Details
+$(cat "$ENRICH_LOG" 2>/dev/null || echo "*No enrichment log*")
 REPORTEOF
 
 # === Commit and push ===
