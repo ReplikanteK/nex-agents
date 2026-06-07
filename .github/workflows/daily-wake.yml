@@ -52,7 +52,7 @@ jobs:
           [ "$ST" != "Available" ] && echo "[agent3] Timeout" && exit 1
 
           echo "[agent3] Running entrypoint..."
-          timeout 1500 gh codespace ssh -c "$CS" -- "cd /workspaces/nex-agents && git fetch origin && git reset --hard origin/main && bash setup/entrypoint.sh $GH_PAT" 2>&1
+          timeout 1800 gh codespace ssh -c "$CS" -- "cd /workspaces/nex-agents && git fetch origin && git reset --hard origin/main && bash setup/entrypoint.sh $GH_PAT" 2>&1
           echo "[agent3] Done"
 
       - name: Always cleanup

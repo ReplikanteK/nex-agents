@@ -122,14 +122,17 @@ echo "[agent3] Enrichment log: $ENRICH_LOG" > "$ENRICH_LOG"
 
 # Extract github.com URLs from in_scope targets
 # Handles different field names per platform:
-#   H1: asset_identifier | BC: target, uri | IT: endpoint | YWH: target
+#   H1: asset_identifier, instruction | BC: target, uri | IT: endpoint, description | YWH: target
+# Also handles bare domains (github.com/org/repo) and http:// URLs
 extract_gh_urls() {
   local json="$1" platform="$2"
   jq -r '
     [.[] | select(.targets.in_scope != null) |
      {name: .name, url: .url,
-      assets: [.targets.in_scope[] |
-        (.asset_identifier // .target // .uri // .endpoint // "") | select(length > 0)]}]
+      assets: [(.targets.in_scope[] |
+        (.asset_identifier // .target // .uri // .endpoint // "") | select(length > 0)),
+       (.targets.in_scope[] | .instruction // "" | select(length > 0)),
+       (.targets.in_scope[] | .description // "" | select(length > 0))]}]
     | .[] | select(.assets | length > 0) |
     {name, purl: .url, assets}
   ' "$json" 2>/dev/null
@@ -204,6 +207,14 @@ api_ok=0
 api_fail=0
 github_found=0
 
+# Repo cache: avoid re-fetching known repos across runs
+REPO_CACHE="memoria/repo-cache.json"
+[ -f "$REPO_CACHE" ] || echo '{}' > "$REPO_CACHE"
+
+# Rate limit state
+RATE_LIMIT_REACHED=false
+RATE_LIMIT_RESET=0
+
 for platform in hackerone bugcrowd intigriti yeswehack; do
   case "$platform" in
     hackerone) JSON="$H1_JSON"; BPLABEL="H1" ;;
@@ -222,33 +233,65 @@ for platform in hackerone bugcrowd intigriti yeswehack; do
     [ -z "$assets_raw" ] && continue
 
     echo "$assets_raw" | while read -r asset; do
-      ghurl=$(echo "$asset" | grep -io 'https\?://github\.com/[A-Za-z0-9_.-]\+/[A-Za-z0-9_.-]\+' 2>/dev/null || true)
+      ghurl=$(echo "$asset" | grep -ioE '(https?://)?github\.com/[A-Za-z0-9_.-]+/[A-Za-z0-9_*.+-]+' 2>/dev/null || true)
       [ -z "$ghurl" ] && continue
-      ghurl=$(echo "$ghurl" | sed 's/\.git$//; s/\/$//')
-      owner_repo=$(echo "$ghurl" | sed 's|https\?://github\.com/||')
+      ghurl=$(echo "$ghurl" | sed 's|^https\?://||; s|^|https://|; s|\.git$||; s|/$||')
+      owner_repo=$(echo "$ghurl" | sed 's|https://github\.com/||')
+      # Skip wildcards — can't API-query github.com/org/*
+      echo "$owner_repo" | grep -q '\*' && continue
 
-      api_calls=$((api_calls + 1))
-      api_resp=$(curl -s -H "Authorization: token $GH_PAT" "https://api.github.com/repos/$owner_repo" 2>/dev/null)
-      message=$(echo "$api_resp" | jq -r '.message // ""' 2>/dev/null)
+      # Check cache first
+      cached=$(jq -r --arg r "$owner_repo" '.[$r] // empty' "$REPO_CACHE" 2>/dev/null)
+      if [ -n "$cached" ]; then
+        api_ok=$((api_ok + 1))
+        lang=$(echo "$cached" | jq -r '.language // "unknown"')
+        size=$(echo "$cached" | jq -r '.size // 0')
+        stars=$(echo "$cached" | jq -r '.stars // 0')
+        pushed=$(echo "$cached" | jq -r '.pushed_at // ""')
+        desc=$(echo "$cached" | jq -r '.description // ""')
+        topics=$(echo "$cached" | jq -r '.topics // ""')
+      else
+        # Rate limit guard: check remaining calls
+        if [ "$RATE_LIMIT_REACHED" = true ]; then
+          echo "[agent3] SKIP $owner_repo: rate limit previously hit" >> "$ENRICH_LOG"
+          continue
+        fi
 
-      if [ "$message" = "Not Found" ] || [ -z "$message" ] && [ -z "$api_resp" ]; then
-        api_fail=$((api_fail + 1))
-        echo "[agent3] SKIP $owner_repo: $message" >> "$ENRICH_LOG"
-        continue
+        api_calls=$((api_calls + 1))
+        api_resp=$(curl -s -w "\n%{http_code}" -H "Authorization: token $GH_PAT" "https://api.github.com/repos/$owner_repo" 2>/dev/null)
+        http_code=$(echo "$api_resp" | tail -1)
+        api_resp=$(echo "$api_resp" | sed '$d')
+        message=$(echo "$api_resp" | jq -r '.message // ""' 2>/dev/null)
+
+        if [ "$http_code" = "403" ] && echo "$message" | grep -qi "rate limit"; then
+          reset_ts=$(echo "$api_resp" | jq -r '.headers["x-ratelimit-reset"] // "0"' 2>/dev/null)
+          echo "[agent3] RATE LIMIT HIT after $api_calls calls. Reset at: $reset_ts" | tee -a "$ENRICH_LOG"
+          RATE_LIMIT_REACHED=true
+          RATE_LIMIT_RESET=$reset_ts
+          break 2
+        fi
+
+        if [ "$message" = "Not Found" ] || [ -z "$api_resp" ]; then
+          api_fail=$((api_fail + 1))
+          echo "[agent3] SKIP $owner_repo: $message" >> "$ENRICH_LOG"
+          continue
+        fi
+
+        api_ok=$((api_ok + 1))
+        lang=$(echo "$api_resp" | jq -r '.language // "unknown"')
+        size=$(echo "$api_resp" | jq -r '.size // 0')
+        stars=$(echo "$api_resp" | jq -r '.stargazers_count // 0')
+        pushed=$(echo "$api_resp" | jq -r '.pushed_at // ""')
+        desc=$(echo "$api_resp" | jq -r '.description // ""')
+        topics=$(echo "$api_resp" | jq -r '.topics // [] | join(",")')
+
+        # Cache this repo (skip wildcards and 404s)
+        echo "$api_resp" | jq -c --arg r "$owner_repo" \
+          '{($r): {language: .language, size: .size, stars: .stargazers_count, pushed_at: .pushed_at, description: .description, topics: (.topics // [] | join(","))}}' \
+          > /tmp/repo-cache-entry.json 2>/dev/null
+        jq -s '.[0] * .[1]' "$REPO_CACHE" /tmp/repo-cache-entry.json > /tmp/repo-cache-new.json 2>/dev/null && \
+          mv /tmp/repo-cache-new.json "$REPO_CACHE"
       fi
-      if [ "$message" = "API rate limit exceeded" ]; then
-        echo "[agent3] RATE LIMIT HIT after $api_calls calls. Stopping enrichment." >> "$ENRICH_LOG"
-        echo "[agent3] Rate limit hit after $api_calls calls" >&2
-        break 2
-      fi
-
-      api_ok=$((api_ok + 1))
-      lang=$(echo "$api_resp" | jq -r '.language // "unknown"')
-      size=$(echo "$api_resp" | jq -r '.size // 0')
-      stars=$(echo "$api_resp" | jq -r '.stargazers_count // 0')
-      pushed=$(echo "$api_resp" | jq -r '.pushed_at // ""')
-      desc=$(echo "$api_resp" | jq -r '.description // ""')
-      topics=$(echo "$api_resp" | jq -r '.topics // [] | join(",")')
 
       github_found=$((github_found + 1))
 
@@ -265,7 +308,7 @@ for platform in hackerone bugcrowd intigriti yeswehack; do
 done
 echo "]" >> "$RANKED_FILE.tmp"
 
-echo "[agent3] Enrichment done: $api_calls API calls, $api_ok OK, $api_fail failed, $github_found repos scored" | tee -a "$ENRICH_LOG"
+echo "[agent3] Enrichment done: $api_calls API calls, $api_ok OK, $api_fail failed, $github_found repos scored (cache: $(jq 'length' "$REPO_CACHE" 2>/dev/null || echo 0) repos)" | tee -a "$ENRICH_LOG"
 
 # Sort by score descending and take top 10
 jq -s 'add | sort_by(-.score) | .[:10]' "$RANKED_FILE.tmp" 2>/dev/null > "$RANKED_FILE" || echo '[]' > "$RANKED_FILE"
