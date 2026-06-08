@@ -5,15 +5,47 @@ on:
     - cron: '33 1 * * *'
   workflow_dispatch:
 
-concurrency:
-  group: agent3-wake
-  cancel-in-progress: true
-
 env:
   GH_PAT: ${{ secrets.GH_PAT }}
 
 jobs:
-  wake-agent3:
+  # Job 1: Enrichment (runs on ubuntu-latest - FREE)
+  enrich:
+    runs-on: ubuntu-latest
+    outputs:
+      top_score: ${{ steps.enrich.outputs.top_score }}
+      top_name: ${{ steps.enrich.outputs.top_name }}
+      has_target: ${{ steps.enrich.outputs.has_target }}
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Run enrichment
+        id: enrich
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT }}
+        run: |
+          chmod +x setup/enrich.sh
+          bash setup/enrich.sh "$GH_PAT"
+          
+          # Extract outputs
+          TOP_SCORE=$(jq -r '.top_candidate.score // 0' memoria/agent3-latest.json 2>/dev/null || echo 0)
+          TOP_NAME=$(jq -r '.top_candidate.name // ""' memoria/agent3-latest.json 2>/dev/null || echo "")
+          
+          echo "top_score=$TOP_SCORE" >> "$GITHUB_OUTPUT"
+          echo "top_name=$TOP_NAME" >> "$GITHUB_OUTPUT"
+          
+          if [ "$TOP_SCORE" -ge 65 ]; then
+            echo "has_target=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_target=false" >> "$GITHUB_OUTPUT"
+          fi
+          
+          echo "[enrich] Score: $TOP_SCORE, Target: $TOP_NAME"
+
+  # Job 2: Execute (runs on codespace - only if target ≥ 65)
+  execute:
+    needs: enrich
+    if: needs.enrich.outputs.has_target == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
@@ -26,7 +58,7 @@ jobs:
             [ -n "$CS" ] && gh api -X POST "/user/codespaces/$CS/stop" > /dev/null && echo "[agent3] Stopped orphan: $CS"
           done
 
-      - name: Run agent3
+      - name: Run agent3 execute
         id: agent3
         env:
           GH_TOKEN: ${{ secrets.GH_PAT }}
@@ -51,8 +83,9 @@ jobs:
           done
           [ "$ST" != "Available" ] && echo "[agent3] Timeout" && exit 1
 
-          echo "[agent3] Running entrypoint..."
-          timeout 1800 gh codespace ssh -c "$CS" -- "cd /workspaces/nex-agents && git fetch origin && git reset --hard origin/main && bash setup/entrypoint.sh $GH_PAT" 2>&1
+          echo "[agent3] Running entrypoint (execute only)..."
+          # Run only the task execution part, skip enrichment
+          timeout 900 gh codespace ssh -c "$CS" -- "cd /workspaces/nex-agents && git fetch origin && git reset --hard origin/main && bash setup/execute.sh $GH_PAT" 2>&1
           echo "[agent3] Done"
 
       - name: Always cleanup
@@ -70,4 +103,45 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh issue create             --title "agent3: run failed $(date +%Y-%m-%d)"             --body "Agent3 daily run failed at $(date -u +%Y-%m-%dT%H:%M:%SZ). Check workflow logs."             --label "bug" 2>/dev/null || true
+          gh issue create \
+            --title "agent3: execute failed $(date +%Y-%m-%d)" \
+            --body "Agent3 execute job failed at $(date -u +%Y-%m-%dT%H:%M:%SZ). Check workflow logs." \
+            --label "bug" 2>/dev/null || true
+
+  # Job 3: Light day (no target, just report)
+  light-day:
+    needs: enrich
+    if: needs.enrich.outputs.has_target == 'false'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      
+      - name: Generate light report
+        run: |
+          DOW=$(date +%u)
+          DATE=$(date +%Y-%m-%d)
+          
+          if [ "$DOW" -eq 5 ]; then
+            echo "[light-day] Friday - creating maintenance task"
+            cat > "tasks/maintenance-${DATE}.md" << 'EOF'
+          # Task: Weekly maintenance
+          ### Origen: agent3 (auto)
+          ### Prioridad: media
+          ### Estado: pending
+          ### Iniciado: $(date -u +%Y-%m-%dT%H:%M:%SZ)
+          
+          ### Objetivo
+          1. Revisa reportes activos pendientes
+          2. Resume cambios semanales en bounty landscape
+          3. Deja brief para agent1
+          Output: reports/maintenance-${DATE}.md
+          EOF
+          else
+            echo "[light-day] No target with score ≥65. Light day."
+          fi
+          
+          git add tasks/ 2>/dev/null || true
+          if ! git diff --cached --quiet 2>/dev/null; then
+            git -c user.name="enrich-bot" -c user.email="enrich@nex.local" commit -m "light-day: ${DATE}" 2>/dev/null || true
+            git push origin main 2>/dev/null || true
+          fi
