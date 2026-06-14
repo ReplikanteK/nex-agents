@@ -100,7 +100,7 @@ echo "[enrich] Enrichment log: $ENRICH_LOG" > "$ENRICH_LOG"
 # Extract github.com URLs from in_scope targets
 extract_gh_urls() {
   local json="$1" platform="$2"
-  jq -r '
+  jq -rc '
     [.[] | select(.targets.in_scope != null) |
      {name: .name, url: .url,
       assets: [(.targets.in_scope[] |
