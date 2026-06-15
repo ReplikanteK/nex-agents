@@ -5,6 +5,9 @@ set -uo pipefail
 # Fetches bounty data, does GitHub API enrichment, produces ranked targets
 # Output: memoria/targets-ranked.json, memoria/agent3-latest.json
 
+# Ensure /tmp is in PATH (for custom jq binary if needed)
+export PATH="/tmp:$PATH"
+
 GH_PAT="${1:-${GITHUB_TOKEN:-}}"
 [ -z "$GH_PAT" ] && echo "[enrich] No token" && exit 1
 export GH_TOKEN="$GH_PAT"
@@ -19,6 +22,26 @@ for cmd in gh git curl jq; do
   command -v "$cmd" &>/dev/null || { echo "[enrich] Missing: $cmd"; exit 1; }
 done
 
+# === Validate token ===
+echo "[enrich] Validating GitHub token..."
+HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" -H "Authorization: token $GH_PAT" "https://api.github.com/user" 2>/dev/null)
+if [ "$HTTP_CODE" != "200" ]; then
+  echo "[enrich] ERROR: Invalid token (HTTP $HTTP_CODE)"
+  echo "[enrich] Token length: ${#GH_PAT}"
+  exit 1
+fi
+echo "[enrich] Token valid (HTTP $HTTP_CODE)"
+
+# Check rate limit
+RATE_RESP=$(curl -s -H "Authorization: token $GH_PAT" "https://api.github.com/rate_limit" 2>/dev/null)
+RATE_REMAINING=$(echo "$RATE_RESP" | jq -r '.rate.remaining // 0' 2>/dev/null)
+RATE_LIMIT=$(echo "$RATE_RESP" | jq -r '.rate.limit // 0' 2>/dev/null)
+echo "[enrich] GitHub API rate limit: $RATE_REMAINING / $RATE_LIMIT remaining"
+
+if [ "$RATE_REMAINING" -lt 100 ]; then
+  echo "[enrich] WARNING: Low rate limit ($RATE_REMAINING remaining). Enrichment may be limited."
+fi
+
 # === Clone repo ===
 REPO_DIR="${GITHUB_WORKSPACE:-$(pwd)}"
 cd "$REPO_DIR" || exit 1
@@ -28,9 +51,14 @@ git pull origin main 2>/dev/null || true
 # === Fetch bounty data ===
 BOUNTY_DIR="/tmp/bounty-targets-data"
 if [ ! -d "$BOUNTY_DIR/.git" ]; then
-  git clone --depth 1 https://github.com/arkadiyt/bounty-targets-data.git "$BOUNTY_DIR" 2>/dev/null || true
+  git clone --depth 1 https://github.com/arkadiyt/bounty-targets-data.git "$BOUNTY_DIR" 2>&1 | tail -3
 else
-  git -C "$BOUNTY_DIR" pull origin master 2>/dev/null || true
+  git -C "$BOUNTY_DIR" pull origin master 2>&1 | tail -3
+fi
+
+if [ ! -f "$BOUNTY_DIR/data/hackerone_data.json" ]; then
+  echo "[enrich] ERROR: bounty-targets-data not found"
+  exit 1
 fi
 
 # === Diff engine ===
@@ -48,10 +76,12 @@ BC_NOW=$(get_name_url "$BC_JSON")
 IT_NOW=$(get_name_url "$IT_JSON")
 YWH_NOW=$(get_name_url "$YWH_JSON")
 
-H1_COUNT=$(echo "$H1_NOW" | wc -l)
-BC_COUNT=$(echo "$BC_NOW" | wc -l)
-IT_COUNT=$(echo "$IT_NOW" | wc -l)
-YWH_COUNT=$(echo "$YWH_NOW" | wc -l)
+H1_COUNT=$(echo "$H1_NOW" | grep -c . 2>/dev/null || echo 0)
+BC_COUNT=$(echo "$BC_NOW" | grep -c . 2>/dev/null || echo 0)
+IT_COUNT=$(echo "$IT_NOW" | grep -c . 2>/dev/null || echo 0)
+YWH_COUNT=$(echo "$YWH_NOW" | grep -c . 2>/dev/null || echo 0)
+
+echo "[enrich] Targets: H1=$H1_COUNT BC=$BC_COUNT IT=$IT_COUNT YWH=$YWH_COUNT"
 
 # Diff logic
 if [ -f "$STATE_FILE" ]; then
@@ -96,6 +126,7 @@ RANKED_FILE="memoria/targets-ranked.json"
 SCORED_CANDIDATES="[]"
 ENRICH_LOG="memoria/enrich-log-${DATE}.txt"
 echo "[enrich] Enrichment log: $ENRICH_LOG" > "$ENRICH_LOG"
+echo "[enrich] Rate limit at start: $RATE_REMAINING" >> "$ENRICH_LOG"
 
 # Extract github.com URLs from in_scope targets
 extract_gh_urls() {
@@ -109,7 +140,7 @@ extract_gh_urls() {
        (.targets.in_scope[] | .description // "" | select(length > 0))]}]
     | .[] | select(.assets | length > 0) |
     {name, purl: .url, assets}
-  ' "$json" 2>/dev/null
+  ' "$json" 2>> "$ENRICH_LOG"
 }
 
 # Categorize repo type by description and topics (0-15 pts)
@@ -176,8 +207,9 @@ for platform in hackerone bugcrowd intigriti yeswehack; do
     intigriti) JSON="$IT_JSON"; BPLABEL="IT" ;;
     yeswehack) JSON="$YWH_JSON"; BPLABEL="YWH" ;;
   esac
-  [ ! -f "$JSON" ] && continue
+  [ ! -f "$JSON" ] && { echo "[enrich] SKIP: $JSON not found"; continue; }
 
+  echo "[enrich] Extracting GitHub URLs from $BPLABEL..."
   extract_gh_urls "$JSON" "$platform" | while read -r prog; do
     pname=$(echo "$prog" | jq -r '.name')
     purl=$(echo "$prog" | jq -r '.purl')
@@ -193,6 +225,8 @@ for platform in hackerone bugcrowd intigriti yeswehack; do
       echo "$BPLABEL|$pname|$purl|$owner_repo" >> "$ALL_REPOS_FILE"
     done
   done
+  REPOS_FOUND=$(grep -c "^$BPLABEL|" "$ALL_REPOS_FILE" 2>/dev/null || echo 0)
+  echo "[enrich] $BPLABEL: $REPOS_FOUND repo references found"
 done
 
 # Deduplicate repos (same repo can appear in multiple programs)
@@ -200,6 +234,15 @@ UNIQUE_REPOS_FILE="/tmp/unique-repos.txt"
 awk -F'|' '{print $4}' "$ALL_REPOS_FILE" | sort -u > "$UNIQUE_REPOS_FILE"
 TOTAL_REPOS=$(wc -l < "$UNIQUE_REPOS_FILE")
 echo "[enrich] Found $TOTAL_REPOS unique repos to enrich"
+echo "[enrich] Total repo references: $(wc -l < "$ALL_REPOS_FILE")"
+
+if [ "$TOTAL_REPOS" -eq 0 ]; then
+  echo "[enrich] WARNING: No GitHub repos found in scope!"
+  echo "[enrich] This could mean:" >> "$ENRICH_LOG"
+  echo "  - extract_gh_urls jq query failed" >> "$ENRICH_LOG"
+  echo "  - No programs have GitHub URLs in scope" >> "$ENRICH_LOG"
+  echo "  - Data structure changed" >> "$ENRICH_LOG"
+fi
 
 # Repo cache
 REPO_CACHE="memoria/repo-cache.json"
@@ -209,28 +252,41 @@ REPO_CACHE="memoria/repo-cache.json"
 fetch_repo_batch() {
   local batch_file="$1"
   local batch_num="$2"
+  local batch_ok=0
+  local batch_404=0
+  local batch_err=0
   
   while read -r owner_repo; do
     # Check cache first
     cached=$(jq -r --arg r "$owner_repo" '.[$r] // empty' "$REPO_CACHE" 2>/dev/null)
     if [ -n "$cached" ]; then
       echo "CACHED|$owner_repo|$cached"
+      batch_ok=$((batch_ok + 1))
       continue
     fi
     
-    # API call
-    api_resp=$(curl -s -w "\n%{http_code}" -H "Authorization: token $GH_PAT" "https://api.github.com/repos/$owner_repo" 2>/dev/null)
+    # API call - NO 2>/dev/null so we can see errors
+    api_resp=$(curl -s -w "\n%{http_code}" -H "Authorization: token $GH_PAT" "https://api.github.com/repos/$owner_repo" 2>&1)
     http_code=$(echo "$api_resp" | tail -1)
     api_resp=$(echo "$api_resp" | sed '$d')
     message=$(echo "$api_resp" | jq -r '.message // ""' 2>/dev/null)
     
     if [ "$http_code" = "403" ] && echo "$message" | grep -qi "rate limit"; then
       echo "RATE_LIMIT|$owner_repo"
+      echo "[enrich] RATE LIMIT HIT at batch $batch_num after $batch_ok OK repos" >> "$ENRICH_LOG"
       break
     fi
     
     if [ "$message" = "Not Found" ] || [ -z "$api_resp" ]; then
       echo "404|$owner_repo"
+      batch_404=$((batch_404 + 1))
+      continue
+    fi
+    
+    if [ "$http_code" != "200" ]; then
+      echo "ERR|$owner_repo|HTTP$http_code"
+      echo "[enrich] API ERROR: $owner_repo -> HTTP $http_code ($message)" >> "$ENRICH_LOG"
+      batch_err=$((batch_err + 1))
       continue
     fi
     
@@ -250,7 +306,10 @@ fetch_repo_batch() {
       mv /tmp/repo-cache-new.json "$REPO_CACHE"
     
     echo "OK|$owner_repo|$lang|$size|$stars|$pushed|$desc|$topics"
+    batch_ok=$((batch_ok + 1))
   done < "$batch_file"
+  
+  echo "[enrich] Batch $batch_num: $batch_ok OK, $batch_404 not found, $batch_err errors" >> "$ENRICH_LOG"
 }
 
 # Split into batches of 50 for parallel processing
@@ -264,25 +323,43 @@ for batch_file in /tmp/batch-*; do
   [ ! -f "$batch_file" ] && continue
   BATCH_NUM=$((BATCH_NUM + 1))
   echo "[enrich] Processing batch $BATCH_NUM..."
-  fetch_repo_batch "$batch_file" "$BATCH_NUM" >> "$RESULTS_FILE" 2>/dev/null
+  fetch_repo_batch "$batch_file" "$BATCH_NUM" >> "$RESULTS_FILE"
 done
 rm -f /tmp/batch-*
+
+# Count results
+OK_COUNT=$(grep -c "^OK|" "$RESULTS_FILE" 2>/dev/null || echo 0)
+CACHED_COUNT=$(grep -c "^CACHED|" "$RESULTS_FILE" 2>/dev/null || echo 0)
+RATE_COUNT=$(grep -c "^RATE_LIMIT|" "$RESULTS_FILE" 2>/dev/null || echo 0)
+ERR_COUNT=$(grep -c "^ERR\|^404" "$RESULTS_FILE" 2>/dev/null || echo 0)
+
+echo "[enrich] API results: $OK_COUNT fresh, $CACHED_COUNT cached, $RATE_COUNT rate-limited, $ERR_COUNT errors"
+echo "[enrich] API results: $OK_COUNT fresh, $CACHED_COUNT cached, $RATE_COUNT rate-limited, $ERR_COUNT errors" >> "$ENRICH_LOG"
+
+if [ "$RATE_COUNT" -gt 0 ]; then
+  echo "[enrich] WARNING: Rate limiting detected. Some repos were not enriched."
+fi
 
 # Score candidates
 echo "[enrich] Scoring candidates..."
 echo "[" > "$RANKED_FILE.tmp"
 first=true
+SCORED=0
 
 while IFS='|' read -r owner_repo; do
-  result=$(grep "^OK|$owner_repo|" "$RESULTS_FILE" | head -1)
+  result=$(grep "^OK|$owner_repo\|^CACHED|$owner_repo" "$RESULTS_FILE" | head -1)
   [ -z "$result" ] && continue
   
-  IFS='|' read -r _ repo lang size stars pushed desc topics <<< "$result"
+  IFS='|' read -r status repo lang size stars pushed desc topics <<< "$result"
+  
+  # Skip if size is 0 or missing
+  [ -z "$size" ] || [ "$size" = "0" ] && continue
   
   # Find all programs that reference this repo
   programs=$(grep "|$owner_repo$" "$ALL_REPOS_FILE" | awk -F'|' '{print $1 "|" $2 "|" $3}' | sort -u)
   
   while IFS='|' read -r platform pname purl; do
+    [ -z "$pname" ] && continue
     bounty_status="paid"
     surface_type=$(categorize_repo "$desc" "$topics")
     score=$(score_target "$pname" "https://github.com/$owner_repo" "$lang" "$size" "$stars" "$pushed" "$bounty_status" "$surface_type")
@@ -293,10 +370,14 @@ while IFS='|' read -r owner_repo; do
     
     entry="{\"name\":$(echo "$pname" | jq -Rs .),\"platform\":\"$platform\",\"url\":\"$purl\",\"repo\":\"https://github.com/$owner_repo\",\"language\":\"$lang\",\"size_kb\":$size,\"stars\":$stars,\"pushed_at\":\"$pushed\",\"score\":$score,\"surface_type\":$surface_type,\"bounty\":\"$bounty_status\",\"scored_at\":\"$TS\"}"
     if [ "$first" = true ]; then echo "$entry" >> "$RANKED_FILE.tmp"; first=false; else echo ",$entry" >> "$RANKED_FILE.tmp"; fi
+    SCORED=$((SCORED + 1))
   done <<< "$programs"
 done < "$UNIQUE_REPOS_FILE"
 
 echo "]" >> "$RANKED_FILE.tmp"
+echo "[enrich] Scored $SCORED target-repo combinations"
+echo "[enrich] Scored $SCORED target-repo combinations" >> "$ENRICH_LOG"
+
 jq -s 'add | sort_by(-.score) | .[:10]' "$RANKED_FILE.tmp" 2>/dev/null > "$RANKED_FILE" || echo '[]' > "$RANKED_FILE"
 rm -f "$RANKED_FILE.tmp"
 
@@ -356,6 +437,14 @@ cat > "$REPORT" << REPORTEOF
 | Bugcrowd | ${BC_COUNT} |
 | Intigriti | ${IT_COUNT} |
 | YesWeHack | ${YWH_COUNT} |
+
+## API Enrichment Results
+- Unique repos found: $TOTAL_REPOS
+- Repos fetched (fresh): $OK_COUNT
+- Repos cached: $CACHED_COUNT
+- Rate limited: $RATE_COUNT
+- Errors/404: $ERR_COUNT
+- Targets scored: $SCORED
 
 ## Top Candidates (scored)
 | Score | Platform | Target | Lang | Stars | Surface | Repo |
