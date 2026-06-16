@@ -34,7 +34,7 @@ jobs:
           echo "top_score=$TOP_SCORE" >> "$GITHUB_OUTPUT"
           echo "top_name=$TOP_NAME" >> "$GITHUB_OUTPUT"
           
-          if [ "$TOP_SCORE" -ge 65 ]; then
+          if [ "$TOP_SCORE" -ge 50 ]; then
             echo "has_target=true" >> "$GITHUB_OUTPUT"
           else
             echo "has_target=false" >> "$GITHUB_OUTPUT"
