@@ -118,17 +118,37 @@ write_platform() { jq '[.[] | {name, url}]' "$1" 2>/dev/null || echo '[]'; }
 jq -n --arg ts "$TS" --argjson h1 "$(write_platform "$H1_JSON")" --argjson bc "$(write_platform "$BC_JSON")" --argjson it "$(write_platform "$IT_JSON")" --argjson yw "$(write_platform "$YWH_JSON")" '{last_scan: $ts, targets: {hackerone: $h1, bugcrowd: $bc, intigriti: $it, yeswehack: $yw}}' > "$STATE_FILE"
 
 # =====================================================================
-# GitHub Enrichment + Scoring Pipeline
+# Scoring Pipeline (Base + GitHub Bonus)
 # =====================================================================
-echo "[enrich] Enriching targets with GitHub API..."
+echo "[enrich] Scoring all targets..."
 
 RANKED_FILE="memoria/targets-ranked.json"
-SCORED_CANDIDATES="[]"
 ENRICH_LOG="memoria/enrich-log-${DATE}.txt"
 echo "[enrich] Enrichment log: $ENRICH_LOG" > "$ENRICH_LOG"
 echo "[enrich] Rate limit at start: $RATE_REMAINING" >> "$ENRICH_LOG"
 
-# Extract github.com URLs from in_scope targets
+# Extract ALL programs with full data for base scoring
+extract_programs_full() {
+  local json="$1" platform="$2"
+  jq -rc '
+    [.[] | select(.targets.in_scope != null) |
+     {name: .name, url: .url,
+      offers_bounties: (.offers_bounties // false),
+      managed: (.managed_program // .managed_by_bugcrowd // false),
+      response_efficiency: (.response_efficiency_percentage // null),
+      max_bounty: (.max_bounty.value // .max_payout // null),
+      min_bounty: (.min_bounty.value // null),
+      assets_count: ([.targets.in_scope[] | select(.eligible_for_bounty == true)] | length),
+      has_wildcard: ([.targets.in_scope[] | select(.asset_identifier // .target // .uri // .endpoint // "" | test("\\*"))] | length > 0),
+      github_urls: [.targets.in_scope[] |
+        (.asset_identifier // .target // .uri // .endpoint // "") |
+        select(test("github\\.com/[A-Za-z0-9_.-]+/[A-Za-z0-9_*.+-]+"))]}]
+    | .[] |
+    {name, url, offers_bounties, managed, response_efficiency, max_bounty, min_bounty, assets_count, has_wildcard, github_urls}
+  ' "$json" 2>> "$ENRICH_LOG"
+}
+
+# Extract github.com URLs from in_scope targets (for GitHub bonus)
 extract_gh_urls() {
   local json="$1" platform="$2"
   jq -rc '
@@ -158,47 +178,105 @@ categorize_repo() {
   echo 15
 }
 
-score_target() {
-  local name="$1" repo="$2" lang="$3" size="$4" stars="$5" pushed="$6" bounty="$7" surface_type="$8"
-  [ "$bounty" != "paid" ] && echo 0 && return
-
-  local code=0
-  case "$lang" in
-    "Python") code=30 ;;
-    "Go")     code=26 ;;
-    "C"|"C++"|"Rust") code=22 ;;
-    "TypeScript"|"JavaScript") code=16 ;;
-    "Java")   code=12 ;;
-    *)        code=8 ;;
+# Base scoring WITHOUT GitHub dependency (for ALL programs)
+# Uses: bounty amount, wildcard, managed, response efficiency, platform, assets
+score_target_base() {
+  local name="$1" platform="$2" max_bounty="$3" has_wildcard="$4" managed="$5" response_eff="$6" assets_count="$7"
+  
+  local score=0
+  
+  # Bounty amount (0-35 pts)
+  if [ -n "$max_bounty" ] && [ "$max_bounty" != "null" ] && [ "$max_bounty" != "0" ]; then
+    if [ "$max_bounty" -ge 10000 ]; then
+      score=$((score + 35))
+    elif [ "$max_bounty" -ge 5000 ]; then
+      score=$((score + 30))
+    elif [ "$max_bounty" -ge 2000 ]; then
+      score=$((score + 25))
+    elif [ "$max_bounty" -ge 1000 ]; then
+      score=$((score + 20))
+    elif [ "$max_bounty" -ge 500 ]; then
+      score=$((score + 15))
+    elif [ "$max_bounty" -ge 100 ]; then
+      score=$((score + 10))
+    else
+      score=$((score + 5))
+    fi
+  else
+    score=$((score + 8))  # Neutral for unknown bounty
+  fi
+  
+  # Wildcard scope bonus (0-20 pts) - more surface area
+  [ "$has_wildcard" = "true" ] && score=$((score + 20))
+  
+  # Managed program bonus (0-15 pts) - better triage
+  [ "$managed" = "true" ] && score=$((score + 15))
+  
+  # Response efficiency bonus (0-10 pts) - H1 specific
+  if [ -n "$response_eff" ] && [ "$response_eff" != "null" ]; then
+    if [ "$response_eff" -ge 90 ]; then
+      score=$((score + 10))
+    elif [ "$response_eff" -ge 80 ]; then
+      score=$((score + 7))
+    elif [ "$response_eff" -ge 70 ]; then
+      score=$((score + 4))
+    fi
+  fi
+  
+  # Assets in scope (0-15 pts)
+  local assets_score=$((assets_count * 2))
+  [ "$assets_score" -gt 15 ] && assets_score=15
+  score=$((score + assets_score))
+  
+  # Platform diversity bonus (0-10 pts) - less competition on non-H1
+  case "$platform" in
+    intigriti) score=$((score + 10)) ;;
+    yeswehack) score=$((score + 8)) ;;
+    bugcrowd)  score=$((score + 5)) ;;
+    *)         ;;  # HackerOne = no bonus
   esac
-  [ "$size" -lt 10000 ] && code=$((code + 3))
-  [ "$size" -gt 100000 ] && code=$((code - 3))
-  [ "$size" -gt 50000 ] && [ "$size" -le 100000 ] && code=$((code - 1))
-  local stale=$(date -d "$pushed" +%s 2>/dev/null || echo 0)
-  local now=$(date +%s)
-  [ $(( (now - stale) / 86400 )) -gt 365 ] && code=$((code - 2))
-  [ "$code" -lt 0 ] && code=0
-
-  local surface=12
-  [ "$stars" -lt 1000 ] && surface=24
-  [ "$stars" -lt 500 ] && surface=27
-  [ "$stars" -gt 10000 ] && surface=15
-
-  local like=6
-  case "$lang" in "Python"|"Go"|"C"|"C++") like=$((like + 6)) ;; esac
-  [ "$size" -lt 30000 ] && like=$((like + 3))
-  [ "$like" -gt 15 ] && like=15
-
-  local total=$((code + surface + like + surface_type))
-  echo "$total"
+  
+  echo "$score"
 }
 
-# Batch API calls using xargs for parallelism
-echo "[enrich] Starting parallel enrichment..."
+# GitHub enrichment bonus (adds to base score)
+# Uses: language, size, stars, pushed_at
+score_github_bonus() {
+  local lang="$1" size="$2" stars="$3" pushed="$4" surface_type="$5"
+  
+  local bonus=0
+  
+  # Language fit (0-15 pts)
+  case "$lang" in
+    "Python") bonus=$((bonus + 15)) ;;
+    "Go")     bonus=$((bonus + 13)) ;;
+    "C"|"C++"|"Rust") bonus=$((bonus + 12)) ;;
+    "TypeScript"|"JavaScript") bonus=$((bonus + 8)) ;;
+    "Java")   bonus=$((bonus + 6)) ;;
+    *)        bonus=$((bonus + 3)) ;;
+  esac
+  
+  # Size sweet spot (0-5 pts)
+  [ "$size" -lt 30000 ] && bonus=$((bonus + 5))
+  [ "$size" -gt 100000 ] && bonus=$((bonus - 2))
+  
+  # Staleness penalty
+  local stale=$(date -d "$pushed" +%s 2>/dev/null || echo 0)
+  local now=$(date +%s)
+  [ $(( (now - stale) / 86400 )) -gt 365 ] && bonus=$((bonus - 3))
+  [ "$bonus" -lt 0 ] && bonus=0
+  
+  echo "$bonus"
+}
 
-# First, collect all unique repos
-ALL_REPOS_FILE="/tmp/all-repos.txt"
-> "$ALL_REPOS_FILE"
+# =====================================================================
+# BASE SCORING (works without GitHub)
+# =====================================================================
+echo "[enrich] Scoring ALL programs (base scoring)..."
+
+RANKED_FILE="memoria/targets-ranked.json"
+ALL_PROGRAMS_FILE="/tmp/all-programs.json"
+> "$ALL_PROGRAMS_FILE"
 
 for platform in hackerone bugcrowd intigriti yeswehack; do
   case "$platform" in
@@ -209,40 +287,109 @@ for platform in hackerone bugcrowd intigriti yeswehack; do
   esac
   [ ! -f "$JSON" ] && { echo "[enrich] SKIP: $JSON not found"; continue; }
 
-  echo "[enrich] Extracting GitHub URLs from $BPLABEL..."
-  extract_gh_urls "$JSON" "$platform" | while read -r prog; do
-    pname=$(echo "$prog" | jq -r '.name')
-    purl=$(echo "$prog" | jq -r '.purl')
-    assets_raw=$(echo "$prog" | jq -r '.assets[]' 2>/dev/null)
-    [ -z "$assets_raw" ] && continue
-
-    echo "$assets_raw" | while read -r asset; do
-      ghurl=$(echo "$asset" | grep -ioE '(https?://)?github\.com/[A-Za-z0-9_.-]+/[A-Za-z0-9_*.+-]+' 2>/dev/null || true)
-      [ -z "$ghurl" ] && continue
-      ghurl=$(echo "$ghurl" | sed 's|^https\?://||; s|^|https://|; s|\.git$||; s|/$||')
-      owner_repo=$(echo "$ghurl" | sed 's|https://github\.com/||')
-      echo "$owner_repo" | grep -q '\*' && continue
-      echo "$BPLABEL|$pname|$purl|$owner_repo" >> "$ALL_REPOS_FILE"
-    done
+  echo "[enrich] Extracting programs from $BPLABEL..."
+  extract_programs_full "$JSON" "$platform" | while read -r prog; do
+    echo "$prog" >> "$ALL_PROGRAMS_FILE"
   done
-  REPOS_FOUND=$(grep -c "^$BPLABEL|" "$ALL_REPOS_FILE" 2>/dev/null || echo 0)
-  echo "[enrich] $BPLABEL: $REPOS_FOUND repo references found"
+  PROG_COUNT=$(grep -c "\"name\"" "$ALL_PROGRAMS_FILE" 2>/dev/null || echo 0)
+  echo "[enrich] $BPLABEL: $PROG_COUNT programs total"
 done
 
-# Deduplicate repos (same repo can appear in multiple programs)
-UNIQUE_REPOS_FILE="/tmp/unique-repos.txt"
-awk -F'|' '{print $4}' "$ALL_REPOS_FILE" | sort -u > "$UNIQUE_REPOS_FILE"
-TOTAL_REPOS=$(wc -l < "$UNIQUE_REPOS_FILE")
-echo "[enrich] Found $TOTAL_REPOS unique repos to enrich"
-echo "[enrich] Total repo references: $(wc -l < "$ALL_REPOS_FILE")"
+TOTAL_PROGRAMS=$(wc -l < "$ALL_PROGRAMS_FILE")
+echo "[enrich] Total programs to score: $TOTAL_PROGRAMS"
 
-if [ "$TOTAL_REPOS" -eq 0 ]; then
-  echo "[enrich] WARNING: No GitHub repos found in scope!"
-  echo "[enrich] This could mean:" >> "$ENRICH_LOG"
-  echo "  - extract_gh_urls jq query failed" >> "$ENRICH_LOG"
-  echo "  - No programs have GitHub URLs in scope" >> "$ENRICH_LOG"
-  echo "  - Data structure changed" >> "$ENRICH_LOG"
-fi
+# Score each program with base scoring
+echo "[" > "$RANKED_FILE.tmp"
+first=true
+SCORED=0
+
+while IFS= read -r prog; do
+  [ -z "$prog" ] && continue
+  
+  name=$(echo "$prog" | jq -r '.name // ""')
+  platform=$(echo "$prog" | jq -r '.platform // ""')
+  url=$(echo "$prog" | jq -r '.url // ""')
+  max_bounty=$(echo "$prog" | jq -r '.max_bounty // "null"')
+  has_wildcard=$(echo "$prog" | jq -r '.has_wildcard')
+  managed=$(echo "$prog" | jq -r '.managed')
+  response_eff=$(echo "$prog" | jq -r '.response_efficiency // "null"')
+  assets_count=$(echo "$prog" | jq -r '.assets_count')
+  
+  [ -z "$name" ] || [ "$name" = "null" ] && continue
+  
+  # Base score (without GitHub)
+  base_score=$(score_target_base "$name" "$platform" "$max_bounty" "$has_wildcard" "$managed" "$response_eff" "$assets_count")
+  
+  [ "$base_score" -eq 0 ] && continue
+  
+  echo "[enrich] BASE_SCORE: $name ($platform) -> $base_score (bounty=$max_bounty wc=$has_wildcard mg=$managed)" >> "$ENRICH_LOG"
+  
+  entry="{\"name\":$(echo "$name" | jq -Rs .),\"platform\":\"$platform\",\"url\":\"$url\",\"repo\":null,\"language\":null,\"stars\":0,\"score\":$base_score,\"base_score\":$base_score,\"github_bonus\":0,\"max_bounty\":$max_bounty,\"has_wildcard\":$has_wildcard,\"managed\":$managed,\"assets_count\":$assets_count,\"scored_at\":\"$TS\"}"
+  if [ "$first" = true ]; then echo "$entry" >> "$RANKED_FILE.tmp"; first=false; else echo ",$entry" >> "$RANKED_FILE.tmp"; fi
+  SCORED=$((SCORED + 1))
+done < "$ALL_PROGRAMS_FILE"
+
+echo "]" >> "$RANKED_FILE.tmp"
+echo "[enrich] Base scoring done: $SCORED programs scored"
+echo "[enrich] Base scoring done: $SCORED programs scored" >> "$ENRICH_LOG"
+
+jq -s 'add | sort_by(-.score) | .[:10]' "$RANKED_FILE.tmp" 2>/dev/null > "$RANKED_FILE" || echo '[]' > "$RANKED_FILE"
+rm -f "$RANKED_FILE.tmp"
+
+# =====================================================================
+# GITHUB ENRICHMENT (optional bonus for top candidates)
+# =====================================================================
+echo "[enrich] Adding GitHub bonus for top candidates..."
+
+# Get top 20 candidates for GitHub enrichment (save API calls)
+TOP20_FILE="/tmp/top20-candidates.json"
+jq -r '.[:20] | .[] | .name' "$RANKED_FILE" 2>/dev/null > /tmp/top20-names.txt
+
+# Extract GitHub URLs for these candidates
+ALL_REPOS_FILE="/tmp/all-repos-github.txt"
+> "$ALL_REPOS_FILE"
+
+for platform in hackerone bugcrowd intigriti yeswehack; do
+  case "$platform" in
+    hackerone) JSON="$H1_JSON"; BPLABEL="H1" ;;
+    bugcrowd)  JSON="$BC_JSON"; BPLABEL="BC" ;;
+    intigriti) JSON="$IT_JSON"; BPLABEL="IT" ;;
+    yeswehack) JSON="$YWH_JSON"; BPLABEL="YWH" ;;
+  esac
+  [ ! -f "$JSON" ] && continue
+  
+  # Only extract for top candidates
+  while IFS= read -r target_name; do
+    [ -z "$target_name" ] && continue
+    # Find this program in JSON and extract GitHub URLs
+    jq -r --arg name "$target_name" '
+      .[] | select(.name == $name and .targets.in_scope != null) |
+      {name: .name, url: .url,
+       assets: [.targets.in_scope[] |
+         (.asset_identifier // .target // .uri // .endpoint // "") |
+         select(test("github\\.com/[A-Za-z0-9_.-]+/[A-Za-z0-9_*.+-]+"))]}
+      | select(.assets | length > 0) |
+      {name, purl: .url, assets}
+    ' "$JSON" 2>/dev/null | while read -r prog; do
+      pname=$(echo "$prog" | jq -r '.name')
+      purl=$(echo "$prog" | jq -r '.purl')
+      echo "$prog" | jq -r '.assets[]' 2>/dev/null | while read -r asset; do
+        ghurl=$(echo "$asset" | grep -ioE '(https?://)?github\.com/[A-Za-z0-9_.-]+/[A-Za-z0-9_*.+-]+' 2>/dev/null || true)
+        [ -z "$ghurl" ] && continue
+        ghurl=$(echo "$ghurl" | sed 's|^https\?://||; s|^|https://|; s|\.git$||; s|/$||')
+        owner_repo=$(echo "$ghurl" | sed 's|https://github\.com/||')
+        echo "$owner_repo" | grep -q '\*' && continue
+        echo "$BPLABEL|$pname|$purl|$owner_repo" >> "$ALL_REPOS_FILE"
+      done
+    done
+  done < /tmp/top20-names.txt
+done
+
+# Deduplicate and fetch
+UNIQUE_REPOS_FILE="/tmp/unique-repos-github.txt"
+awk -F'|' '{print $4}' "$ALL_REPOS_FILE" | sort -u > "$UNIQUE_REPOS_FILE"
+TOTAL_REPOS_GH=$(wc -l < "$UNIQUE_REPOS_FILE")
+echo "[enrich] GitHub enrichment: $TOTAL_REPOS_GH repos to fetch"
 
 # Repo cache
 REPO_CACHE="memoria/repo-cache.json"
@@ -265,7 +412,7 @@ fetch_repo_batch() {
       continue
     fi
     
-    # API call - NO 2>/dev/null so we can see errors
+    # API call
     api_resp=$(curl -s -w "\n%{http_code}" -H "Authorization: token $GH_PAT" "https://api.github.com/repos/$owner_repo" 2>&1)
     http_code=$(echo "$api_resp" | tail -1)
     api_resp=$(echo "$api_resp" | sed '$d')
@@ -312,76 +459,56 @@ fetch_repo_batch() {
   echo "[enrich] Batch $batch_num: $batch_ok OK, $batch_404 not found, $batch_err errors" >> "$ENRICH_LOG"
 }
 
-# Split into batches of 50 for parallel processing
-BATCH_SIZE=50
-BATCH_NUM=0
-RESULTS_FILE="/tmp/enrich-results.txt"
-> "$RESULTS_FILE"
+# Fetch in batches
+RESULTS_FILE_GH="/tmp/enrich-results-github.txt"
+> "$RESULTS_FILE_GH"
 
-split -l "$BATCH_SIZE" "$UNIQUE_REPOS_FILE" /tmp/batch-
-for batch_file in /tmp/batch-*; do
-  [ ! -f "$batch_file" ] && continue
-  BATCH_NUM=$((BATCH_NUM + 1))
-  echo "[enrich] Processing batch $BATCH_NUM..."
-  fetch_repo_batch "$batch_file" "$BATCH_NUM" >> "$RESULTS_FILE"
-done
-rm -f /tmp/batch-*
-
-# Count results
-OK_COUNT=$(grep -c "^OK|" "$RESULTS_FILE" 2>/dev/null || echo 0)
-CACHED_COUNT=$(grep -c "^CACHED|" "$RESULTS_FILE" 2>/dev/null || echo 0)
-RATE_COUNT=$(grep -c "^RATE_LIMIT|" "$RESULTS_FILE" 2>/dev/null || echo 0)
-ERR_COUNT=$(grep -c "^ERR\|^404" "$RESULTS_FILE" 2>/dev/null || echo 0)
-
-echo "[enrich] API results: $OK_COUNT fresh, $CACHED_COUNT cached, $RATE_COUNT rate-limited, $ERR_COUNT errors"
-echo "[enrich] API results: $OK_COUNT fresh, $CACHED_COUNT cached, $RATE_COUNT rate-limited, $ERR_COUNT errors" >> "$ENRICH_LOG"
-
-if [ "$RATE_COUNT" -gt 0 ]; then
-  echo "[enrich] WARNING: Rate limiting detected. Some repos were not enriched."
+if [ "$TOTAL_REPOS_GH" -gt 0 ]; then
+  split -l 50 "$UNIQUE_REPOS_FILE" /tmp/batch-gh-
+  for batch_file in /tmp/batch-gh-*; do
+    [ ! -f "$batch_file" ] && continue
+    BATCH_NUM_GH=$((BATCH_NUM_GH + 1))
+    fetch_repo_batch "$batch_file" "$BATCH_NUM_GH" >> "$RESULTS_FILE_GH"
+  done
+  rm -f /tmp/batch-gh-*
 fi
 
-# Score candidates
-echo "[enrich] Scoring candidates..."
-echo "[" > "$RANKED_FILE.tmp"
-first=true
-SCORED=0
+# Merge GitHub bonus into ranked results
+echo "[enrich] Merging GitHub bonus into final scores..."
 
+# Create temp file with updated scores
+jq -s '.' "$RANKED_FILE.tmp" > /tmp/ranked-base.json
+
+# For each program with GitHub data, add bonus
 while IFS='|' read -r owner_repo; do
-  result=$(grep "^OK|$owner_repo\|^CACHED|$owner_repo" "$RESULTS_FILE" | head -1)
+  result=$(grep "^OK|$owner_repo\|^CACHED|$owner_repo" "$RESULTS_FILE_GH" | head -1)
   [ -z "$result" ] && continue
   
   IFS='|' read -r status repo lang size stars pushed desc topics <<< "$result"
   
-  # Skip if size is 0 or missing
-  [ -z "$size" ] || [ "$size" = "0" ] && continue
-  
-  # Find all programs that reference this repo
-  programs=$(grep "|$owner_repo$" "$ALL_REPOS_FILE" | awk -F'|' '{print $1 "|" $2 "|" $3}' | sort -u)
-  
-  while IFS='|' read -r platform pname purl; do
+  # Find programs that reference this repo
+  grep "|$owner_repo$" "$ALL_REPOS_FILE" | awk -F'|' '{print $2}' | sort -u | while read -r pname; do
     [ -z "$pname" ] && continue
-    bounty_status="paid"
-    surface_type=$(categorize_repo "$desc" "$topics")
-    score=$(score_target "$pname" "https://github.com/$owner_repo" "$lang" "$size" "$stars" "$pushed" "$bounty_status" "$surface_type")
     
-    [ "$score" -eq 0 ] && continue
+    # Calculate GitHub bonus
+    surface_type=15  # default
+    gh_bonus=$(score_github_bonus "$lang" "$size" "$stars" "$pushed" "$surface_type")
     
-    echo "[enrich] SCORE: $pname ($platform) -> $score (lang=$lang stars=$stars)" >> "$ENRICH_LOG"
+    echo "[enrich] GITHUB_BONUS: $pname (+$gh_bonus) lang=$lang stars=$stars" >> "$ENRICH_LOG"
     
-    entry="{\"name\":$(echo "$pname" | jq -Rs .),\"platform\":\"$platform\",\"url\":\"$purl\",\"repo\":\"https://github.com/$owner_repo\",\"language\":\"$lang\",\"size_kb\":$size,\"stars\":$stars,\"pushed_at\":\"$pushed\",\"score\":$score,\"surface_type\":$surface_type,\"bounty\":\"$bounty_status\",\"scored_at\":\"$TS\"}"
-    if [ "$first" = true ]; then echo "$entry" >> "$RANKED_FILE.tmp"; first=false; else echo ",$entry" >> "$RANKED_FILE.tmp"; fi
-    SCORED=$((SCORED + 1))
-  done <<< "$programs"
+    # Update score in ranked file
+    jq --arg name "$pname" --argjson bonus "$gh_bonus" --arg repo "https://github.com/$owner_repo" --arg lang "$lang" --argjson stars "$stars" \
+      'map(if .name == $name then .github_bonus = $bonus | .score = (.base_score + $bonus) | .repo = $repo | .language = $lang | .stars = $stars else . end)' \
+      /tmp/ranked-base.json > /tmp/ranked-updated.json 2>/dev/null && \
+      mv /tmp/ranked-updated.json /tmp/ranked-base.json
+  done
 done < "$UNIQUE_REPOS_FILE"
 
-echo "]" >> "$RANKED_FILE.tmp"
-echo "[enrich] Scored $SCORED target-repo combinations"
-echo "[enrich] Scored $SCORED target-repo combinations" >> "$ENRICH_LOG"
+# Sort by final score and take top 10
+jq 'sort_by(-.score) | .[:10]' /tmp/ranked-base.json > "$RANKED_FILE" 2>/dev/null || echo '[]' > "$RANKED_FILE"
+rm -f "$RANKED_FILE.tmp" /tmp/ranked-base.json
 
-jq -s 'add | sort_by(-.score) | .[:10]' "$RANKED_FILE.tmp" 2>/dev/null > "$RANKED_FILE" || echo '[]' > "$RANKED_FILE"
-rm -f "$RANKED_FILE.tmp"
-
-echo "[enrich] Enrichment done: $TOTAL_REPOS repos processed"
+echo "[enrich] GitHub enrichment done"
 
 TOP_CANDIDATES=$(jq -r '.[0] // empty' "$RANKED_FILE" 2>/dev/null)
 TOP_SCORE=$(echo "$TOP_CANDIDATES" | jq -r '.score // 0' 2>/dev/null)
@@ -392,7 +519,7 @@ echo "[enrich] Top candidate: $(echo "$TOP_CANDIDATES" | jq -r '.name // "none"'
 
 # === Save agent3-latest.json ===
 TOP_NAME=$(echo "${TOP_CANDIDATES:-}" | jq -r '.name // ""' 2>/dev/null || echo "")
-RANKED_JSON=$(jq '.[:3] | map({name, platform, repo, language, score})' "${RANKED_FILE}" 2>/dev/null || echo '[]')
+RANKED_JSON=$(jq '.[:5] | map({name, platform, repo, language, score, base_score, github_bonus, max_bounty, has_wildcard, managed})' "${RANKED_FILE}" 2>/dev/null || echo '[]')
 jq -n \
   --arg ts "$TS" \
   --arg date "$DATE" \
@@ -447,9 +574,9 @@ cat > "$REPORT" << REPORTEOF
 - Targets scored: $SCORED
 
 ## Top Candidates (scored)
-| Score | Platform | Target | Lang | Stars | Surface | Repo |
-|-------|----------|--------|------|-------|---------|------|
-$(jq -r '.[] | "\(.score) | \(.platform) | \(.name) | \(.language) | \(.stars) | \(.surface_type) | \(.repo)"' "$RANKED_FILE" 2>/dev/null | head -5 | while IFS='|' read -r score plat name lang stars stype repo; do stype_label="prod"; [ "$stype" = "3" ] && stype_label="infra"; [ "$stype" = "5" ] && stype_label="cli"; [ "$stype" = "8" ] && stype_label="sdk"; printf "| %s | %s | %s | %s | %s⭐ | %s | %s |\n" "$score" "$plat" "$name" "$lang" "$stars" "$stype_label" "$repo"; done || echo "*No GitHub repos found in scope*")
+| Score | Base | GH+ | Platform | Target | Lang | Stars | Bounty | Wild | Managed | Repo |
+|-------|------|-----|----------|--------|------|-------|--------|------|---------|------|
+$(jq -r '.[] | "\(.score) | \(.base_score) | \(.github_bonus) | \(.platform) | \(.name) | \(.language // "-") | \(.stars // 0) | \(.max_bounty // "-") | \(.has_wildcard) | \(.managed) | \(.repo // "-")"' "$RANKED_FILE" 2>/dev/null | head -10 | while IFS='|' read -r score base gh plat name lang stars bounty wild managed repo; do printf "| %s | %s | %s | %s | %s | %s | %s | %s | %s | %s | %s |\n" "$score" "$base" "$gh" "$plat" "$name" "$lang" "$stars" "$bounty" "$wild" "$managed" "$repo"; done || echo "*No programs scored*")
 
 ## Target Changes
 ${DIFF_SECTION:-*No changes detected.*}
