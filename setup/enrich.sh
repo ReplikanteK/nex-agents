@@ -461,6 +461,7 @@ fetch_repo_batch() {
 # Fetch in batches
 RESULTS_FILE_GH="/tmp/enrich-results-github.txt"
 > "$RESULTS_FILE_GH"
+BATCH_NUM_GH=0
 
 if [ "$TOTAL_REPOS_GH" -gt 0 ]; then
   split -l 50 "$UNIQUE_REPOS_FILE" /tmp/batch-gh-
@@ -508,6 +509,13 @@ jq 'sort_by(-.score) | .[:10]' /tmp/ranked-base.json > "$RANKED_FILE" 2>/dev/nul
 rm -f "$RANKED_FILE.tmp" /tmp/ranked-base.json
 
 echo "[enrich] GitHub enrichment done"
+
+# Compute stats from results
+OK_COUNT=$(grep -c '^OK|' "$RESULTS_FILE_GH" 2>/dev/null || echo 0)
+CACHED_COUNT=$(grep -c '^CACHED|' "$RESULTS_FILE_GH" 2>/dev/null || echo 0)
+RATE_COUNT=$(grep -c '^RATE_LIMIT|' "$RESULTS_FILE_GH" 2>/dev/null || echo 0)
+ERR_COUNT=$(grep -cE '^404\||^ERR\|' "$RESULTS_FILE_GH" 2>/dev/null || echo 0)
+TOTAL_REPOS=$TOTAL_REPOS_GH
 
 TOP_CANDIDATES=$(jq -r '.[0] // empty' "$RANKED_FILE" 2>/dev/null)
 TOP_SCORE=$(echo "$TOP_CANDIDATES" | jq -r '.score // 0' 2>/dev/null)
