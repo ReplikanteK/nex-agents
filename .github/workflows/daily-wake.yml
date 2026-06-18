@@ -12,6 +12,8 @@ jobs:
   # Job 1: Enrichment (runs on ubuntu-latest - FREE)
   enrich:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     outputs:
       top_score: ${{ steps.enrich.outputs.top_score }}
       top_name: ${{ steps.enrich.outputs.top_name }}
