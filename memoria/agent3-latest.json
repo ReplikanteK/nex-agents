@@ -1,16 +1,77 @@
 {
-  "scan_date": "2026-06-06T05:35:28Z",
-  "date": "2026-06-06",
+  "scan_date": "2026-06-18T20:23:08Z",
+  "date": "2026-06-18",
   "task": "",
   "platforms": {
-    "hackerone": 457,
-    "bugcrowd": 226,
-    "intigriti": 123,
-    "yeswehack": 66
+    "hackerone": 459,
+    "bugcrowd": 233,
+    "intigriti": 131,
+    "yeswehack": 65
   },
   "top_candidate": {
-    "name": "",
-    "score": 0
+    "name": "Auth0 by Okta",
+    "score": 83
   },
-  "ranked_targets": []
+  "ranked_targets": [
+    {
+      "name": "Auth0 by Okta",
+      "platform": "",
+      "repo": "https://github.com/auth0/react-native-auth0",
+      "language": "TypeScript",
+      "score": 83,
+      "base_score": 70,
+      "github_bonus": 13,
+      "max_bounty": 50000,
+      "has_wildcard": true,
+      "managed": true
+    },
+    {
+      "name": "Atlassian",
+      "platform": "",
+      "repo": null,
+      "language": null,
+      "score": 70,
+      "base_score": 70,
+      "github_bonus": 0,
+      "max_bounty": 12000,
+      "has_wildcard": true,
+      "managed": true
+    },
+    {
+      "name": "Bitdefender",
+      "platform": "",
+      "repo": null,
+      "language": null,
+      "score": 70,
+      "base_score": 70,
+      "github_bonus": 0,
+      "max_bounty": 15000,
+      "has_wildcard": true,
+      "managed": true
+    },
+    {
+      "name": "Bugcrowd",
+      "platform": "",
+      "repo": null,
+      "language": null,
+      "score": 70,
+      "base_score": 70,
+      "github_bonus": 0,
+      "max_bounty": 10000,
+      "has_wildcard": true,
+      "managed": true
+    },
+    {
+      "name": "Canva",
+      "platform": "",
+      "repo": null,
+      "language": null,
+      "score": 70,
+      "base_score": 70,
+      "github_bonus": 0,
+      "max_bounty": 15000,
+      "has_wildcard": true,
+      "managed": true
+    }
+  ]
 }

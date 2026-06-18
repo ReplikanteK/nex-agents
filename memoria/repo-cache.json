@@ -1,1 +1,66 @@
-{}
+{
+  "auth0/Auth0.Net": {
+    "language": "C#",
+    "size": 19960,
+    "stars": 359,
+    "pushed_at": "2026-06-17T03:30:51Z",
+    "description": ".NET client for the Auth0 Authentication & Management APIs.",
+    "topics": "dx-sdk,oauth2,openid-connect"
+  },
+  "auth0/auth0-java": {
+    "language": "Java",
+    "size": 9705,
+    "stars": 318,
+    "pushed_at": "2026-06-16T21:03:06Z",
+    "description": "Java client library for the Auth0 platform",
+    "topics": "dx-sdk,hacktoberfest,java"
+  },
+  "auth0/auth0-php": {
+    "language": "PHP",
+    "size": 8208,
+    "stars": 409,
+    "pushed_at": "2026-06-11T17:06:09Z",
+    "description": "PHP SDK for Auth0 Authentication and Management APIs.",
+    "topics": "auth0,dx-sdk,php"
+  },
+  "auth0/auth0-spa-js": {
+    "language": "TypeScript",
+    "size": 13049,
+    "stars": 993,
+    "pushed_at": "2026-06-18T14:02:59Z",
+    "description": "Auth0 authentication for Single Page Applications (SPA) with PKCE",
+    "topics": "auth0,auth0-js,dx-sdk,javascript,oauth2,openid-connect,pkce,spa"
+  },
+  "auth0/auth0.js": {
+    "language": "JavaScript",
+    "size": 26041,
+    "stars": 1052,
+    "pushed_at": "2026-06-18T19:22:32Z",
+    "description": "Auth0 headless browser sdk",
+    "topics": "auth0,authentication,authorization,browser,dx-sdk,javascript,jwt,login,oauth2,sdk"
+  },
+  "auth0/lock": {
+    "language": "JavaScript",
+    "size": 166204,
+    "stars": 1140,
+    "pushed_at": "2026-06-18T08:58:42Z",
+    "description": "Auth0's signin solution",
+    "topics": "dx-sdk,lock"
+  },
+  "auth0/nextjs-auth0": {
+    "language": "TypeScript",
+    "size": 19981,
+    "stars": 2303,
+    "pushed_at": "2026-06-17T09:19:19Z",
+    "description": "Next.js SDK for signing in with Auth0",
+    "topics": "auth0,dx-sdk,nextjs,react,typescript"
+  },
+  "auth0/react-native-auth0": {
+    "language": "TypeScript",
+    "size": 12482,
+    "stars": 544,
+    "pushed_at": "2026-06-18T15:13:54Z",
+    "description": "React Native toolkit for Auth0 API",
+    "topics": "dx-sdk,react-native"
+  }
+}

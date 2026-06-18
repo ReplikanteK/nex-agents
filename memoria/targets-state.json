@@ -1,7 +1,15 @@
 {
-  "last_scan": "2026-06-06T05:35:28Z",
+  "last_scan": "2026-06-18T20:23:08Z",
   "targets": {
     "hackerone": [
+      {
+        "name": "Agoda Public",
+        "url": "https://hackerone.com/agoda-public"
+      },
+      {
+        "name": "Epic Games VDP",
+        "url": "https://hackerone.com/epicgames-vdp"
+      },
       {
         "name": "PhonePe",
         "url": "https://hackerone.com/phonepe_vdp"
@@ -475,10 +483,6 @@
         "url": "https://hackerone.com/brightspeed"
       },
       {
-        "name": "AboitizPower",
-        "url": "https://hackerone.com/aboitizpower_corporation"
-      },
-      {
         "name": "Tools for Humanity",
         "url": "https://hackerone.com/toolsforhumanity"
       },
@@ -601,10 +605,6 @@
       {
         "name": "Mergify",
         "url": "https://hackerone.com/mergify"
-      },
-      {
-        "name": "Zabbix",
-        "url": "https://hackerone.com/zabbix"
       },
       {
         "name": "Coinhako",
@@ -1203,10 +1203,6 @@
         "url": "https://hackerone.com/overloop"
       },
       {
-        "name": "JNJ Mobile",
-        "url": "https://hackerone.com/jnj_mobile"
-      },
-      {
         "name": "MTN Group",
         "url": "https://hackerone.com/mtn_group"
       },
@@ -1407,6 +1403,10 @@
         "url": "https://hackerone.com/ibm"
       },
       {
+        "name": "arkadiyt-projects",
+        "url": "https://hackerone.com/arkadiyt-projects"
+      },
+      {
         "name": "Cosmos",
         "url": "https://hackerone.com/cosmos"
       },
@@ -1587,6 +1587,10 @@
         "url": "https://hackerone.com/quora"
       },
       {
+        "name": "Brave Software",
+        "url": "https://hackerone.com/brave"
+      },
+      {
         "name": "PortSwigger Web Security",
         "url": "https://hackerone.com/portswigger"
       },
@@ -1641,6 +1645,10 @@
       {
         "name": "Wealthsimple",
         "url": "https://hackerone.com/wealthsimple"
+      },
+      {
+        "name": "Home Bargains",
+        "url": "https://hackerone.com/homebargains"
       },
       {
         "name": "Eternal",
@@ -1837,6 +1845,10 @@
         "url": "https://bugcrowd.com/engagements/CCData-mbb-og"
       },
       {
+        "name": "Jaanga Marketplace Bug Bounty",
+        "url": "https://bugcrowd.com/engagements/JaangaInc-mbb-market"
+      },
+      {
         "name": "Acorns Grow, Inc.",
         "url": "https://bugcrowd.com/engagements/acorns"
       },
@@ -1851,6 +1863,10 @@
       {
         "name": "Aiven Managed Bug Bounty",
         "url": "https://bugcrowd.com/engagements/aiven-mbb-og"
+      },
+      {
+        "name": "Appsvio Marketplace Bug Bounty",
+        "url": "https://bugcrowd.com/engagements/appsvio"
       },
       {
         "name": "Arlo Cash Rewards",
@@ -1939,6 +1955,10 @@
       {
         "name": "Bolt Technology OÜ",
         "url": "https://bugcrowd.com/engagements/bolt-og"
+      },
+      {
+        "name": "Broken Build Bug Bounty",
+        "url": "https://bugcrowd.com/engagements/brokenbuild"
       },
       {
         "name": "Bugcrowd",
@@ -2057,8 +2077,20 @@
         "url": "https://bugcrowd.com/engagements/devacrobats-market"
       },
       {
+        "name": "Deviniti",
+        "url": "https://bugcrowd.com/engagements/deviniti"
+      },
+      {
         "name": "Directly",
         "url": "https://bugcrowd.com/engagements/directly"
+      },
+      {
+        "name": "Dutch Beginners ZZP Marketplace Managed Bug Bounty Engagement",
+        "url": "https://bugcrowd.com/engagements/dutch-beginners-market"
+      },
+      {
+        "name": "Easy Agile",
+        "url": "https://bugcrowd.com/engagements/easyagile"
       },
       {
         "name": "eazyBI",
@@ -2133,6 +2165,10 @@
         "url": "https://bugcrowd.com/engagements/glean-technologies-public"
       },
       {
+        "name": "Gliffy",
+        "url": "https://bugcrowd.com/engagements/gliffy"
+      },
+      {
         "name": "HostGator LATAM Bug Bounty",
         "url": "https://bugcrowd.com/engagements/hostgator-latam-bb"
       },
@@ -2187,6 +2223,10 @@
       {
         "name": "Izymes",
         "url": "https://bugcrowd.com/engagements/izymes"
+      },
+      {
+        "name": "J-Tricks - Marketplace Bug Bounty Program",
+        "url": "https://bugcrowd.com/engagements/j-tricks"
       },
       {
         "name": "Jora",
@@ -2335,10 +2375,6 @@
       {
         "name": "NEOGOV Public Assets",
         "url": "https://bugcrowd.com/engagements/neohrms"
-      },
-      {
-        "name": "NETGEAR Cash Rewards",
-        "url": "https://bugcrowd.com/engagements/netgear"
       },
       {
         "name": "New Relic Public Bug Bounty Program",
@@ -2811,6 +2847,14 @@
         "url": "https://www.intigriti.com/programs/innovapost/innovapost/detail"
       },
       {
+        "name": "Capital.com",
+        "url": "https://www.intigriti.com/programs/capitalcom/capitalcom/detail"
+      },
+      {
+        "name": "Challenge 0626",
+        "url": "https://www.intigriti.com/programs/intigriti/challenge0626/detail"
+      },
+      {
         "name": "Citymesh Responsible Vulnerability Disclosure Program",
         "url": "https://www.intigriti.com/programs/citymesh/responsiblevulnerabilitydisclosureprogram/detail"
       },
@@ -2955,6 +2999,10 @@
         "url": "https://www.intigriti.com/programs/aswatson/kruidvat/detail"
       },
       {
+        "name": "Lansweeper Bug Bounty Program",
+        "url": "https://www.intigriti.com/programs/lansweeper/lansweeper1/detail"
+      },
+      {
         "name": "Libelle",
         "url": "https://www.intigriti.com/programs/dpgm/libelle/detail"
       },
@@ -2971,8 +3019,16 @@
         "url": "https://www.intigriti.com/programs/aswatson/marionnaud/detail"
       },
       {
+        "name": "Monzo Public Bug Bounty Program",
+        "url": "https://www.intigriti.com/programs/monzobank/monzopublicbugbountyprogram/detail"
+      },
+      {
         "name": "Moralis VDP",
         "url": "https://www.intigriti.com/programs/moralis/moralisio/detail"
+      },
+      {
+        "name": "NVIDIA Public Bug Bounty",
+        "url": "https://www.intigriti.com/programs/nvidia/nvidiapublicbugbounty/detail"
       },
       {
         "name": "NVIDIA Vulnerability Disclosure Program",
@@ -2983,8 +3039,8 @@
         "url": "https://www.intigriti.com/programs/nestl%C3%A9/nestl%C3%A9vdp/detail"
       },
       {
-        "name": "Nexuzhealth",
-        "url": "https://www.intigriti.com/programs/nexuzhealth/nexuzhealth/detail"
+        "name": "Nexo",
+        "url": "https://www.intigriti.com/programs/nexo/nexo/detail"
       },
       {
         "name": "Nexuzhealth VDP",
@@ -3071,6 +3127,10 @@
         "url": "https://www.intigriti.com/programs/simscale/simscale/detail"
       },
       {
+        "name": "Skoda Auto Bug Bounty Program",
+        "url": "https://www.intigriti.com/programs/skodaauto/skodaautoprivatebugbountyprogram/detail"
+      },
+      {
         "name": "Social Deal",
         "url": "https://www.intigriti.com/programs/socialdeal/socialdeal/detail"
       },
@@ -3107,8 +3167,16 @@
         "url": "https://www.intigriti.com/programs/tomorrowland/tomorrowland/detail"
       },
       {
+        "name": "Torfs",
+        "url": "https://www.intigriti.com/programs/torfs/torfs/detail"
+      },
+      {
         "name": "Trouw",
         "url": "https://www.intigriti.com/programs/dpgm/trouw/detail"
+      },
+      {
+        "name": "TrueLayer",
+        "url": "https://www.intigriti.com/programs/truelayer/truelayer/detail"
       },
       {
         "name": "Trusted Firmware",
@@ -3258,10 +3326,6 @@
       },
       {
         "name": "Bug Bounty Program - BlaBlaCar",
-        "url": null
-      },
-      {
-        "name": "Bug Bounty SNCF Connect",
         "url": null
       },
       {
