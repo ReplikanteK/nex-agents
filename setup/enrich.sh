@@ -333,7 +333,7 @@ echo "]" >> "$RANKED_FILE.tmp"
 echo "[enrich] Base scoring done: $SCORED programs scored"
 echo "[enrich] Base scoring done: $SCORED programs scored" >> "$ENRICH_LOG"
 
-jq -s 'add | sort_by(-.score) | .[:10]' "$RANKED_FILE.tmp" 2>/dev/null > "$RANKED_FILE" || echo '[]' > "$RANKED_FILE"
+jq 'sort_by(-.score) | .[:10]' "$RANKED_FILE.tmp" 2>/dev/null > "$RANKED_FILE" || echo '[]' > "$RANKED_FILE"
 rm -f "$RANKED_FILE.tmp"
 
 # =====================================================================

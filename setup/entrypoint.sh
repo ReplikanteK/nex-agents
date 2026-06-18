@@ -311,7 +311,7 @@ echo "]" >> "$RANKED_FILE.tmp"
 echo "[agent3] Enrichment done: $api_calls API calls, $api_ok OK, $api_fail failed, $github_found repos scored (cache: $(jq 'length' "$REPO_CACHE" 2>/dev/null || echo 0) repos)" | tee -a "$ENRICH_LOG"
 
 # Sort by score descending and take top 10
-jq -s 'add | sort_by(-.score) | .[:10]' "$RANKED_FILE.tmp" 2>/dev/null > "$RANKED_FILE" || echo '[]' > "$RANKED_FILE"
+jq 'sort_by(-.score) | .[:10]' "$RANKED_FILE.tmp" 2>/dev/null > "$RANKED_FILE" || echo '[]' > "$RANKED_FILE"
 rm -f "$RANKED_FILE.tmp"
 
 TOP_CANDIDATES=$(jq -r '.[0] // empty' "$RANKED_FILE" 2>/dev/null)
