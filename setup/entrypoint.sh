@@ -301,7 +301,7 @@ for platform in hackerone bugcrowd intigriti yeswehack; do
 
       echo "[agent3] SCORE: $pname ($BPLABEL) -> $score (lang=$lang stars=$stars surface=$surface_type)" >> "$ENRICH_LOG"
 
-      entry="{\"name\":$(echo "$pname" | jq -Rs .),\"platform\":\"$BPLABEL\",\"url\":\"$purl\",\"repo\":\"$ghurl\",\"language\":\"$lang\",\"size_kb\":$size,\"stars\":$stars,\"pushed_at\":\"$pushed\",\"score\":$score,\"surface_type\":$surface_type,\"bounty\":\"$bounty_status\",\"scored_at\":\"$TS\"}"
+      entry=$(jq -nc --arg name "$pname" --arg platform "$BPLABEL" --arg url "$purl" --arg repo "$ghurl" --arg language "$lang" --argjson size "$size" --argjson stars "$stars" --arg pushed_at "$pushed" --argjson score "$score" --argjson surface_type "$surface_type" --arg bounty "$bounty_status" --arg ts "$TS" '{name:$name,platform:$platform,url:$url,repo:$repo,language:$language,size_kb:$size,stars:$stars,pushed_at:$pushed_at,score:$score,surface_type:$surface_type,bounty:$bounty,scored_at:$ts}')
       if [ "$first" = true ]; then echo "$entry" >> "$RANKED_FILE.tmp"; first=false; else echo ",$entry" >> "$RANKED_FILE.tmp"; fi
     done
   done

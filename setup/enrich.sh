@@ -324,7 +324,7 @@ while IFS= read -r prog; do
   
   echo "[enrich] BASE_SCORE: $name ($platform) -> $base_score (bounty=$max_bounty wc=$has_wildcard mg=$managed)" >> "$ENRICH_LOG"
   
-  entry="{\"name\":$(echo "$name" | jq -Rs .),\"platform\":\"$platform\",\"url\":\"$url\",\"repo\":null,\"language\":null,\"stars\":0,\"score\":$base_score,\"base_score\":$base_score,\"github_bonus\":0,\"max_bounty\":$max_bounty,\"has_wildcard\":$has_wildcard,\"managed\":$managed,\"assets_count\":$assets_count,\"scored_at\":\"$TS\"}"
+  entry=$(jq -nc --arg name "$name" --arg platform "$platform" --arg url "$url" --argjson base_score "$base_score" --argjson max_bounty "$max_bounty" --argjson has_wildcard "$has_wildcard" --argjson managed "$managed" --argjson assets_count "$assets_count" --arg ts "$TS" '{name:$name,platform:$platform,url:$url,repo:null,language:null,stars:0,score:$base_score,base_score:$base_score,github_bonus:0,max_bounty:$max_bounty,has_wildcard:$has_wildcard,managed:$managed,assets_count:$assets_count,scored_at:$ts}')
   if [ "$first" = true ]; then echo "$entry" >> "$RANKED_FILE.tmp"; first=false; else echo ",$entry" >> "$RANKED_FILE.tmp"; fi
   SCORED=$((SCORED + 1))
 done < "$ALL_PROGRAMS_FILE"
