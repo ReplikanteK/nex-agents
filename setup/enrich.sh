@@ -477,7 +477,7 @@ fi
 echo "[enrich] Merging GitHub bonus into final scores..."
 
 # Create temp file with updated scores
-jq -s '.' "$RANKED_FILE.tmp" > /tmp/ranked-base.json
+jq '.' "$RANKED_FILE.tmp" > /tmp/ranked-base.json
 
 # For each program with GitHub data, add bonus
 while IFS='|' read -r owner_repo; do
