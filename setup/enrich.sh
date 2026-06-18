@@ -334,7 +334,6 @@ echo "[enrich] Base scoring done: $SCORED programs scored"
 echo "[enrich] Base scoring done: $SCORED programs scored" >> "$ENRICH_LOG"
 
 jq 'sort_by(-.score) | .[:10]' "$RANKED_FILE.tmp" 2>/dev/null > "$RANKED_FILE" || echo '[]' > "$RANKED_FILE"
-rm -f "$RANKED_FILE.tmp"
 
 # =====================================================================
 # GITHUB ENRICHMENT (optional bonus for top candidates)
@@ -362,7 +361,7 @@ for platform in hackerone bugcrowd intigriti yeswehack; do
   while IFS= read -r target_name; do
     [ -z "$target_name" ] && continue
     # Find this program in JSON and extract GitHub URLs
-    jq -r --arg name "$target_name" '
+    jq -rc --arg name "$target_name" '
       .[] | select(.name == $name and .targets.in_scope != null) |
       {name: .name, url: .url,
        assets: [.targets.in_scope[] |
