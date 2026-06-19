@@ -1,30 +1,18 @@
 {
-  "scan_date": "2026-06-18T20:23:08Z",
-  "date": "2026-06-18",
+  "scan_date": "2026-06-19T06:49:40Z",
+  "date": "2026-06-19",
   "task": "",
   "platforms": {
-    "hackerone": 459,
+    "hackerone": 458,
     "bugcrowd": 233,
-    "intigriti": 131,
+    "intigriti": 129,
     "yeswehack": 65
   },
   "top_candidate": {
-    "name": "Auth0 by Okta",
-    "score": 83
+    "name": "Atlassian",
+    "score": 70
   },
   "ranked_targets": [
-    {
-      "name": "Auth0 by Okta",
-      "platform": "",
-      "repo": "https://github.com/auth0/react-native-auth0",
-      "language": "TypeScript",
-      "score": 83,
-      "base_score": 70,
-      "github_bonus": 13,
-      "max_bounty": 50000,
-      "has_wildcard": true,
-      "managed": true
-    },
     {
       "name": "Atlassian",
       "platform": "",
@@ -34,6 +22,18 @@
       "base_score": 70,
       "github_bonus": 0,
       "max_bounty": 12000,
+      "has_wildcard": true,
+      "managed": true
+    },
+    {
+      "name": "Auth0 by Okta",
+      "platform": "",
+      "repo": null,
+      "language": null,
+      "score": 70,
+      "base_score": 70,
+      "github_bonus": 0,
+      "max_bounty": 50000,
       "has_wildcard": true,
       "managed": true
     },

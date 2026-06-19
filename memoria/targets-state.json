@@ -1,5 +1,5 @@
 {
-  "last_scan": "2026-06-18T20:23:08Z",
+  "last_scan": "2026-06-19T06:49:40Z",
   "targets": {
     "hackerone": [
       {
@@ -1587,10 +1587,6 @@
         "url": "https://hackerone.com/quora"
       },
       {
-        "name": "Brave Software",
-        "url": "https://hackerone.com/brave"
-      },
-      {
         "name": "PortSwigger Web Security",
         "url": "https://hackerone.com/portswigger"
       },
@@ -3063,10 +3059,6 @@
         "url": "https://www.intigriti.com/programs/orbia/orbiavdp/detail"
       },
       {
-        "name": "PDQ bug bounty program",
-        "url": "https://www.intigriti.com/programs/pdq/pdqcomprivate/detail"
-      },
-      {
         "name": "PeopleCert VDP",
         "url": "https://www.intigriti.com/programs/peoplecert/peoplecert/detail"
       },
@@ -3173,10 +3165,6 @@
       {
         "name": "Trouw",
         "url": "https://www.intigriti.com/programs/dpgm/trouw/detail"
-      },
-      {
-        "name": "TrueLayer",
-        "url": "https://www.intigriti.com/programs/truelayer/truelayer/detail"
       },
       {
         "name": "Trusted Firmware",

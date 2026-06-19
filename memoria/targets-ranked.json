@@ -1,21 +1,5 @@
 [
   {
-    "name": "Auth0 by Okta",
-    "platform": "",
-    "url": "https://bugcrowd.com/engagements/auth0-okta",
-    "repo": "https://github.com/auth0/react-native-auth0",
-    "language": "TypeScript",
-    "stars": 544,
-    "score": 83,
-    "base_score": 70,
-    "github_bonus": 13,
-    "max_bounty": 50000,
-    "has_wildcard": true,
-    "managed": true,
-    "assets_count": 0,
-    "scored_at": "2026-06-18T20:23:08Z"
-  },
-  {
     "name": "Atlassian",
     "platform": "",
     "url": "https://bugcrowd.com/engagements/atlassian",
@@ -29,7 +13,23 @@
     "has_wildcard": true,
     "managed": true,
     "assets_count": 0,
-    "scored_at": "2026-06-18T20:23:08Z"
+    "scored_at": "2026-06-19T06:49:40Z"
+  },
+  {
+    "name": "Auth0 by Okta",
+    "platform": "",
+    "url": "https://bugcrowd.com/engagements/auth0-okta",
+    "repo": null,
+    "language": null,
+    "stars": 0,
+    "score": 70,
+    "base_score": 70,
+    "github_bonus": 0,
+    "max_bounty": 50000,
+    "has_wildcard": true,
+    "managed": true,
+    "assets_count": 0,
+    "scored_at": "2026-06-19T06:49:40Z"
   },
   {
     "name": "Bitdefender",
@@ -45,7 +45,7 @@
     "has_wildcard": true,
     "managed": true,
     "assets_count": 0,
-    "scored_at": "2026-06-18T20:23:08Z"
+    "scored_at": "2026-06-19T06:49:40Z"
   },
   {
     "name": "Bugcrowd",
@@ -61,7 +61,7 @@
     "has_wildcard": true,
     "managed": true,
     "assets_count": 0,
-    "scored_at": "2026-06-18T20:23:08Z"
+    "scored_at": "2026-06-19T06:49:40Z"
   },
   {
     "name": "Canva",
@@ -77,7 +77,7 @@
     "has_wildcard": true,
     "managed": true,
     "assets_count": 0,
-    "scored_at": "2026-06-18T20:23:08Z"
+    "scored_at": "2026-06-19T06:49:40Z"
   },
   {
     "name": "Cash App",
@@ -93,7 +93,7 @@
     "has_wildcard": true,
     "managed": true,
     "assets_count": 0,
-    "scored_at": "2026-06-18T20:23:08Z"
+    "scored_at": "2026-06-19T06:49:40Z"
   },
   {
     "name": "Chime Managed Bug Bounty Engagement",
@@ -109,7 +109,7 @@
     "has_wildcard": true,
     "managed": true,
     "assets_count": 0,
-    "scored_at": "2026-06-18T20:23:08Z"
+    "scored_at": "2026-06-19T06:49:40Z"
   },
   {
     "name": "Cisco Meraki",
@@ -125,7 +125,7 @@
     "has_wildcard": true,
     "managed": true,
     "assets_count": 0,
-    "scored_at": "2026-06-18T20:23:08Z"
+    "scored_at": "2026-06-19T06:49:40Z"
   },
   {
     "name": "eToro Managed Bug Bounty Engagement",
@@ -141,7 +141,7 @@
     "has_wildcard": true,
     "managed": true,
     "assets_count": 0,
-    "scored_at": "2026-06-18T20:23:08Z"
+    "scored_at": "2026-06-19T06:49:40Z"
   },
   {
     "name": "Etsy",
@@ -157,6 +157,6 @@
     "has_wildcard": true,
     "managed": true,
     "assets_count": 0,
-    "scored_at": "2026-06-18T20:23:08Z"
+    "scored_at": "2026-06-19T06:49:40Z"
   }
 ]
