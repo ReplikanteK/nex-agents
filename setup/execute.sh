@@ -94,23 +94,43 @@ elif [ "$TOP_SCORE" -ge 65 ] && [ "$OPENCODE_AVAIL" -eq 1 ]; then
   TARGET_NAME=$(echo "$TOP_CANDIDATES" | jq -r '.name')
   TARGET_REPO=$(echo "$TOP_CANDIDATES" | jq -r '.repo')
   TARGET_LANG=$(echo "$TOP_CANDIDATES" | jq -r '.language')
+  TARGET_URL=$(echo "$TOP_CANDIDATES" | jq -r '.url // empty')
 
-  # Phase 1: Scout triage
-  SCOUT_FILE="reports/scout-${DATE}-${TARGET_NAME// /-}.md"
-  echo "[execute] Phase 1: Scout triage on $TARGET_NAME..."
-  OPENCODE_DANGEROUSLY_SKIP_PERMISSIONS=true timeout 300 opencode run --dangerously-skip-permissions \
-    "Use the scout subagent to perform reconnaissance on this target. Repo: $TARGET_REPO, Language: $TARGET_LANG. Produce a structured recon report with: tech stack, key modules, auth mechanisms, API surface, and recommended test vectors. Output to: $SCOUT_FILE" \
-    -f "$SCOUT_FILE" 2>&1 || true
+  # Validate repo exists and is cloneable
+  HAS_REPO="false"
+  if [ "$TARGET_REPO" != "null" ] && [ -n "$TARGET_REPO" ]; then
+    if git ls-remote "https://github.com/$TARGET_REPO.git" &>/dev/null; then
+      HAS_REPO="true"
+    fi
+  fi
 
-  # Phase 2: Code review if scout report exists
-  REVIEW_FILE="reports/codereview-${DATE}-${TARGET_NAME// /-}.md"
-  echo "[execute] Phase 2: Code review on $TARGET_NAME..."
-  auto_create_task "codereview-${DATE}-${TARGET_NAME// /-}" "Code review of $TARGET_NAME" \
+  if [ "$HAS_REPO" = "true" ]; then
+    # Phase 1: Scout triage (repo-based)
+    SCOUT_FILE="reports/scout-${DATE}-${TARGET_NAME// /-}.md"
+    echo "[execute] Phase 1: Scout triage on $TARGET_NAME (repo: $TARGET_REPO)..."
+    OPENCODE_DANGEROUSLY_SKIP_PERMISSIONS=true timeout 300 opencode run --dangerously-skip-permissions \
+      "Use the scout subagent to perform reconnaissance on this target. Repo: $TARGET_REPO, Language: $TARGET_LANG. Produce a structured recon report with: tech stack, key modules, auth mechanisms, API surface, and recommended test vectors. Output to: $SCOUT_FILE" \
+      -f "$SCOUT_FILE" 2>&1 || true
+
+    # Phase 2: Code review
+    REVIEW_FILE="reports/codereview-${DATE}-${TARGET_NAME// /-}.md"
+    echo "[execute] Phase 2: Code review on $TARGET_NAME..."
+    auto_create_task "codereview-${DATE}-${TARGET_NAME// /-}" "Code review of $TARGET_NAME" \
 "### Objetivo
-Clona $TARGET_REPO y realiza un code review de seguridad.
+Clona https://github.com/$TARGET_REPO y realiza un code review de seguridad.
 Enfoque: input parsing, auth logic, trust boundary crossings, logging de datos sensibles.
 Lenguaje: $TARGET_LANG. Aplica patrones del skill correspondiente.
 Output: $REVIEW_FILE"
+  else
+    # No repo available - web recon only
+    SCOUT_FILE="reports/webrecon-${DATE}-${TARGET_NAME// /-}.md"
+    echo "[execute] No repo for $TARGET_NAME. Running web recon instead..."
+    OPENCODE_DANGEROUSLY_SKIP_PERMISSIONS=true timeout 300 opencode run --dangerously-skip-permissions \
+      "Perform web reconnaissance on this bounty target: $TARGET_NAME. Analyze their public-facing applications, API endpoints, technology stack (via HTTP headers, JS files, etc.), and identify potential attack surface. Check for common misconfigs, exposed panels, and interesting endpoints. Output to: $SCOUT_FILE" \
+      -f "$SCOUT_FILE" 2>&1 || true
+    
+    echo "[execute] Skipping code review (no repo available). Web recon saved."
+  fi
 
 elif [ "$OPENCODE_AVAIL" -eq 1 ]; then
   echo "[execute] No target with score ≥65. Light day."
