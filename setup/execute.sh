@@ -120,7 +120,10 @@ elif [ "$TOP_SCORE" -ge 65 ] && [ "$OPENCODE_AVAIL" -eq 1 ]; then
 Clona https://github.com/$TARGET_REPO y realiza un code review de seguridad.
 Enfoque: input parsing, auth logic, trust boundary crossings, logging de datos sensibles.
 Lenguaje: $TARGET_LANG. Aplica patrones del skill correspondiente.
-Output: $REVIEW_FILE"
+Output: $REVIEW_FILE
+
+### Nota
+Si el repo no es clonable, haz web recon en su lugar y guarda en $SCOUT_FILE"
   else
     # No repo available - web recon only
     SCOUT_FILE="reports/webrecon-${DATE}-${TARGET_NAME// /-}.md"
