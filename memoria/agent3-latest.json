@@ -1,11 +1,11 @@
 {
-  "scan_date": "2026-06-20T05:58:34Z",
-  "date": "2026-06-20",
+  "scan_date": "2026-06-21T06:30:14Z",
+  "date": "2026-06-21",
   "task": "",
   "platforms": {
     "hackerone": 457,
     "bugcrowd": 233,
-    "intigriti": 129,
+    "intigriti": 128,
     "yeswehack": 65
   },
   "top_candidate": {
