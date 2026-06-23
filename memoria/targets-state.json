@@ -1,5 +1,5 @@
 {
-  "last_scan": "2026-06-22T07:01:36Z",
+  "last_scan": "2026-06-23T05:48:33Z",
   "targets": {
     "hackerone": [
       {
@@ -21,10 +21,6 @@
       {
         "name": "Clear Street Disclosure Program",
         "url": "https://hackerone.com/clear_street_vdp"
-      },
-      {
-        "name": "Gogo VDP",
-        "url": "https://hackerone.com/gogo_vdp"
       },
       {
         "name": "Coupang Taiwan",
@@ -637,10 +633,6 @@
       {
         "name": "City of Los Angeles",
         "url": "https://hackerone.com/city_of_los_angeles_vdp"
-      },
-      {
-        "name": "Dynamic Labs",
-        "url": "https://hackerone.com/dynamic_labs"
       },
       {
         "name": "ResMed",
@@ -1581,6 +1573,10 @@
       {
         "name": "Quora",
         "url": "https://hackerone.com/quora"
+      },
+      {
+        "name": "Brave Software",
+        "url": "https://hackerone.com/brave"
       },
       {
         "name": "PortSwigger Web Security",
@@ -2843,10 +2839,6 @@
         "url": "https://www.intigriti.com/programs/capitalcom/capitalcom/detail"
       },
       {
-        "name": "Challenge 0626",
-        "url": "https://www.intigriti.com/programs/intigriti/challenge0626/detail"
-      },
-      {
         "name": "Citymesh Responsible Vulnerability Disclosure Program",
         "url": "https://www.intigriti.com/programs/citymesh/responsiblevulnerabilitydisclosureprogram/detail"
       },
@@ -3011,6 +3003,10 @@
         "url": "https://www.intigriti.com/programs/mv/mobilevikings/detail"
       },
       {
+        "name": "Monzo Public Bug Bounty Program",
+        "url": "https://www.intigriti.com/programs/monzobank/monzopublicbugbountyprogram/detail"
+      },
+      {
         "name": "Moralis VDP",
         "url": "https://www.intigriti.com/programs/moralis/moralisio/detail"
       },
@@ -3031,6 +3027,10 @@
         "url": "https://www.intigriti.com/programs/nexo/nexo/detail"
       },
       {
+        "name": "Nexuzhealth",
+        "url": "https://www.intigriti.com/programs/nexuzhealth/nexuzhealth/detail"
+      },
+      {
         "name": "Nexuzhealth VDP",
         "url": "https://www.intigriti.com/programs/nexuzhealth/nexuzhealthvdp/detail"
       },
@@ -3049,6 +3049,10 @@
       {
         "name": "Orbia Responsible Disclosure",
         "url": "https://www.intigriti.com/programs/orbia/orbiavdp/detail"
+      },
+      {
+        "name": "PDQ bug bounty program",
+        "url": "https://www.intigriti.com/programs/pdq/pdqcomprivate/detail"
       },
       {
         "name": "PeopleCert VDP",
@@ -3197,14 +3201,6 @@
       {
         "name": "Venly",
         "url": "https://www.intigriti.com/programs/arkane/arkanenetwork/detail"
-      },
-      {
-        "name": "Veriff Bug Bounty",
-        "url": "https://www.intigriti.com/programs/veriff/veriffbugbounty/detail"
-      },
-      {
-        "name": "Vinted - Bug Bounty Program",
-        "url": "https://www.intigriti.com/programs/vinted/vinted-bugbountyprogram/detail"
       },
       {
         "name": "Visma",
