@@ -1,5 +1,5 @@
 {
-  "last_scan": "2026-06-23T05:48:33Z",
+  "last_scan": "2026-06-24T05:46:04Z",
   "targets": {
     "hackerone": [
       {
@@ -21,6 +21,10 @@
       {
         "name": "Clear Street Disclosure Program",
         "url": "https://hackerone.com/clear_street_vdp"
+      },
+      {
+        "name": "Gogo VDP",
+        "url": "https://hackerone.com/gogo_vdp"
       },
       {
         "name": "Coupang Taiwan",
@@ -179,7 +183,7 @@
         "url": "https://hackerone.com/qinetiq"
       },
       {
-        "name": "Kraken Tech",
+        "name": "Kraken Tech (VDP)",
         "url": "https://hackerone.com/kraken-tech"
       },
       {
@@ -637,6 +641,10 @@
       {
         "name": "ResMed",
         "url": "https://hackerone.com/resmed"
+      },
+      {
+        "name": "Yuga Labs",
+        "url": "https://hackerone.com/yuga_labs"
       },
       {
         "name": "Modern Treasury",
@@ -2545,10 +2553,6 @@
         "url": "https://bugcrowd.com/engagements/seek-com"
       },
       {
-        "name": "Sendbird",
-        "url": "https://bugcrowd.com/engagements/sendbird-mbb"
-      },
-      {
         "name": "Shipwire",
         "url": "https://bugcrowd.com/engagements/shipwire"
       },
@@ -2947,6 +2951,10 @@
         "url": "https://www.intigriti.com/programs/houseofhr/houseofhrvulnerabilitydisclosureprogram/detail"
       },
       {
+        "name": "Housing Application (huisvestingsapp) Bug Bounty Program",
+        "url": "https://www.intigriti.com/programs/kuleuven/huisvesting/detail"
+      },
+      {
         "name": "Humo",
         "url": "https://www.intigriti.com/programs/dpgm/humo/detail"
       },
@@ -2977,10 +2985,6 @@
       {
         "name": "Kruidvat",
         "url": "https://www.intigriti.com/programs/aswatson/kruidvat/detail"
-      },
-      {
-        "name": "Lansweeper Bug Bounty Program",
-        "url": "https://www.intigriti.com/programs/lansweeper/lansweeper1/detail"
       },
       {
         "name": "Libelle",
@@ -3027,10 +3031,6 @@
         "url": "https://www.intigriti.com/programs/nexo/nexo/detail"
       },
       {
-        "name": "Nexuzhealth",
-        "url": "https://www.intigriti.com/programs/nexuzhealth/nexuzhealth/detail"
-      },
-      {
         "name": "Nexuzhealth VDP",
         "url": "https://www.intigriti.com/programs/nexuzhealth/nexuzhealthvdp/detail"
       },
@@ -3061,6 +3061,10 @@
       {
         "name": "Personio",
         "url": "https://www.intigriti.com/programs/personio/personio/detail"
+      },
+      {
+        "name": "Port of Antwerp-Bruges",
+        "url": "https://www.intigriti.com/programs/portofantwerp/portofantwerp/detail"
       },
       {
         "name": "Proof.com VDP",
