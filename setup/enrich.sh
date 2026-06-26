@@ -103,9 +103,9 @@ diff_platform() {
     new_str=$(echo "$now" | head -10)
   fi
   if [ -n "$new_str" ] || [ -n "$rem_str" ]; then
-    DIFF_SECTION="${DIFF_SECTION}### ${label}\n"
-    [ -n "$new_str" ] && DIFF_SECTION="${DIFF_SECTION}**New ($(echo "$new_str" | wc -l):**\n\`\`\`\n$new_str\n\`\`\`\n"
-    [ -n "$rem_str" ] && DIFF_SECTION="${DIFF_SECTION}**Removed ($(echo "$rem_str" | wc -l):**\n\`\`\`\n$rem_str\n\`\`\`\n"
+    DIFF_SECTION="${DIFF_SECTION}### ${label}\\n"
+    [ -n "$new_str" ] && DIFF_SECTION="${DIFF_SECTION}**New ($(echo "$new_str" | wc -l):**\\n\`\\`\\`\n$new_str\n\`\\`\\`\n"
+    [ -n "$rem_str" ] && DIFF_SECTION="${DIFF_SECTION}**Removed ($(echo "$rem_str" | wc -l):**\\n\`\\`\\`\n$rem_str\n\`\\`\\`\n"
   fi
 }
 diff_platform "HackerOne" "$H1_NOW" "$H1_PREV"
@@ -130,9 +130,10 @@ echo "[enrich] Rate limit at start: $RATE_REMAINING" >> "$ENRICH_LOG"
 # Extract ALL programs with full data for base scoring
 extract_programs_full() {
   local json="$1" platform="$2"
-  jq -rc '
+  jq -rc --arg platform "$platform" '
     [.[] | select(.targets.in_scope != null) |
      {name: .name, url: .url,
+      platform: $platform,
       offers_bounties: (.offers_bounties // false),
       managed: (.managed_program // .managed_by_bugcrowd // false),
       response_efficiency: (.response_efficiency_percentage // null),
@@ -144,7 +145,7 @@ extract_programs_full() {
         (.asset_identifier // .target // .uri // .endpoint // "") |
         select(test("github\\.com/[A-Za-z0-9_.-]+/[A-Za-z0-9_*.+-]+"))]}]
     | .[] |
-    {name, url, offers_bounties, managed, response_efficiency, max_bounty, min_bounty, assets_count, has_wildcard, github_urls}
+    {name, url, platform, offers_bounties, managed, response_efficiency, max_bounty, min_bounty, assets_count, has_wildcard, github_urls}
   ' "$json" 2>> "$ENRICH_LOG"
 }
 
@@ -548,11 +549,11 @@ BRAND_NEW=$(comm -23 <(echo "$ALL_NOW") <(echo "$ALL_PREV") 2>/dev/null | head -
 QUICK_SCAN=""
 if [ -n "$BRAND_NEW" ] && command -v curl &>/dev/null; then
   echo "[enrich] Quick-scanning new targets..."
-  QUICK_SCAN="## Quick Scan (new targets)\n| Target | URL | HTTP |\n|--------|-----|------|\n"
+  QUICK_SCAN="## Quick Scan (new targets)\\n| Target | URL | HTTP |\\n|--------|-----|------|\\n"
   while IFS='|' read -r name url; do
     [ -z "$name" ] && continue
     http=$(curl -sI -o /dev/null -w "%{http_code}" --connect-timeout 5 --max-time 5 "$url" 2>/dev/null || echo "ERR")
-    QUICK_SCAN="${QUICK_SCAN}| $name | $url | $http |\n"
+    QUICK_SCAN="${QUICK_SCAN}| $name | $url | $http |\\n"
   done <<< "$BRAND_NEW"
 fi
 
