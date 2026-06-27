@@ -4,20 +4,10 @@
   "instructions": [
     ".opencode/MEMORIA-BOUNDARIES.md"
   ],
-  "skills": [
-    ".opencode/skills/bounty-hunting.md",
-    ".opencode/skills/api-testing.md",
-    ".opencode/skills/web-security.md",
-    ".opencode/skills/code-review-c.md",
-    ".opencode/skills/code-review-java.md",
-    ".opencode/skills/code-review-pygo.md",
-    ".opencode/skills/code-review-rust.md",
-    ".opencode/skills/code-fuzzing-c.md"
-  ],
-  "agents": [
-    ".opencode/agent/scout.md",
-    ".opencode/agent/reviewer.md",
-    ".opencode/agent/fuzzer.md",
-    ".opencode/agent/writer.md"
-  ]
+  "skills": {
+    "paths": [
+      ".opencode/skills",
+      ".opencode/agent"
+    ]
+  }
 }
