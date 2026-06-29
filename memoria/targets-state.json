@@ -1,5 +1,5 @@
 {
-  "last_scan": "2026-06-28T05:57:26Z",
+  "last_scan": "2026-06-29T06:20:18Z",
   "targets": {
     "hackerone": [
       {
@@ -1199,10 +1199,6 @@
         "url": "https://hackerone.com/palo_alto_software"
       },
       {
-        "name": "Overloop",
-        "url": "https://hackerone.com/overloop"
-      },
-      {
         "name": "MTN Group",
         "url": "https://hackerone.com/mtn_group"
       },
@@ -1539,10 +1535,6 @@
         "url": "https://hackerone.com/disclosure-assistance"
       },
       {
-        "name": "Nord Security",
-        "url": "https://hackerone.com/nordsecurity"
-      },
-      {
         "name": "Lyst",
         "url": "https://hackerone.com/lyst"
       },
@@ -1577,10 +1569,6 @@
       {
         "name": "Quora",
         "url": "https://hackerone.com/quora"
-      },
-      {
-        "name": "Brave Software",
-        "url": "https://hackerone.com/brave"
       },
       {
         "name": "PortSwigger Web Security",
@@ -2561,10 +2549,6 @@
         "url": "https://bugcrowd.com/engagements/seek-com"
       },
       {
-        "name": "Shipwire",
-        "url": "https://bugcrowd.com/engagements/shipwire"
-      },
-      {
         "name": "SimpliSafe Managed Bug Bounty Engagement",
         "url": "https://bugcrowd.com/engagements/simplisafe"
       },
@@ -2765,12 +2749,12 @@
         "url": "https://bugcrowd.com/engagements/ynab"
       },
       {
-        "name": "Zendesk Managed Bug Bounty Engagement",
-        "url": "https://bugcrowd.com/engagements/zendesk"
-      },
-      {
         "name": "Zola Managed Bug Bounty ",
         "url": "https://bugcrowd.com/engagements/zola-mbb-og"
+      },
+      {
+        "name": "Bugcrowd Bug Bounty",
+        "url": "https://gov.bugcrowd.net/engagements/bugcrowd-mbb-og"
       }
     ],
     "intigriti": [
@@ -2813,10 +2797,6 @@
       {
         "name": "Axel Springer SE Vulnerability Disclosure Program",
         "url": "https://www.intigriti.com/programs/axelspringerse/axelspringersevulnerabilitydisclosureprogram/detail"
-      },
-      {
-        "name": "BMC",
-        "url": "https://www.intigriti.com/programs/randstad/bmc/detail"
       },
       {
         "name": "BMW Group",
@@ -2877,10 +2857,6 @@
       {
         "name": "DPG Media",
         "url": "https://www.intigriti.com/programs/dpgm/dpgmedia/detail"
-      },
-      {
-        "name": "DataCamp",
-        "url": "https://www.intigriti.com/programs/datacamp/datacamp/detail"
       },
       {
         "name": "De Morgen",
@@ -2995,10 +2971,6 @@
         "url": "https://www.intigriti.com/programs/aswatson/kruidvat/detail"
       },
       {
-        "name": "Lansweeper Bug Bounty Program",
-        "url": "https://www.intigriti.com/programs/lansweeper/lansweeper1/detail"
-      },
-      {
         "name": "LeakyJar Challenge",
         "url": "https://www.intigriti.com/programs/intigriti/challengeleakyjar/detail"
       },
@@ -3023,10 +2995,6 @@
         "url": "https://www.intigriti.com/programs/mv/mobilevikings/detail"
       },
       {
-        "name": "Monzo Public Bug Bounty Program",
-        "url": "https://www.intigriti.com/programs/monzobank/monzopublicbugbountyprogram/detail"
-      },
-      {
         "name": "Moralis VDP",
         "url": "https://www.intigriti.com/programs/moralis/moralisio/detail"
       },
@@ -3045,10 +3013,6 @@
       {
         "name": "Nexo",
         "url": "https://www.intigriti.com/programs/nexo/nexo/detail"
-      },
-      {
-        "name": "Nexuzhealth",
-        "url": "https://www.intigriti.com/programs/nexuzhealth/nexuzhealth/detail"
       },
       {
         "name": "Nexuzhealth VDP",
@@ -3071,20 +3035,12 @@
         "url": "https://www.intigriti.com/programs/orbia/orbiavdp/detail"
       },
       {
-        "name": "PDQ bug bounty program",
-        "url": "https://www.intigriti.com/programs/pdq/pdqcomprivate/detail"
-      },
-      {
         "name": "PeopleCert VDP",
         "url": "https://www.intigriti.com/programs/peoplecert/peoplecert/detail"
       },
       {
         "name": "Personio",
         "url": "https://www.intigriti.com/programs/personio/personio/detail"
-      },
-      {
-        "name": "Port of Antwerp-Bruges",
-        "url": "https://www.intigriti.com/programs/portofantwerp/portofantwerp/detail"
       },
       {
         "name": "Proof.com VDP",
@@ -3101,10 +3057,6 @@
       {
         "name": "RGF BE - VDP",
         "url": "https://www.intigriti.com/programs/rgfstaffing/rgfbe-vdp/detail"
-      },
-      {
-        "name": "RIPE NCC",
-        "url": "https://www.intigriti.com/programs/ripencc/ripencc/detail"
       },
       {
         "name": "Randstad",
@@ -3163,10 +3115,6 @@
         "url": "https://www.intigriti.com/programs/tekion/tekionvdp/detail"
       },
       {
-        "name": "Tempo-Team ",
-        "url": "https://www.intigriti.com/programs/randstad/tempo-team/detail"
-      },
-      {
         "name": "The Coca-Cola Company Vulnerability Disclosure Program",
         "url": "https://www.intigriti.com/programs/tccc/coca-cola/detail"
       },
@@ -3191,16 +3139,8 @@
         "url": "https://www.intigriti.com/programs/dpgm/trouw/detail"
       },
       {
-        "name": "TrueLayer",
-        "url": "https://www.intigriti.com/programs/truelayer/truelayer/detail"
-      },
-      {
         "name": "Trusted Firmware",
         "url": "https://www.intigriti.com/programs/arm/trustedfirmware/detail"
-      },
-      {
-        "name": "Twago",
-        "url": "https://www.intigriti.com/programs/randstad/twago/detail"
       },
       {
         "name": "Tweakers",
@@ -3289,10 +3229,6 @@
       {
         "name": "Wärtsilä Vulnerability Disclosure Program",
         "url": "https://www.intigriti.com/programs/wartsila/wartsila-vdp/detail"
-      },
-      {
-        "name": "Yacht",
-        "url": "https://www.intigriti.com/programs/randstad/yacht/detail"
       },
       {
         "name": "Yahoo Bug Bounty",

@@ -13,7 +13,7 @@
     "has_wildcard": true,
     "managed": true,
     "assets_count": 0,
-    "scored_at": "2026-06-28T05:57:26Z"
+    "scored_at": "2026-06-29T06:20:18Z"
   },
   {
     "name": "Auth0 by Okta",
@@ -29,7 +29,7 @@
     "has_wildcard": true,
     "managed": true,
     "assets_count": 0,
-    "scored_at": "2026-06-28T05:57:26Z"
+    "scored_at": "2026-06-29T06:20:18Z"
   },
   {
     "name": "Bitdefender",
@@ -45,7 +45,7 @@
     "has_wildcard": true,
     "managed": true,
     "assets_count": 0,
-    "scored_at": "2026-06-28T05:57:26Z"
+    "scored_at": "2026-06-29T06:20:18Z"
   },
   {
     "name": "Bugcrowd",
@@ -61,7 +61,7 @@
     "has_wildcard": true,
     "managed": true,
     "assets_count": 0,
-    "scored_at": "2026-06-28T05:57:26Z"
+    "scored_at": "2026-06-29T06:20:18Z"
   },
   {
     "name": "Canva",
@@ -77,7 +77,7 @@
     "has_wildcard": true,
     "managed": true,
     "assets_count": 0,
-    "scored_at": "2026-06-28T05:57:26Z"
+    "scored_at": "2026-06-29T06:20:18Z"
   },
   {
     "name": "Cash App",
@@ -93,7 +93,7 @@
     "has_wildcard": true,
     "managed": true,
     "assets_count": 0,
-    "scored_at": "2026-06-28T05:57:26Z"
+    "scored_at": "2026-06-29T06:20:18Z"
   },
   {
     "name": "Chime Managed Bug Bounty Engagement",
@@ -109,7 +109,7 @@
     "has_wildcard": true,
     "managed": true,
     "assets_count": 0,
-    "scored_at": "2026-06-28T05:57:26Z"
+    "scored_at": "2026-06-29T06:20:18Z"
   },
   {
     "name": "Cisco Meraki",
@@ -125,7 +125,7 @@
     "has_wildcard": true,
     "managed": true,
     "assets_count": 0,
-    "scored_at": "2026-06-28T05:57:26Z"
+    "scored_at": "2026-06-29T06:20:18Z"
   },
   {
     "name": "eToro Managed Bug Bounty Engagement",
@@ -141,7 +141,7 @@
     "has_wildcard": true,
     "managed": true,
     "assets_count": 0,
-    "scored_at": "2026-06-28T05:57:26Z"
+    "scored_at": "2026-06-29T06:20:18Z"
   },
   {
     "name": "Etsy",
@@ -157,6 +157,6 @@
     "has_wildcard": true,
     "managed": true,
     "assets_count": 0,
-    "scored_at": "2026-06-28T05:57:26Z"
+    "scored_at": "2026-06-29T06:20:18Z"
   }
 ]
