@@ -1,12 +1,12 @@
 {
-  "scan_date": "2026-06-30T05:49:59Z",
-  "date": "2026-06-30",
+  "scan_date": "2026-07-01T06:07:53Z",
+  "date": "2026-07-01",
   "task": "",
   "platforms": {
-    "hackerone": 455,
+    "hackerone": 454,
     "bugcrowd": 234,
-    "intigriti": 126,
-    "yeswehack": 64
+    "intigriti": 127,
+    "yeswehack": 63
   },
   "top_candidate": {
     "name": "Atlassian",

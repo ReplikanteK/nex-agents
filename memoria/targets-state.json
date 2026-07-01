@@ -1,5 +1,5 @@
 {
-  "last_scan": "2026-06-30T05:49:59Z",
+  "last_scan": "2026-07-01T06:07:53Z",
   "targets": {
     "hackerone": [
       {
@@ -1237,10 +1237,6 @@
       {
         "name": "Trellix",
         "url": "https://hackerone.com/trellix"
-      },
-      {
-        "name": "curl",
-        "url": "https://hackerone.com/curl"
       },
       {
         "name": "Dynatrace",
@@ -2863,6 +2859,10 @@
         "url": "https://www.intigriti.com/programs/dpgm/dpgmedia/detail"
       },
       {
+        "name": "DataCamp",
+        "url": "https://www.intigriti.com/programs/datacamp/datacamp/detail"
+      },
+      {
         "name": "De Morgen",
         "url": "https://www.intigriti.com/programs/dpgm/demorgen/detail"
       },
@@ -3023,6 +3023,10 @@
         "url": "https://www.intigriti.com/programs/nexo/nexo/detail"
       },
       {
+        "name": "Nexuzhealth",
+        "url": "https://www.intigriti.com/programs/nexuzhealth/nexuzhealth/detail"
+      },
+      {
         "name": "Nexuzhealth VDP",
         "url": "https://www.intigriti.com/programs/nexuzhealth/nexuzhealthvdp/detail"
       },
@@ -3055,6 +3059,10 @@
         "url": "https://www.intigriti.com/programs/personio/personio/detail"
       },
       {
+        "name": "Port of Antwerp-Bruges",
+        "url": "https://www.intigriti.com/programs/portofantwerp/portofantwerp/detail"
+      },
+      {
         "name": "Proof.com VDP",
         "url": "https://www.intigriti.com/programs/proof/proofvdp/detail"
       },
@@ -3073,10 +3081,6 @@
       {
         "name": "RIPE NCC",
         "url": "https://www.intigriti.com/programs/ripencc/ripencc/detail"
-      },
-      {
-        "name": "Randstad",
-        "url": "https://www.intigriti.com/programs/randstad/randstad/detail"
       },
       {
         "name": "Red Bull",
@@ -3109,10 +3113,6 @@
       {
         "name": "Social Deal",
         "url": "https://www.intigriti.com/programs/socialdeal/socialdeal/detail"
-      },
-      {
-        "name": "Soundtrack Technologies",
-        "url": "https://www.intigriti.com/programs/syb/soundtrackyourbrand/detail"
       },
       {
         "name": "Speakap Responsible Disclosure",
@@ -3362,10 +3362,6 @@
       },
       {
         "name": "GoTo Financial - Public Bounty Program",
-        "url": null
-      },
-      {
-        "name": "GovTech - Vulnerability Disclosure Programme",
         "url": null
       },
       {
