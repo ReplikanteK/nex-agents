@@ -1,10 +1,14 @@
 {
-  "last_scan": "2026-07-01T06:07:53Z",
+  "last_scan": "2026-07-02T05:37:40Z",
   "targets": {
     "hackerone": [
       {
         "name": "Agoda Public",
         "url": "https://hackerone.com/agoda-public"
+      },
+      {
+        "name": "Anthropic Cyber Jailbreak",
+        "url": "https://hackerone.com/anthropic-cyber-jailbreak"
       },
       {
         "name": "Epic Games VDP",
@@ -1937,6 +1941,10 @@
         "url": "https://bugcrowd.com/engagements/blockopensource"
       },
       {
+        "name": "Blofin Crypto Managed Bug Bounty Engagement",
+        "url": "https://bugcrowd.com/engagements/blofin-crypto-mbb-og"
+      },
+      {
         "name": "Bolt Technology OÜ",
         "url": "https://bugcrowd.com/engagements/bolt-og"
       },
@@ -2963,7 +2971,7 @@
         "url": "https://www.intigriti.com/programs/intel/intel/detail"
       },
       {
-        "name": "KU Leuven Responsible Disclosure Program",
+        "name": "KU Leuven Vulnerability Disclosure Program (VDP)",
         "url": "https://www.intigriti.com/programs/kuleuven/kuleuvenrdp/detail"
       },
       {
