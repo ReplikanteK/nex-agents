@@ -1,5 +1,5 @@
 {
-  "last_scan": "2026-07-02T05:37:40Z",
+  "last_scan": "2026-07-03T05:32:33Z",
   "targets": {
     "hackerone": [
       {
@@ -1519,10 +1519,6 @@
         "url": "https://hackerone.com/roblox"
       },
       {
-        "name": "Stellar.org",
-        "url": "https://hackerone.com/stellar"
-      },
-      {
         "name": "Dyson",
         "url": "https://hackerone.com/dyson"
       },
@@ -1994,7 +1990,7 @@
       },
       {
         "name": "Cisco Meraki",
-        "url": "https://bugcrowd.com/engagements/ciscomeraki"
+        "url": "https://bugcrowd.com/engagements/cisconetworking"
       },
       {
         "name": "City of Vienna Managed Bug Bounty",
@@ -2799,6 +2795,10 @@
         "url": "https://www.intigriti.com/programs/atolls/atollsvdp/detail"
       },
       {
+        "name": "Attentia VDP",
+        "url": "https://www.intigriti.com/programs/attentia/attentiavdp/detail"
+      },
+      {
         "name": "Axel Springer National Media & Tech",
         "url": "https://www.intigriti.com/programs/axelspringerse/nmt/detail"
       },
@@ -3123,6 +3123,10 @@
         "url": "https://www.intigriti.com/programs/socialdeal/socialdeal/detail"
       },
       {
+        "name": "Soundtrack Technologies",
+        "url": "https://www.intigriti.com/programs/syb/soundtrackyourbrand/detail"
+      },
+      {
         "name": "Speakap Responsible Disclosure",
         "url": "https://www.intigriti.com/programs/speakap/speakapresponsibledisclosure/detail"
       },
@@ -3161,6 +3165,10 @@
       {
         "name": "Trouw",
         "url": "https://www.intigriti.com/programs/dpgm/trouw/detail"
+      },
+      {
+        "name": "TrueLayer",
+        "url": "https://www.intigriti.com/programs/truelayer/truelayer/detail"
       },
       {
         "name": "Trusted Firmware",
