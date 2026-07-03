@@ -67,28 +67,64 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GH_PAT }}
         run: |
+          REPO_ID=1246782009
           CS=$(gh api /user/codespaces --jq '.codespaces[] | select(.repository.name == "nex-agents") | .name' | head -1)
-          if [ -z "$CS" ]; then
-            echo "[agent3] Creating codespace..."
-            CS=$(echo '{"repository_id":1246782009,"ref":"main","geo":"EuropeWest","machine":"basicLinux32gb","idle_timeout_minutes":10}' | gh api /user/codespaces --input - -X POST --jq '.name')
+          
+          # Function to create a new codespace
+          create_codespace() {
+            echo "[agent3] Creating new codespace..."
+            CS=$(echo "{\"repository_id\":$REPO_ID,\"ref\":\"main\",\"geo\":\"EuropeWest\",\"machine\":\"basicLinux32gb\",\"idle_timeout_minutes\":10}" | gh api /user/codespaces --input - -X POST --jq '.name')
             echo "[agent3] Created: $CS"
+          }
+          
+          # Function to wait for codespace to be available
+          wait_available() {
+            local cs="$1"
+            echo "[agent3] Waiting for Available..."
+            for i in $(seq 1 60); do
+              ST=$(gh api "/user/codespaces/$cs" --jq '.state')
+              echo "[agent3] $i: $ST"
+              [ "$ST" = "Available" ] && return 0
+              sleep 10
+            done
+            echo "[agent3] Timeout (state: $ST)"
+            return 1
+          }
+          
+          # Function to test SSH availability
+          test_ssh() {
+            local cs="$1"
+            timeout 30 gh codespace ssh -c "$cs" -- "echo ssh_ok" 2>&1 | grep -q "ssh_ok"
+          }
+          
+          # Get or create codespace
+          if [ -z "$CS" ]; then
+            create_codespace
           else
             ST=$(gh api "/user/codespaces/$CS" --jq '.state')
             while [ "$ST" = "ShuttingDown" ]; do sleep 10; ST=$(gh api "/user/codespaces/$CS" --jq '.state'); done
             [ "$ST" = "Shutdown" ] && gh api -X POST "/user/codespaces/$CS/start" > /dev/null
           fi
-
-          echo "[agent3] Waiting for Available..."
-          for i in $(seq 1 60); do
-            ST=$(gh api "/user/codespaces/$CS" --jq '.state')
-            echo "[agent3] $i: $ST"
-            [ "$ST" = "Available" ] && break
-            sleep 10
-          done
-          [ "$ST" != "Available" ] && echo "[agent3] Timeout (state: $ST)" && exit 1
-
+          
+          # Wait for available
+          wait_available "$CS" || exit 1
+          
+          # Test SSH - if it fails, recreate codespace (old config without sshd)
+          if ! test_ssh "$CS"; then
+            echo "[agent3] SSH not available, recreating codespace..."
+            gh api -X POST "/user/codespaces/$CS/delete" > /dev/null 2>&1 || true
+            sleep 5
+            create_codespace
+            wait_available "$CS" || exit 1
+            
+            # Verify SSH works on new codespace
+            if ! test_ssh "$CS"; then
+              echo "[agent3] FATAL: SSH still not available after recreation"
+              exit 1
+            fi
+          fi
+          
           echo "[agent3] Running entrypoint (execute only)..."
-          # Run only the task execution part, skip enrichment
           timeout 1200 gh codespace ssh -c "$CS" -- "cd /workspaces/nex-agents && git fetch origin && git reset --hard origin/main && bash setup/execute.sh $GH_PAT" 2>&1
           echo "[agent3] Done"
 
