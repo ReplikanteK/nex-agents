@@ -19,6 +19,7 @@ echo "[execute] $TS - Execute starting... (day $DOW)"
 # Install gh CLI if missing (binary download to ~/.local/bin - no sudo needed)
 if ! command -v gh &>/dev/null; then
   echo "[execute] gh not installed. Installing..."
+  mkdir -p "$HOME/.local/bin"
   curl -fsSL https://github.com/cli/cli/releases/download/v2.96.0/gh_2.96.0_linux_amd64.tar.gz | tar xz -C "$HOME/.local/bin" --strip-components=1 gh_2.96.0_linux_amd64/bin/gh 2>/dev/null
 fi
 
