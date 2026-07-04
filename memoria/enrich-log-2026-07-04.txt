@@ -1,5 +1,5 @@
 [enrich] Enrichment log: memoria/enrich-log-2026-07-04.txt
-[enrich] Rate limit at start: 4750
+[enrich] Rate limit at start: 4690
 jq: error (at /tmp/bounty-targets-data/data/yeswehack_data.json:4661): Cannot index number with string "value"
 [enrich] BASE_SCORE: Agoda Public (hackerone) -> 35 (bounty=null wc=false mg=true)
 [enrich] BASE_SCORE: Anthropic Cyber Jailbreak (hackerone) -> 33 (bounty=null wc=false mg=true)
