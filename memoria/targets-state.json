@@ -1,5 +1,5 @@
 {
-  "last_scan": "2026-07-03T05:32:33Z",
+  "last_scan": "2026-07-04T05:26:32Z",
   "targets": {
     "hackerone": [
       {
@@ -1455,10 +1455,6 @@
         "url": "https://hackerone.com/goldmansachs"
       },
       {
-        "name": "Smule",
-        "url": "https://hackerone.com/smule"
-      },
-      {
         "name": "Yoti",
         "url": "https://hackerone.com/yoti"
       },
@@ -1567,10 +1563,6 @@
         "url": "https://hackerone.com/quora"
       },
       {
-        "name": "Brave Software",
-        "url": "https://hackerone.com/brave"
-      },
-      {
         "name": "PortSwigger Web Security",
         "url": "https://hackerone.com/portswigger"
       },
@@ -1625,10 +1617,6 @@
       {
         "name": "Wealthsimple",
         "url": "https://hackerone.com/wealthsimple"
-      },
-      {
-        "name": "Home Bargains",
-        "url": "https://hackerone.com/homebargains"
       },
       {
         "name": "Eternal",
@@ -2947,10 +2935,6 @@
         "url": "https://www.intigriti.com/programs/houseofhr/houseofhrvulnerabilitydisclosureprogram/detail"
       },
       {
-        "name": "Housing Application (huisvestingsapp) Bug Bounty Program",
-        "url": "https://www.intigriti.com/programs/kuleuven/huisvesting/detail"
-      },
-      {
         "name": "Humo",
         "url": "https://www.intigriti.com/programs/dpgm/humo/detail"
       },
@@ -3121,10 +3105,6 @@
       {
         "name": "Social Deal",
         "url": "https://www.intigriti.com/programs/socialdeal/socialdeal/detail"
-      },
-      {
-        "name": "Soundtrack Technologies",
-        "url": "https://www.intigriti.com/programs/syb/soundtrackyourbrand/detail"
       },
       {
         "name": "Speakap Responsible Disclosure",
