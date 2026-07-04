@@ -1,7 +1,11 @@
 {
   "name": "agent3",
   "image": "mcr.microsoft.com/devcontainers/javascript-node:20",
-  "features": {},
+  "features": {
+    "ghcr.io/devcontainers/features/sshdd:1": {
+      "version": "latest"
+    }
+  }, 
   "postCreateCommand": "bash setup/bootstrap.sh",
   "customizations": {
     "vscode": {
