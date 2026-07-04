@@ -8,7 +8,7 @@ GH_PAT="${1:-${GITHUB_TOKEN:-}}"
 [ -z "$GH_PAT" ] && echo "[execute] No token" && exit 1
 export GH_TOKEN="$GH_PAT"
 export GIT_TERMINAL_PROMPT=0
-export PATH="$HOME/.opencode/bin:$PATH"
+export PATH="$HOME/.local/bin:$PATH"
 
 TS=$(date -u +%Y-%m-%dT%H:%M:%SZ)
 DATE=$(date +%Y-%m-%d)
@@ -16,12 +16,10 @@ DOW=$(date +%u)
 echo "[execute] $TS - Execute starting... (day $DOW)"
 
 # === Health ===
-# Install gh CLI if missing
+# Install gh CLI if missing (binary download to ~/.local/bin - no sudo needed)
 if ! command -v gh &>/dev/null; then
   echo "[execute] gh not installed. Installing..."
-  curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg 2>/dev/null
-  echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | tee /etc/apt/sources.list.d/github-cli.list > /dev/null
-  apt-get update -qq && apt-get install gh -y -qq 2>&1 | tail -3
+  curl -fsSL https://github.com/cli/cli/releases/download/v2.96.0/gh_2.96.0_linux_amd64.tar.gz | tar xz -C "$HOME/.local/bin" --strip-components=1 gh_2.96.0_linux_amd64/bin/gh 2>/dev/null
 fi
 
 for cmd in gh git curl jq; do
