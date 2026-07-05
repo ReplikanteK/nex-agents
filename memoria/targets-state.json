@@ -1,5 +1,5 @@
 {
-  "last_scan": "2026-07-04T11:22:57Z",
+  "last_scan": "2026-07-05T05:45:02Z",
   "targets": {
     "hackerone": [
       {
@@ -3015,10 +3015,6 @@
         "url": "https://www.intigriti.com/programs/nexo/nexo/detail"
       },
       {
-        "name": "Nexuzhealth",
-        "url": "https://www.intigriti.com/programs/nexuzhealth/nexuzhealth/detail"
-      },
-      {
         "name": "Nexuzhealth VDP",
         "url": "https://www.intigriti.com/programs/nexuzhealth/nexuzhealthvdp/detail"
       },
@@ -3213,10 +3209,6 @@
       {
         "name": "Voi Vulnerability Disclosure Program",
         "url": "https://www.intigriti.com/programs/voi/voivulnerabilitydisclosureprogram/detail"
-      },
-      {
-        "name": "WP Engine Bug Bounty",
-        "url": "https://www.intigriti.com/programs/wpengine/wpenginebugbounty/detail"
       },
       {
         "name": "WP Engine VDP",
