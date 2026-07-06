@@ -180,59 +180,61 @@ categorize_repo() {
 }
 
 # Base scoring WITHOUT GitHub dependency (for ALL programs)
-# Uses: bounty amount, wildcard, managed, response efficiency, platform, assets
+# Based on evidence: Mozilla $1k (SSRF via auto-creation, open source Python)
+# Factors: Code Accessibility, Bounty, Attack Surface, Platform
 score_target_base() {
-  local name="$1" platform="$2" max_bounty="$3" has_wildcard="$4" managed="$5" response_eff="$6" assets_count="$7"
+  local name="$1" platform="$2" max_bounty="$3" has_github_urls="$4" assets_count="$5"
   
   local score=0
   
-  # Bounty amount (0-35 pts)
+  # 1. Code Accessibility (0-30 pts) — FACTOR #1
+  # Open source (GitHub URLs in scope) = we can read the code = find bugs
+  if [ "$has_github_urls" = "true" ]; then
+    score=$((score + 30))
+  else
+    # Closed source or unknown — lower chance of finding bugs
+    score=$((score + 5))
+  fi
+  
+  # 2. Bounty amount (0-25 pts) — Is it worth our time?
   if [ -n "$max_bounty" ] && [ "$max_bounty" != "null" ] && [ "$max_bounty" != "0" ]; then
     if [ "$max_bounty" -ge 10000 ]; then
-      score=$((score + 35))
-    elif [ "$max_bounty" -ge 5000 ]; then
-      score=$((score + 30))
-    elif [ "$max_bounty" -ge 2000 ]; then
       score=$((score + 25))
-    elif [ "$max_bounty" -ge 1000 ]; then
+    elif [ "$max_bounty" -ge 5000 ]; then
       score=$((score + 20))
-    elif [ "$max_bounty" -ge 500 ]; then
+    elif [ "$max_bounty" -ge 1000 ]; then
       score=$((score + 15))
-    elif [ "$max_bounty" -ge 100 ]; then
+    elif [ "$max_bounty" -ge 500 ]; then
       score=$((score + 10))
-    else
+    elif [ "$max_bounty" -ge 100 ]; then
       score=$((score + 5))
+    else
+      score=$((score + 2))
     fi
   else
-    score=$((score + 8))  # Neutral for unknown bounty
+    score=$((score + 5))  # Neutral for unknown bounty
   fi
   
-  # Wildcard scope bonus (0-20 pts) - more surface area
-  [ "$has_wildcard" = "true" ] && score=$((score + 20))
-  
-  # Managed program bonus (0-15 pts) - better triage
-  [ "$managed" = "true" ] && score=$((score + 15))
-  
-  # Response efficiency bonus (0-10 pts) - H1 specific
-  if [ -n "$response_eff" ] && [ "$response_eff" != "null" ]; then
-    if [ "$response_eff" -ge 90 ]; then
-      score=$((score + 10))
-    elif [ "$response_eff" -ge 80 ]; then
-      score=$((score + 7))
-    elif [ "$response_eff" -ge 70 ]; then
-      score=$((score + 4))
-    fi
+  # 3. Attack Surface (0-20 pts) — Can we test it?
+  # More assets = more potential attack surface (but diminishing returns)
+  if [ "$assets_count" -ge 20 ]; then
+    score=$((score + 20))
+  elif [ "$assets_count" -ge 10 ]; then
+    score=$((score + 15))
+  elif [ "$assets_count" -ge 5 ]; then
+    score=$((score + 10))
+  elif [ "$assets_count" -ge 1 ]; then
+    score=$((score + 5))
+  else
+    score=$((score + 0))
   fi
   
-  # Assets in scope (0-15 pts)
-  local assets_score=$((assets_count * 2))
-  [ "$assets_score" -gt 15 ] && assets_score=15
-  score=$((score + assets_score))
-  
-  # Platform bonus (0-5 pts) - prioritize proven platform
+  # 4. Platform bonus (0-10 pts) — Proven platform
   case "$platform" in
-    hackerone) score=$((score + 5)) ;;
-    *)         ;;  # Other platforms = no bonus
+    hackerone) score=$((score + 10)) ;;  # Proven: $1k Mozilla
+    bugcrowd)  score=$((score + 5)) ;;
+    intigriti) score=$((score + 3)) ;;
+    yeswehack) score=$((score + 2)) ;;
   esac
   
   echo "$score"
@@ -245,7 +247,7 @@ score_github_bonus() {
   
   local bonus=0
   
-  # Language fit (0-15 pts)
+  # Language fit (0-15 pts) — matches our expertise
   case "$lang" in
     "Python") bonus=$((bonus + 15)) ;;
     "Go")     bonus=$((bonus + 13)) ;;
@@ -255,11 +257,11 @@ score_github_bonus() {
     *)        bonus=$((bonus + 3)) ;;
   esac
   
-  # Size sweet spot (0-5 pts)
+  # Size sweet spot (0-5 pts) — smaller = easier to audit
   [ "$size" -lt 30000 ] && bonus=$((bonus + 5))
   [ "$size" -gt 100000 ] && bonus=$((bonus - 2))
   
-  # Staleness penalty
+  # Staleness penalty — old code = less likely to be fixed
   local stale=$(date -d "$pushed" +%s 2>/dev/null || echo 0)
   local now=$(date +%s)
   [ $(( (now - stale) / 86400 )) -gt 365 ] && bonus=$((bonus - 3))
@@ -309,21 +311,20 @@ while IFS= read -r prog; do
   platform=$(echo "$prog" | jq -r '.platform // ""')
   url=$(echo "$prog" | jq -r '.url // ""')
   max_bounty=$(echo "$prog" | jq -r '.max_bounty // "null"')
-  has_wildcard=$(echo "$prog" | jq -r '.has_wildcard')
-  managed=$(echo "$prog" | jq -r '.managed')
-  response_eff=$(echo "$prog" | jq -r '.response_efficiency // "null"')
   assets_count=$(echo "$prog" | jq -r '.assets_count')
+  github_urls_count=$(echo "$prog" | jq -r '.github_urls | length')
+  has_github_urls=$( [ "$github_urls_count" -gt 0 ] && echo "true" || echo "false" )
   
   [ -z "$name" ] || [ "$name" = "null" ] && continue
   
   # Base score (without GitHub)
-  base_score=$(score_target_base "$name" "$platform" "$max_bounty" "$has_wildcard" "$managed" "$response_eff" "$assets_count")
+  base_score=$(score_target_base "$name" "$platform" "$max_bounty" "$has_github_urls" "$assets_count")
   
   [ "$base_score" -eq 0 ] && continue
   
-  echo "[enrich] BASE_SCORE: $name ($platform) -> $base_score (bounty=$max_bounty wc=$has_wildcard mg=$managed)" >> "$ENRICH_LOG"
+  echo "[enrich] BASE_SCORE: $name ($platform) -> $base_score (bounty=$max_bounty gh=$has_github_urls assets=$assets_count)" >> "$ENRICH_LOG"
   
-  entry=$(jq -nc --arg name "$name" --arg platform "$platform" --arg url "$url" --argjson base_score "$base_score" --argjson max_bounty "$max_bounty" --argjson has_wildcard "$has_wildcard" --argjson managed "$managed" --argjson assets_count "$assets_count" --arg ts "$TS" '{name:$name,platform:$platform,url:$url,repo:null,language:null,stars:0,score:$base_score,base_score:$base_score,github_bonus:0,max_bounty:$max_bounty,has_wildcard:$has_wildcard,managed:$managed,assets_count:$assets_count,scored_at:$ts}')
+  entry=$(jq -nc --arg name "$name" --arg platform "$platform" --arg url "$url" --argjson base_score "$base_score" --argjson max_bounty "$max_bounty" --argjson has_github_urls "$has_github_urls" --argjson assets_count "$assets_count" --arg ts "$TS" '{name:$name,platform:$platform,url:$url,repo:null,language:null,stars:0,score:$base_score,base_score:$base_score,github_bonus:0,max_bounty:$max_bounty,has_github_urls:$has_github_urls,assets_count:$assets_count,scored_at:$ts}')
   if [ "$first" = true ]; then echo "$entry" >> "$RANKED_FILE.tmp"; first=false; else echo ",$entry" >> "$RANKED_FILE.tmp"; fi
   SCORED=$((SCORED + 1))
 done < "$ALL_PROGRAMS_FILE"
@@ -525,7 +526,7 @@ echo "[enrich] Top candidate: $(echo "$TOP_CANDIDATES" | jq -r '.name // "none"'
 
 # === Save agent3-latest.json ===
 TOP_NAME=$(echo "${TOP_CANDIDATES:-}" | jq -r '.name // ""' 2>/dev/null || echo "")
-RANKED_JSON=$(jq '.[:5] | map({name, platform, repo, language, score, base_score, github_bonus, max_bounty, has_wildcard, managed})' "${RANKED_FILE}" 2>/dev/null || echo '[]')
+RANKED_JSON=$(jq '.[:5] | map({name, platform, repo, language, score, base_score, github_bonus, max_bounty, has_github_urls, assets_count})' "${RANKED_FILE}" 2>/dev/null || echo '[]')
 jq -n \
   --arg ts "$TS" \
   --arg date "$DATE" \
@@ -580,9 +581,9 @@ cat > "$REPORT" << REPORTEOF
 - Targets scored: $SCORED
 
 ## Top Candidates (scored)
-| Score | Base | GH+ | Platform | Target | Lang | Stars | Bounty | Wild | Managed | Repo |
-|-------|------|-----|----------|--------|------|-------|--------|------|---------|------|
-$(jq -r '.[] | "\(.score) | \(.base_score) | \(.github_bonus) | \(.platform) | \(.name) | \(.language // "-") | \(.stars // 0) | \(.max_bounty // "-") | \(.has_wildcard) | \(.managed) | \(.repo // "-")"' "$RANKED_FILE" 2>/dev/null | head -10 | while IFS='|' read -r score base gh plat name lang stars bounty wild managed repo; do printf "| %s | %s | %s | %s | %s | %s | %s | %s | %s | %s | %s |\n" "$score" "$base" "$gh" "$plat" "$name" "$lang" "$stars" "$bounty" "$wild" "$managed" "$repo"; done || echo "*No programs scored*")
+| Score | Base | GH+ | Platform | Target | Lang | Stars | Bounty | CodeAccess | Assets | Repo |
+|-------|------|-----|----------|--------|------|-------|--------|------------|--------|------|
+$(jq -r '.[] | "\(.score) | \(.base_score) | \(.github_bonus) | \(.platform) | \(.name) | \(.language // "-") | \(.stars // 0) | \(.max_bounty // "-") | \(.has_github_urls) | \(.assets_count) | \(.repo // "-")"' "$RANKED_FILE" 2>/dev/null | head -10 | while IFS='|' read -r score base gh plat name lang stars bounty codeaccess assets repo; do printf "| %s | %s | %s | %s | %s | %s | %s | %s | %s | %s | %s |\n" "$score" "$base" "$gh" "$plat" "$name" "$lang" "$stars" "$bounty" "$codeaccess" "$assets" "$repo"; done || echo "*No programs scored*")
 
 ## Target Changes
 ${DIFF_SECTION:-*No changes detected.*}
