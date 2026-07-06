@@ -229,12 +229,10 @@ score_target_base() {
   [ "$assets_score" -gt 15 ] && assets_score=15
   score=$((score + assets_score))
   
-  # Platform diversity bonus (0-10 pts) - less competition on non-H1
+  # Platform bonus (0-5 pts) - prioritize proven platform
   case "$platform" in
-    intigriti) score=$((score + 10)) ;;
-    yeswehack) score=$((score + 8)) ;;
-    bugcrowd)  score=$((score + 5)) ;;
-    *)         ;;  # HackerOne = no bonus
+    hackerone) score=$((score + 5)) ;;
+    *)         ;;  # Other platforms = no bonus
   esac
   
   echo "$score"
