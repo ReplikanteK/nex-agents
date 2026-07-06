@@ -1,5 +1,5 @@
 {
-  "last_scan": "2026-07-05T05:45:02Z",
+  "last_scan": "2026-07-06T06:07:21Z",
   "targets": {
     "hackerone": [
       {
@@ -2855,10 +2855,6 @@
         "url": "https://www.intigriti.com/programs/dpgm/dpgmedia/detail"
       },
       {
-        "name": "DataCamp",
-        "url": "https://www.intigriti.com/programs/datacamp/datacamp/detail"
-      },
-      {
         "name": "De Morgen",
         "url": "https://www.intigriti.com/programs/dpgm/demorgen/detail"
       },
@@ -3209,6 +3205,10 @@
       {
         "name": "Voi Vulnerability Disclosure Program",
         "url": "https://www.intigriti.com/programs/voi/voivulnerabilitydisclosureprogram/detail"
+      },
+      {
+        "name": "WP Engine Bug Bounty",
+        "url": "https://www.intigriti.com/programs/wpengine/wpenginebugbounty/detail"
       },
       {
         "name": "WP Engine VDP",
