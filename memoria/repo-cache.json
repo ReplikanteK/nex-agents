@@ -62,5 +62,925 @@
     "pushed_at": "2026-06-18T15:13:54Z",
     "description": "React Native toolkit for Auth0 API",
     "topics": "dx-sdk,react-native"
+  },
+  "Hacker0x01/react-datepicker": {
+    "language": "TypeScript",
+    "size": 172342,
+    "stars": 8381,
+    "pushed_at": "2026-04-02T08:36:28Z",
+    "description": "A simple and reusable datepicker component for React",
+    "topics": "date-fns,datepicker-component,hacktoberfest,javascript,moment,picker,react"
+  },
+  "backstage/backstage": {
+    "language": "TypeScript",
+    "size": 5797908,
+    "stars": 33802,
+    "pushed_at": "2026-07-06T22:11:09Z",
+    "description": "Backstage is an open framework for building developer portals",
+    "topics": "backstage,cncf,developer-experience,developer-portal,dx,hacktoberfest,infrastructure,microservices,self-service-portal"
+  },
+  "buildonspark/spark": {
+    "language": "JavaScript",
+    "size": 465397,
+    "stars": 101,
+    "pushed_at": "2026-07-07T04:50:33Z",
+    "description": "The Spark Bitcoin layer 2 protocol",
+    "topics": ""
+  },
+  "circlefin/aptos-cctp": {
+    "language": "Move",
+    "size": 577,
+    "stars": 8,
+    "pushed_at": "2026-06-18T21:33:35Z",
+    "description": "Official repository for Aptos smart contracts used by the Cross-Chain Transfer Protocol",
+    "topics": ""
+  },
+  "circlefin/arc-node": {
+    "language": "Rust",
+    "size": 2977,
+    "stars": 136,
+    "pushed_at": "2026-06-22T10:49:52Z",
+    "description": "The Economic OS for the internet",
+    "topics": "arc,blockchain,evm,malachite-engine,rust,usdc"
+  },
+  "circlefin/arc-remote-signer": {
+    "language": "Go",
+    "size": 225,
+    "stars": 6,
+    "pushed_at": "2026-06-26T03:14:25Z",
+    "description": "Secure remote signing service for Arc Network using AWS Nitro Enclaves",
+    "topics": "arc,blockchain,golang,nitro-enclaves,signing"
+  },
+  "circlefin/buidl-wallet-contracts": {
+    "language": "Solidity",
+    "size": 2968,
+    "stars": 17,
+    "pushed_at": "2026-06-29T18:33:02Z",
+    "description": "Official repository for all buidl wallet contracts",
+    "topics": ""
+  },
+  "circlefin/evm-cctp-contracts": {
+    "language": "Solidity",
+    "size": 1911,
+    "stars": 217,
+    "pushed_at": "2026-06-18T21:33:08Z",
+    "description": "Official repository for all EVM-compatible smart contracts used by the Cross-Chain Transfer Protocol",
+    "topics": ""
+  },
+  "circlefin/evm-cpn-contracts": {
+    "language": "Solidity",
+    "size": 290,
+    "stars": 2,
+    "pushed_at": "2026-06-25T01:13:37Z",
+    "description": "Official repository for all EVM-compatible smart contracts used by the Circle Payments Network",
+    "topics": "blockchain,evm,payments,smart-contract,usdc"
+  },
+  "circlefin/evm-gateway-contracts": {
+    "language": "Solidity",
+    "size": 3393,
+    "stars": 10,
+    "pushed_at": "2026-01-23T18:57:40Z",
+    "description": "Official repository for all EVM-compatible smart contracts used by Circle Gateway",
+    "topics": ""
+  },
+  "circlefin/evm-xreserve-contracts": {
+    "language": "Solidity",
+    "size": 1427,
+    "stars": 2,
+    "pushed_at": "2026-06-18T21:31:03Z",
+    "description": "Official repository for all EVM-compatible smart contracts used by Circle XReserve",
+    "topics": ""
+  },
+  "circlefin/malachite": {
+    "language": "Rust",
+    "size": 7268,
+    "stars": 432,
+    "pushed_at": "2026-06-22T16:54:20Z",
+    "description": "Flexible BFT consensus engine in Rust",
+    "topics": "bft,consensus,malachite-engine,rust,tendermint"
+  },
+  "circlefin/noble-cctp": {
+    "language": "Go",
+    "size": 1187,
+    "stars": 22,
+    "pushed_at": "2026-06-18T21:34:55Z",
+    "description": null,
+    "topics": "cctp,noble"
+  },
+  "circlefin/noble-fiattokenfactory": {
+    "language": "Go",
+    "size": 2172,
+    "stars": 9,
+    "pushed_at": "2026-06-18T21:37:50Z",
+    "description": "Repository for Noble fiat token factory code",
+    "topics": ""
+  },
+  "circlefin/solana-cctp-contracts": {
+    "language": "Rust",
+    "size": 33819,
+    "stars": 50,
+    "pushed_at": "2026-06-18T21:08:23Z",
+    "description": "Official repository for Solana smart contracts used by the Cross-Chain Transfer Protocol",
+    "topics": ""
+  },
+  "circlefin/solana-gateway-contracts": {
+    "language": "TypeScript",
+    "size": 18748,
+    "stars": 3,
+    "pushed_at": "2026-06-18T21:11:54Z",
+    "description": "Official repository for all Solana smart contracts used by Circle Gateway",
+    "topics": ""
+  },
+  "circlefin/stablecoin-aptos": {
+    "language": "Move",
+    "size": 345,
+    "stars": 6,
+    "pushed_at": "2026-01-23T12:04:23Z",
+    "description": "Source repository for smart contracts used by Circle's stablecoins on Aptos blockchain",
+    "topics": ""
+  },
+  "circlefin/stablecoin-evm": {
+    "language": "TypeScript",
+    "size": 2912,
+    "stars": 771,
+    "pushed_at": "2026-06-26T17:14:36Z",
+    "description": "Source repository for smart contracts used by Circle's stablecoins on EVM-compatible blockchains",
+    "topics": ""
+  },
+  "circlefin/stablecoin-near": {
+    "language": "Rust",
+    "size": 754,
+    "stars": 5,
+    "pushed_at": "2026-04-22T23:35:06Z",
+    "description": "Repository for Circle stablecoins on NEAR",
+    "topics": ""
+  },
+  "circlefin/stablecoin-starknet": {
+    "language": "Cairo",
+    "size": 88,
+    "stars": 3,
+    "pushed_at": "2025-10-30T17:46:18Z",
+    "description": "Source repository for smart contracts used by Circle's stablecoins on Starknet blockchain",
+    "topics": ""
+  },
+  "circlefin/stablecoin-sui": {
+    "language": "Move",
+    "size": 30,
+    "stars": 11,
+    "pushed_at": "2026-06-18T21:29:56Z",
+    "description": "Source repository for smart contracts used by Circle's stablecoins on Sui blockchain",
+    "topics": ""
+  },
+  "circlefin/stablecoin-xlm": {
+    "language": "Rust",
+    "size": 587,
+    "stars": 2,
+    "pushed_at": "2026-06-23T03:25:34Z",
+    "description": "Source repository for smart contracts used by Circle's stablecoins on the Stellar blockchain",
+    "topics": ""
+  },
+  "circlefin/starknet-cctp": {
+    "language": "Cairo",
+    "size": 657,
+    "stars": 1,
+    "pushed_at": "2026-06-18T21:34:04Z",
+    "description": "Official repository for Starknet smart contracts used by the Cross-Chain Transfer Protocol",
+    "topics": ""
+  },
+  "circlefin/stellar-cctp": {
+    "language": "Rust",
+    "size": 770,
+    "stars": 4,
+    "pushed_at": "2026-06-18T21:35:47Z",
+    "description": "Source repository for Stellar smart contracts used by the Cross-Chain Transfer Protocol",
+    "topics": ""
+  },
+  "circlefin/sui-cctp": {
+    "language": "Move",
+    "size": 909,
+    "stars": 16,
+    "pushed_at": "2026-04-08T10:19:01Z",
+    "description": "Official repository for Sui smart contracts used by the Cross-Chain Transfer Protocol",
+    "topics": ""
+  },
+  "cloudflare/vinext": {
+    "language": "TypeScript",
+    "size": 37634,
+    "stars": 8341,
+    "pushed_at": "2026-07-06T23:55:09Z",
+    "description": "Vite plugin that reimplements the Next.js API surface — deploy anywhere",
+    "topics": ""
+  },
+  "cloudflare/workerd": {
+    "language": "C++",
+    "size": 49457,
+    "stars": 8375,
+    "pushed_at": "2026-07-07T01:09:04Z",
+    "description": "The JavaScript / Wasm runtime that powers Cloudflare Workers",
+    "topics": ""
+  },
+  "coinbase/cb-mpc": {
+    "language": "C++",
+    "size": 14153,
+    "stars": 476,
+    "pushed_at": "2026-05-22T15:18:33Z",
+    "description": "Coinbase MPC Library",
+    "topics": ""
+  },
+  "coinbase/cb-mpc-go": {
+    "language": "Go",
+    "size": 8957,
+    "stars": 2,
+    "pushed_at": "2026-04-01T19:48:56Z",
+    "description": "\"demo/beta\" Go wrappers around cb-mpc",
+    "topics": ""
+  },
+  "cosmos/evm": {
+    "language": "Go",
+    "size": 31970,
+    "stars": 159,
+    "pushed_at": "2026-07-06T14:55:10Z",
+    "description": "An EVM compatible framework for blockchain development with the Cosmos SDK",
+    "topics": ""
+  },
+  "cosmos/gaia": {
+    "language": "Go",
+    "size": 44137,
+    "stars": 574,
+    "pushed_at": "2026-07-03T14:55:33Z",
+    "description": "Cosmos Hub",
+    "topics": "blockchain,cosmos,cosmos-hub,cosmos-sdk,golang,ibc,interchain-security"
+  },
+  "cosmos/iavl": {
+    "language": "Go",
+    "size": 14065,
+    "stars": 450,
+    "pushed_at": "2026-05-18T15:01:38Z",
+    "description": "Merkleized IAVL+ Tree implementation in Go",
+    "topics": "blockchain,cryptography,merkle-tree"
+  },
+  "cosmos/ics23": {
+    "language": "Rust",
+    "size": 4500,
+    "stars": 129,
+    "pushed_at": "2026-04-13T09:02:39Z",
+    "description": "Building generic merkle proof format for IBC",
+    "topics": ""
+  },
+  "cosmos/ledger-cosmos": {
+    "language": "C",
+    "size": 22626,
+    "stars": 62,
+    "pushed_at": "2026-06-25T13:53:03Z",
+    "description": null,
+    "topics": ""
+  },
+  "kubernetes/api": {
+    "language": "Go",
+    "size": 83212,
+    "stars": 748,
+    "pushed_at": "2026-07-07T03:38:58Z",
+    "description": "The canonical location of the Kubernetes API definition.",
+    "topics": "k8s-staging"
+  },
+  "kubernetes/apiextensions-apiserver": {
+    "language": "Go",
+    "size": 28980,
+    "stars": 257,
+    "pushed_at": "2026-07-02T23:43:15Z",
+    "description": "API server for API extensions like CustomResourceDefinitions",
+    "topics": "k8s-staging"
+  },
+  "kubernetes/apimachinery": {
+    "language": "Go",
+    "size": 8734,
+    "stars": 898,
+    "pushed_at": "2026-07-02T23:42:14Z",
+    "description": null,
+    "topics": "k8s-staging"
+  },
+  "kubernetes/apiserver": {
+    "language": "Go",
+    "size": 29184,
+    "stars": 719,
+    "pushed_at": "2026-07-07T03:39:29Z",
+    "description": "Library for writing a Kubernetes-style API server.",
+    "topics": "k8s-staging"
+  },
+  "kubernetes/autoscaler": {
+    "language": "Go",
+    "size": 266066,
+    "stars": 8897,
+    "pushed_at": "2026-07-06T18:37:24Z",
+    "description": "Autoscaling components for Kubernetes",
+    "topics": ""
+  },
+  "kubernetes/cli-runtime": {
+    "language": "Go",
+    "size": 5809,
+    "stars": 307,
+    "pushed_at": "2026-06-29T17:35:55Z",
+    "description": "Set of helpers for creating kubectl commands and plugins.",
+    "topics": "k8s-sig-cli,k8s-staging"
+  },
+  "kubernetes/client-go": {
+    "language": "Go",
+    "size": 32282,
+    "stars": 9853,
+    "pushed_at": "2026-07-07T03:39:04Z",
+    "description": "Go client for Kubernetes.",
+    "topics": "k8s-staging"
+  },
+  "kubernetes/cloud-provider": {
+    "language": "Go",
+    "size": 6414,
+    "stars": 282,
+    "pushed_at": "2026-07-02T23:43:59Z",
+    "description": "cloud-provider defines the shared interfaces which Kubernetes cloud providers implement. These interfaces allow various controllers to integrate with any cloud provider in a pluggable fashion. Please file any issues against the main Kubernetes repo.",
+    "topics": "k8s-sig-cloud-provider,k8s-staging"
+  },
+  "kubernetes/cloud-provider-alibaba-cloud": {
+    "language": "Go",
+    "size": 99623,
+    "stars": 377,
+    "pushed_at": "2026-06-09T11:41:49Z",
+    "description": "CloudProvider for Alibaba Cloud ",
+    "topics": "k8s-sig-cloud-provider"
+  },
+  "kubernetes/cloud-provider-aws": {
+    "language": "Go",
+    "size": 12652,
+    "stars": 461,
+    "pushed_at": "2026-07-07T00:10:27Z",
+    "description": "Cloud provider for AWS",
+    "topics": "k8s-sig-cloud-provider"
+  },
+  "kubernetes/cloud-provider-gcp": {
+    "language": "Go",
+    "size": 186223,
+    "stars": 159,
+    "pushed_at": "2026-07-06T23:48:59Z",
+    "description": "cloud-provider-gcp contains several projects used to run Kubernetes in Google Cloud",
+    "topics": "cloud-providers,google,google-cloud"
+  },
+  "kubernetes/cloud-provider-openstack": {
+    "language": "Go",
+    "size": 7201,
+    "stars": 713,
+    "pushed_at": "2026-07-03T18:20:43Z",
+    "description": null,
+    "topics": "cloud-controller-manager,csi-plugin,k8s-sig-cloud-provider,k8s-sig-storage,kubernetes,openstack"
+  },
+  "kubernetes/cloud-provider-vsphere": {
+    "language": "Go",
+    "size": 78517,
+    "stars": 274,
+    "pushed_at": "2026-07-06T17:13:50Z",
+    "description": "Kubernetes Cloud Provider for vSphere https://cloud-provider-vsphere.sigs.k8s.io",
+    "topics": "cloud-providers,kubernetes,vmware,vsphere"
+  },
+  "kubernetes/cluster-bootstrap": {
+    "language": "Go",
+    "size": 2015,
+    "stars": 34,
+    "pushed_at": "2026-06-26T19:09:30Z",
+    "description": null,
+    "topics": "k8s-staging"
+  },
+  "kubernetes/code-generator": {
+    "language": "Go",
+    "size": 13341,
+    "stars": 1833,
+    "pushed_at": "2026-07-01T18:53:20Z",
+    "description": "Generators for kube-like API types",
+    "topics": "k8s-staging"
+  },
+  "kubernetes/community": {
+    "language": "Jupyter Notebook",
+    "size": 99682,
+    "stars": 12928,
+    "pushed_at": "2026-07-04T17:32:20Z",
+    "description": "Kubernetes Community Documentation",
+    "topics": "kubernetes"
+  },
+  "kubernetes/component-base": {
+    "language": "Go",
+    "size": 4731,
+    "stars": 121,
+    "pushed_at": "2026-06-26T19:07:49Z",
+    "description": "Shared code for kubernetes core components",
+    "topics": "k8s-sig-api-machinery,k8s-staging"
+  },
+  "kubernetes/cri-api": {
+    "language": "Go",
+    "size": 2850,
+    "stars": 472,
+    "pushed_at": "2026-07-01T16:43:42Z",
+    "description": "Container Runtime Interface (CRI) – a plugin interface which enables kubelet to use a wide variety of container runtimes.",
+    "topics": "k8s-sig-node,k8s-staging"
+  },
+  "kubernetes/csi-translation-lib": {
+    "language": "Go",
+    "size": 2373,
+    "stars": 14,
+    "pushed_at": "2026-06-26T19:09:36Z",
+    "description": "Staging repo for CSI Migration/Translation libraries",
+    "topics": "k8s-sig-storage,k8s-staging"
+  },
+  "kubernetes/dns": {
+    "language": "Go",
+    "size": 54275,
+    "stars": 1053,
+    "pushed_at": "2026-07-06T14:02:41Z",
+    "description": "Kubernetes DNS service",
+    "topics": "dns,k8s,kube-dns,kubernetes"
+  },
+  "kubernetes/enhancements": {
+    "language": "Go",
+    "size": 58567,
+    "stars": 3896,
+    "pushed_at": "2026-07-02T03:03:36Z",
+    "description": "Enhancements tracking repo for Kubernetes",
+    "topics": "enhancements,k8s-sig-architecture,kubernetes,kubernetes-releases"
+  },
+  "kubernetes/examples": {
+    "language": "Shell",
+    "size": 17462,
+    "stars": 6654,
+    "pushed_at": "2026-03-03T17:55:19Z",
+    "description": "Kubernetes application example tutorials",
+    "topics": ""
+  },
+  "kubernetes/gengo": {
+    "language": "Go",
+    "size": 1568,
+    "stars": 579,
+    "pushed_at": "2026-04-08T19:25:34Z",
+    "description": "gengo library for code generation.",
+    "topics": ""
+  },
+  "kubernetes/git-sync": {
+    "language": "Shell",
+    "size": 12106,
+    "stars": 2712,
+    "pushed_at": "2026-07-06T17:40:35Z",
+    "description": "A sidecar app which clones a git repo and keeps it in sync with the upstream.",
+    "topics": ""
+  },
+  "kubernetes/k8s.io": {
+    "language": "HCL",
+    "size": 1518661,
+    "stars": 963,
+    "pushed_at": "2026-07-06T14:10:28Z",
+    "description": "Code and configuration to manage Kubernetes project infrastructure, including various *.k8s.io sites",
+    "topics": "k8s-sig-infra,kubernetes"
+  },
+  "kubernetes/klog": {
+    "language": "Go",
+    "size": 955,
+    "stars": 560,
+    "pushed_at": "2026-03-19T15:30:35Z",
+    "description": "Leveled execution logs for Go (fork of https://github.com/golang/glog)",
+    "topics": "k8s-sig-architecture"
+  },
+  "kubernetes/kompose": {
+    "language": "Go",
+    "size": 45212,
+    "stars": 10554,
+    "pushed_at": "2026-06-15T21:07:52Z",
+    "description": "Convert Compose to Kubernetes",
+    "topics": "containers,docker,docker-compose,go,kubernetes"
+  },
+  "kubernetes/kops": {
+    "language": "Go",
+    "size": 486378,
+    "stars": 16638,
+    "pushed_at": "2026-07-07T04:26:26Z",
+    "description": "Kubernetes Operations (kOps) - Production Grade k8s Installation, Upgrades and Management",
+    "topics": "cncf,containers,go,kops,kubernetes"
+  },
+  "kubernetes/kube-aggregator": {
+    "language": "Go",
+    "size": 24461,
+    "stars": 269,
+    "pushed_at": "2026-07-01T18:53:45Z",
+    "description": "Aggregator for Kubernetes-style API servers: dynamic registration, discovery summarization, secure proxy",
+    "topics": "k8s-staging"
+  },
+  "kubernetes/kube-controller-manager": {
+    "language": "Go",
+    "size": 3232,
+    "stars": 105,
+    "pushed_at": "2026-06-26T19:09:25Z",
+    "description": "kube-controller-manager component configs",
+    "topics": "k8s-staging"
+  },
+  "kubernetes/kube-openapi": {
+    "language": "Go",
+    "size": 7957,
+    "stars": 352,
+    "pushed_at": "2026-07-06T23:56:25Z",
+    "description": "Kubernetes OpenAPI spec generation & serving",
+    "topics": ""
+  },
+  "kubernetes/kube-proxy": {
+    "language": "Go",
+    "size": 2709,
+    "stars": 207,
+    "pushed_at": "2026-06-26T19:08:51Z",
+    "description": "kube-proxy component configs",
+    "topics": "k8s-staging"
+  },
+  "kubernetes/kube-scheduler": {
+    "language": "Go",
+    "size": 3490,
+    "stars": 204,
+    "pushed_at": "2026-07-06T19:31:55Z",
+    "description": "kube-scheduler component configs",
+    "topics": "k8s-staging"
+  },
+  "kubernetes/kube-state-metrics": {
+    "language": "Go",
+    "size": 25590,
+    "stars": 6146,
+    "pushed_at": "2026-07-06T10:42:31Z",
+    "description": "Add-on agent to generate and expose cluster-level metrics.",
+    "topics": "kubernetes,kubernetes-exporter,kubernetes-monitoring,metrics,monitoring,observability,prometheus,prometheus-exporter"
+  },
+  "kubernetes/kubeadm": {
+    "language": "Go",
+    "size": 6612,
+    "stars": 3983,
+    "pushed_at": "2026-06-01T13:52:54Z",
+    "description": "Aggregator for issues filed against kubeadm",
+    "topics": "best-practice,building-block,conformant,getting-started,installer,kubernetes"
+  },
+  "kubernetes/kubectl": {
+    "language": "Go",
+    "size": 43483,
+    "stars": 3307,
+    "pushed_at": "2026-07-02T23:44:23Z",
+    "description": "Issue tracker and mirror of kubectl code",
+    "topics": "k8s-sig-cli,k8s-staging"
+  },
+  "kubernetes/kubelet": {
+    "language": "Go",
+    "size": 4159,
+    "stars": 409,
+    "pushed_at": "2026-07-01T18:54:41Z",
+    "description": "kubelet component configs",
+    "topics": "k8s-staging"
+  },
+  "kubernetes/kubernetes": {
+    "language": "Go",
+    "size": 1487212,
+    "stars": 123459,
+    "pushed_at": "2026-07-07T01:34:27Z",
+    "description": "Production-Grade Container Scheduling and Management",
+    "topics": "cncf,containers,go,kubernetes"
+  },
+  "kubernetes/kubernetes-template-project": {
+    "language": null,
+    "size": 51,
+    "stars": 229,
+    "pushed_at": "2023-05-30T00:59:56Z",
+    "description": "A template for starting new projects on the github.com/kubernetes organization",
+    "topics": ""
+  },
+  "kubernetes/legacy-cloud-providers": {
+    "language": "Go",
+    "size": 6425,
+    "stars": 51,
+    "pushed_at": "2025-06-19T17:19:02Z",
+    "description": "This repository hosts the legacy in-tree cloud providers. Out-of-tree cloud providers can consume packages in this repo to support legacy implementations of their Kubernetes cloud provider.",
+    "topics": "k8s-sig-cloud-provider,k8s-staging"
+  },
+  "kubernetes/metrics": {
+    "language": "Go",
+    "size": 7093,
+    "stars": 532,
+    "pushed_at": "2026-07-01T18:54:10Z",
+    "description": "Kubernetes metrics-related API types and clients",
+    "topics": "k8s-staging"
+  },
+  "kubernetes/minikube": {
+    "language": "Go",
+    "size": 302159,
+    "stars": 31936,
+    "pushed_at": "2026-07-07T01:18:23Z",
+    "description": "Run Kubernetes locally",
+    "topics": "cluster,cncf,containers,go,kubernetes,minikube"
+  },
+  "kubernetes/node-api": {
+    "language": "Go",
+    "size": 2034,
+    "stars": 16,
+    "pushed_at": "2023-04-26T14:13:55Z",
+    "description": null,
+    "topics": "k8s-sig-node,k8s-staging"
+  },
+  "kubernetes/node-problem-detector": {
+    "language": "Go",
+    "size": 37006,
+    "stars": 3424,
+    "pushed_at": "2026-07-06T22:36:34Z",
+    "description": "This is a place for various problem detectors running on the Kubernetes nodes.",
+    "topics": ""
+  },
+  "kubernetes/org": {
+    "language": "Go",
+    "size": 15220,
+    "stars": 295,
+    "pushed_at": "2026-07-03T10:30:21Z",
+    "description": "Meta configuration for Kubernetes Github Org",
+    "topics": "k8s-sig-contribex"
+  },
+  "kubernetes/perf-tests": {
+    "language": "Go",
+    "size": 113785,
+    "stars": 983,
+    "pushed_at": "2026-07-06T00:45:51Z",
+    "description": "Performance tests and benchmarks",
+    "topics": ""
+  },
+  "kubernetes/publishing-bot": {
+    "language": "Go",
+    "size": 13207,
+    "stars": 91,
+    "pushed_at": "2026-07-06T09:00:42Z",
+    "description": "Code behind the robot to publish from staging to real repositories.",
+    "topics": ""
+  },
+  "kubernetes/release": {
+    "language": "Go",
+    "size": 23046,
+    "stars": 505,
+    "pushed_at": "2026-07-06T01:53:13Z",
+    "description": "Release infrastructure for Kubernetes and related components",
+    "topics": "kubernetes,release-infrastructure"
+  },
+  "kubernetes/repo-infra": {
+    "language": "Starlark",
+    "size": 997,
+    "stars": 99,
+    "pushed_at": "2026-06-15T06:52:37Z",
+    "description": "Kubernetes repository infrastucture tools",
+    "topics": "k8s-sig-testing"
+  },
+  "kubernetes/sample-apiserver": {
+    "language": "Go",
+    "size": 23537,
+    "stars": 599,
+    "pushed_at": "2026-07-01T18:53:52Z",
+    "description": "Reference implementation of an apiserver for a custom Kubernetes API.",
+    "topics": "k8s-staging"
+  },
+  "kubernetes/sample-cli-plugin": {
+    "language": "Go",
+    "size": 6797,
+    "stars": 306,
+    "pushed_at": "2026-06-26T19:08:45Z",
+    "description": "Sample kubectl plugin",
+    "topics": "k8s-sig-cli,k8s-staging"
+  },
+  "kubernetes/sample-controller": {
+    "language": "Go",
+    "size": 11593,
+    "stars": 3491,
+    "pushed_at": "2026-07-01T16:42:58Z",
+    "description": "Repository for sample controller. Complements sample-apiserver",
+    "topics": "k8s-staging"
+  },
+  "kubernetes/sig-release": {
+    "language": "Shell",
+    "size": 67527,
+    "stars": 629,
+    "pushed_at": "2026-07-02T23:00:26Z",
+    "description": "Repo for SIG release",
+    "topics": "cncf,k8s-sig-release,kubernetes,kubernetes-sig,release-management,release-planning"
+  },
+  "kubernetes/steering": {
+    "language": null,
+    "size": 266,
+    "stars": 100,
+    "pushed_at": "2026-06-23T02:05:32Z",
+    "description": "The Kubernetes Steering Committee",
+    "topics": ""
+  },
+  "kubernetes/test-infra": {
+    "language": "Go",
+    "size": 253901,
+    "stars": 4006,
+    "pushed_at": "2026-07-07T02:50:25Z",
+    "description": "Test infrastructure for the Kubernetes project.",
+    "topics": "k8s-sig-testing"
+  },
+  "kubernetes/utils": {
+    "language": "Go",
+    "size": 1223,
+    "stars": 379,
+    "pushed_at": "2026-07-07T02:38:25Z",
+    "description": "Non-Kubernetes-specific utility libraries which are consumed by multiple projects.",
+    "topics": "golang,kubernetes"
+  },
+  "kubernetes/website": {
+    "language": "HTML",
+    "size": 559015,
+    "stars": 5294,
+    "pushed_at": "2026-07-07T05:36:26Z",
+    "description": "Kubernetes website and documentation repo: ",
+    "topics": ""
+  },
+  "lightsparkdev/go-sdk": {
+    "language": "Go",
+    "size": 912,
+    "stars": 11,
+    "pushed_at": "2025-07-11T18:36:55Z",
+    "description": "Lightspark Go SDK",
+    "topics": ""
+  },
+  "lightsparkdev/lightspark-rs": {
+    "language": "Rust",
+    "size": 552,
+    "stars": 17,
+    "pushed_at": "2025-09-22T23:03:18Z",
+    "description": "Lightspark Rust SDK",
+    "topics": ""
+  },
+  "lightsparkdev/python-sdk": {
+    "language": "Python",
+    "size": 730,
+    "stars": 17,
+    "pushed_at": "2026-04-29T21:45:42Z",
+    "description": "Lightspark Python SDK",
+    "topics": ""
+  },
+  "nitrojs/nitro": {
+    "language": "TypeScript",
+    "size": 26286,
+    "stars": 10991,
+    "pushed_at": "2026-07-07T03:45:27Z",
+    "description": "Next Generation Server Toolkit. Create web servers with everything you need and deploy them wherever you prefer.",
+    "topics": ""
+  },
+  "nuxt/nuxt": {
+    "language": "TypeScript",
+    "size": 141763,
+    "stars": 60558,
+    "pushed_at": "2026-07-04T03:10:00Z",
+    "description": "the full-stack Vue framework",
+    "topics": "csr,framework,full-stack,hacktoberfest,hybrid,node,nuxt,server-rendering,ssg,ssr,static-site-generator,universal,vue"
+  },
+  "sveltejs/svelte": {
+    "language": "JavaScript",
+    "size": 121471,
+    "stars": 87454,
+    "pushed_at": "2026-07-06T17:27:14Z",
+    "description": "web development for the rest of us",
+    "topics": "compiler,template,ui"
+  },
+  "vercel-labs/agent-skills": {
+    "language": "JavaScript",
+    "size": 11333,
+    "stars": 28753,
+    "pushed_at": "2026-06-10T21:21:47Z",
+    "description": "Vercel's official collection of agent skills",
+    "topics": ""
+  },
+  "vercel-labs/skills": {
+    "language": "TypeScript",
+    "size": 887,
+    "stars": 25276,
+    "pushed_at": "2026-07-07T03:32:51Z",
+    "description": "The open agent skills tool - npx skills",
+    "topics": ""
+  },
+  "vercel/ai": {
+    "language": "TypeScript",
+    "size": 285503,
+    "stars": 25388,
+    "pushed_at": "2026-07-07T02:38:44Z",
+    "description": "The AI Toolkit for TypeScript. From the creators of Next.js, the AI SDK is a free open-source library for building AI-powered applications and agents ",
+    "topics": "anthropic,artificial-intelligence,gemini,generative-ai,generative-ui,javascript,language-model,llm,nextjs,openai,react,svelte,typescript,vercel,vue"
+  },
+  "vercel/async-sema": {
+    "language": "TypeScript",
+    "size": 46,
+    "stars": 657,
+    "pushed_at": "2024-04-18T16:16:16Z",
+    "description": "Semaphore using `async` and `await`",
+    "topics": "async,asynchronous,await,package,semaphore"
+  },
+  "vercel/flags": {
+    "language": "TypeScript",
+    "size": 19715,
+    "stars": 607,
+    "pushed_at": "2026-07-06T14:39:20Z",
+    "description": "Flags SDK by Vercel",
+    "topics": ""
+  },
+  "vercel/ms": {
+    "language": "TypeScript",
+    "size": 446,
+    "stars": 5539,
+    "pushed_at": "2026-05-20T22:24:50Z",
+    "description": "Tiny millisecond conversion utility",
+    "topics": "conversion,milliseconds,utility"
+  },
+  "vercel/next.js": {
+    "language": "JavaScript",
+    "size": 2503836,
+    "stars": 140374,
+    "pushed_at": "2026-07-07T05:29:17Z",
+    "description": "The React Framework",
+    "topics": "blog,browser,compiler,components,hybrid,nextjs,node,react,server-rendering,ssg,static,static-site-generator,universal,vercel"
+  },
+  "vercel/swr": {
+    "language": "TypeScript",
+    "size": 8283,
+    "stars": 32421,
+    "pushed_at": "2026-07-06T15:15:26Z",
+    "description": "React Hooks for Data Fetching",
+    "topics": "cache,data,data-fetching,fetch,hook,hooks,nextjs,react,react-native,stale-while-revalidate,suspense,swr,vercel"
+  },
+  "vercel/turborepo": {
+    "language": "Rust",
+    "size": 821427,
+    "stars": 30664,
+    "pushed_at": "2026-07-07T05:23:26Z",
+    "description": "Build system optimized for JavaScript and TypeScript, written in Rust",
+    "topics": "build-system,build-tool,javascript,monorepo,typescript"
+  },
+  "vercel/vercel": {
+    "language": "TypeScript",
+    "size": 241434,
+    "stars": 15866,
+    "pushed_at": "2026-07-07T05:00:32Z",
+    "description": "Develop. Preview. Ship.",
+    "topics": "cli,cloud,command,hosting,jamstack,ship,vercel"
+  },
+  "vercel/workflow": {
+    "language": "TypeScript",
+    "size": 67764,
+    "stars": 2187,
+    "pushed_at": "2026-07-07T04:20:47Z",
+    "description": "Workflow SDK: Build durable, reliable, and observable apps and AI Agents in TypeScript",
+    "topics": ""
+  },
+  "worldcoin/orb-core": {
+    "language": "Rust",
+    "size": 8584,
+    "stars": 42,
+    "pushed_at": "2026-01-06T04:30:09Z",
+    "description": "Rust binary responsible for signups on the orb",
+    "topics": "keep-until-2025-11-31,keep-until-2028-07-31,managed-by-terraform,team-no-owner"
+  },
+  "worldcoin/orb-firmware": {
+    "language": "C",
+    "size": 27244,
+    "stars": 46,
+    "pushed_at": "2026-06-30T12:48:05Z",
+    "description": "Microcontroller firmware for the orb",
+    "topics": "managed-by-terraform,team-no-owner"
+  },
+  "worldcoin/orb-messages": {
+    "language": "Rust",
+    "size": 189,
+    "stars": 8,
+    "pushed_at": "2026-05-20T15:31:49Z",
+    "description": "Message definitions for the orb",
+    "topics": "managed-by-terraform,team-no-owner"
+  },
+  "worldcoin/orb-relay-messages": {
+    "language": "Rust",
+    "size": 316,
+    "stars": 5,
+    "pushed_at": "2026-07-04T01:03:24Z",
+    "description": "Message schemas for the relay service",
+    "topics": "managed-by-terraform,team-fleet-management"
+  },
+  "worldcoin/orb-rustzone": {
+    "language": "Rust",
+    "size": 117,
+    "stars": 1,
+    "pushed_at": "2026-06-18T18:58:03Z",
+    "description": "orb-rustzone repository",
+    "topics": "managed-by-terraform,team-orb-device"
+  },
+  "worldcoin/orb-secure-element": {
+    "language": "C",
+    "size": 30,
+    "stars": 11,
+    "pushed_at": "2025-07-17T09:02:07Z",
+    "description": "Software that communicates with the orb's secure element",
+    "topics": "keep-until-2028-07-31,managed-by-terraform,team-no-owner"
+  },
+  "worldcoin/orb-software": {
+    "language": "Rust",
+    "size": 45038,
+    "stars": 389,
+    "pushed_at": "2026-07-06T16:38:04Z",
+    "description": "Software for the orb",
+    "topics": "managed-by-terraform,team-no-owner"
   }
 }

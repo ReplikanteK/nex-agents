@@ -1,77 +1,77 @@
 {
-  "scan_date": "2026-07-06T06:07:21Z",
-  "date": "2026-07-06",
+  "scan_date": "2026-07-07T05:48:02Z",
+  "date": "2026-07-07",
   "task": "",
   "platforms": {
-    "hackerone": 451,
+    "hackerone": 452,
     "bugcrowd": 235,
-    "intigriti": 126,
+    "intigriti": 127,
     "yeswehack": 63
   },
   "top_candidate": {
-    "name": "Atlassian",
-    "score": 75
+    "name": "Coinbase",
+    "score": 83
   },
   "ranked_targets": [
     {
-      "name": "Atlassian",
-      "platform": "bugcrowd",
-      "repo": null,
-      "language": null,
-      "score": 75,
-      "base_score": 75,
-      "github_bonus": 0,
-      "max_bounty": 12000,
-      "has_wildcard": true,
-      "managed": true
+      "name": "Coinbase",
+      "platform": "hackerone",
+      "repo": "https://github.com/coinbase/cb-mpc-go",
+      "language": "Go",
+      "score": 83,
+      "base_score": 65,
+      "github_bonus": 18,
+      "max_bounty": null,
+      "has_github_urls": true,
+      "assets_count": 28
     },
     {
-      "name": "Auth0 by Okta",
-      "platform": "bugcrowd",
-      "repo": null,
-      "language": null,
-      "score": 75,
-      "base_score": 75,
-      "github_bonus": 0,
-      "max_bounty": 50000,
-      "has_wildcard": true,
-      "managed": true
+      "name": "Lightspark BBP",
+      "platform": "hackerone",
+      "repo": "https://github.com/lightsparkdev/python-sdk",
+      "language": "Python",
+      "score": 80,
+      "base_score": 60,
+      "github_bonus": 20,
+      "max_bounty": null,
+      "has_github_urls": true,
+      "assets_count": 12
     },
     {
-      "name": "Bitdefender",
-      "platform": "bugcrowd",
-      "repo": null,
-      "language": null,
-      "score": 75,
-      "base_score": 75,
-      "github_bonus": 0,
-      "max_bounty": 15000,
-      "has_wildcard": true,
-      "managed": true
+      "name": "Tools for Humanity",
+      "platform": "hackerone",
+      "repo": "https://github.com/worldcoin/orb-software",
+      "language": "Rust",
+      "score": 77,
+      "base_score": 65,
+      "github_bonus": 12,
+      "max_bounty": null,
+      "has_github_urls": true,
+      "assets_count": 22
     },
     {
-      "name": "Bugcrowd",
-      "platform": "bugcrowd",
-      "repo": null,
-      "language": null,
-      "score": 75,
-      "base_score": 75,
-      "github_bonus": 0,
-      "max_bounty": 10000,
-      "has_wildcard": true,
-      "managed": true
+      "name": "Cosmos",
+      "platform": "hackerone",
+      "repo": "https://github.com/cosmos/ledger-cosmos",
+      "language": "C",
+      "score": 77,
+      "base_score": 60,
+      "github_bonus": 17,
+      "max_bounty": null,
+      "has_github_urls": true,
+      "assets_count": 11
     },
     {
-      "name": "Canva",
-      "platform": "bugcrowd",
-      "repo": null,
-      "language": null,
-      "score": 75,
-      "base_score": 75,
-      "github_bonus": 0,
-      "max_bounty": 15000,
-      "has_wildcard": true,
-      "managed": true
+      "name": "Cloudflare Public Bug Bounty",
+      "platform": "hackerone",
+      "repo": "https://github.com/cloudflare/workerd",
+      "language": "C++",
+      "score": 77,
+      "base_score": 65,
+      "github_bonus": 12,
+      "max_bounty": null,
+      "has_github_urls": true,
+      "assets_count": 52
     }
   ]
 }
