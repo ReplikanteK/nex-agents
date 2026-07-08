@@ -1,74 +1,74 @@
 {
-  "scan_date": "2026-07-07T05:48:02Z",
-  "date": "2026-07-07",
+  "scan_date": "2026-07-08T04:50:30Z",
+  "date": "2026-07-08",
   "task": "",
   "platforms": {
-    "hackerone": 452,
+    "hackerone": 450,
     "bugcrowd": 235,
     "intigriti": 127,
     "yeswehack": 63
   },
   "top_candidate": {
-    "name": "Coinbase",
-    "score": 83
+    "name": "Circle BBP",
+    "score": 65
   },
   "ranked_targets": [
     {
-      "name": "Coinbase",
+      "name": "Circle BBP",
       "platform": "hackerone",
-      "repo": "https://github.com/coinbase/cb-mpc-go",
-      "language": "Go",
-      "score": 83,
+      "repo": null,
+      "language": null,
+      "score": 65,
       "base_score": 65,
-      "github_bonus": 18,
+      "github_bonus": 0,
       "max_bounty": null,
       "has_github_urls": true,
-      "assets_count": 28
-    },
-    {
-      "name": "Lightspark BBP",
-      "platform": "hackerone",
-      "repo": "https://github.com/lightsparkdev/python-sdk",
-      "language": "Python",
-      "score": 80,
-      "base_score": 60,
-      "github_bonus": 20,
-      "max_bounty": null,
-      "has_github_urls": true,
-      "assets_count": 12
+      "assets_count": 29
     },
     {
       "name": "Tools for Humanity",
       "platform": "hackerone",
-      "repo": "https://github.com/worldcoin/orb-software",
-      "language": "Rust",
-      "score": 77,
+      "repo": null,
+      "language": null,
+      "score": 65,
       "base_score": 65,
-      "github_bonus": 12,
+      "github_bonus": 0,
       "max_bounty": null,
       "has_github_urls": true,
       "assets_count": 22
     },
     {
-      "name": "Cosmos",
+      "name": "Kubernetes",
       "platform": "hackerone",
-      "repo": "https://github.com/cosmos/ledger-cosmos",
-      "language": "C",
-      "score": 77,
-      "base_score": 60,
-      "github_bonus": 17,
+      "repo": null,
+      "language": null,
+      "score": 65,
+      "base_score": 65,
+      "github_bonus": 0,
       "max_bounty": null,
       "has_github_urls": true,
-      "assets_count": 11
+      "assets_count": 57
+    },
+    {
+      "name": "Spotify",
+      "platform": "hackerone",
+      "repo": null,
+      "language": null,
+      "score": 65,
+      "base_score": 65,
+      "github_bonus": 0,
+      "max_bounty": null,
+      "has_github_urls": true,
+      "assets_count": 45
     },
     {
       "name": "Cloudflare Public Bug Bounty",
       "platform": "hackerone",
-      "repo": "https://github.com/cloudflare/workerd",
-      "language": "C++",
-      "score": 77,
+      "repo": null,
+      "language": null,
+      "score": 65,
       "base_score": 65,
-      "github_bonus": 12,
+      "github_bonus": 0,
       "max_bounty": null,
       "has_github_urls": true,
       "assets_count": 52

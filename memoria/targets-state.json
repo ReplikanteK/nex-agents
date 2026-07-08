@@ -1,5 +1,5 @@
 {
-  "last_scan": "2026-07-07T05:48:02Z",
+  "last_scan": "2026-07-08T04:50:30Z",
   "targets": {
     "hackerone": [
       {
@@ -879,10 +879,6 @@
         "url": "https://hackerone.com/zurich-insurance"
       },
       {
-        "name": "Particle Health VDP",
-        "url": "https://hackerone.com/particle-health-vdp"
-      },
-      {
         "name": "Krisp",
         "url": "https://hackerone.com/krisp"
       },
@@ -1485,10 +1481,6 @@
       {
         "name": "Monero",
         "url": "https://hackerone.com/monero"
-      },
-      {
-        "name": "UserTesting",
-        "url": "https://hackerone.com/usertesting"
       },
       {
         "name": "Bitwarden",
@@ -3019,10 +3011,6 @@
         "url": "https://www.intigriti.com/programs/nexo/nexo/detail"
       },
       {
-        "name": "Nexuzhealth",
-        "url": "https://www.intigriti.com/programs/nexuzhealth/nexuzhealth/detail"
-      },
-      {
         "name": "Nexuzhealth VDP",
         "url": "https://www.intigriti.com/programs/nexuzhealth/nexuzhealthvdp/detail"
       },
@@ -3053,6 +3041,10 @@
       {
         "name": "Personio",
         "url": "https://www.intigriti.com/programs/personio/personio/detail"
+      },
+      {
+        "name": "Port of Antwerp-Bruges",
+        "url": "https://www.intigriti.com/programs/portofantwerp/portofantwerp/detail"
       },
       {
         "name": "Proof.com VDP",
