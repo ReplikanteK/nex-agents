@@ -1,5 +1,5 @@
 {
-  "last_scan": "2026-07-08T04:50:30Z",
+  "last_scan": "2026-07-09T05:46:18Z",
   "targets": {
     "hackerone": [
       {
@@ -1235,6 +1235,10 @@
         "url": "https://hackerone.com/worklytics"
       },
       {
+        "name": "DefectDojo",
+        "url": "https://hackerone.com/defectdojo"
+      },
+      {
         "name": "Trellix",
         "url": "https://hackerone.com/trellix"
       },
@@ -1499,6 +1503,10 @@
         "url": "https://hackerone.com/bumble"
       },
       {
+        "name": "Codacy",
+        "url": "https://hackerone.com/codacy"
+      },
+      {
         "name": "Spotify",
         "url": "https://hackerone.com/spotify"
       },
@@ -1613,6 +1621,10 @@
       {
         "name": "Wealthsimple",
         "url": "https://hackerone.com/wealthsimple"
+      },
+      {
+        "name": "Home Bargains",
+        "url": "https://hackerone.com/homebargains"
       },
       {
         "name": "Eternal",
@@ -1831,6 +1843,10 @@
       {
         "name": "Aiven Managed Bug Bounty",
         "url": "https://bugcrowd.com/engagements/aiven-mbb-og"
+      },
+      {
+        "name": "AppLiger",
+        "url": "https://bugcrowd.com/engagements/appliger"
       },
       {
         "name": "Appsvio Marketplace Bug Bounty",
@@ -2101,6 +2117,10 @@
         "url": "https://bugcrowd.com/engagements/felix-health-mbb-og"
       },
       {
+        "name": "55 Degrees",
+        "url": "https://bugcrowd.com/engagements/fiftyfivedegrees"
+      },
+      {
         "name": "Certinia (formerly FinancialForce)",
         "url": "https://bugcrowd.com/engagements/financialforce"
       },
@@ -2155,6 +2175,10 @@
       {
         "name": "The Hut Group: Public Managed Bug Bounty Engagement",
         "url": "https://bugcrowd.com/engagements/hutgroup-public"
+      },
+      {
+        "name": "Hypixel Studios Managed Bug Bounty Engagement",
+        "url": "https://bugcrowd.com/engagements/hypixel-studios-mbb-og"
       },
       {
         "name": "Ibotta",
@@ -2413,6 +2437,10 @@
         "url": "https://bugcrowd.com/engagements/optus-mbb-og"
       },
       {
+        "name": "Opus Guard Marketplace Managed Bug Bounty Engagement",
+        "url": "https://bugcrowd.com/engagements/opus-guard-market"
+      },
+      {
         "name": "Orderly Network: Bug Bounty Program",
         "url": "https://bugcrowd.com/engagements/orderlynetwork-mbb-og"
       },
@@ -2519,6 +2547,10 @@
       {
         "name": "Requirement Yogi (Bug bounty)",
         "url": "https://bugcrowd.com/engagements/requirement-yogi"
+      },
+      {
+        "name": "RV Softwares Marketplace Bug Bounty Program",
+        "url": "https://bugcrowd.com/engagements/rv-softwares"
       },
       {
         "name": "SAP Invitational Bug Bounty Program",
@@ -2851,6 +2883,10 @@
         "url": "https://www.intigriti.com/programs/dpgm/dpgmedia/detail"
       },
       {
+        "name": "Dashlane Vulnerability Disclosure Program",
+        "url": "https://www.intigriti.com/programs/dashlane/dashlanevulnerabilitydisclosureprogram/detail"
+      },
+      {
         "name": "De Morgen",
         "url": "https://www.intigriti.com/programs/dpgm/demorgen/detail"
       },
@@ -3121,10 +3157,6 @@
       {
         "name": "The Perfume Shop",
         "url": "https://www.intigriti.com/programs/aswatson/theperfumeshop/detail"
-      },
-      {
-        "name": "Toast VDP",
-        "url": "https://www.intigriti.com/programs/toast/toastvdp/detail"
       },
       {
         "name": "Tomorrowland",
