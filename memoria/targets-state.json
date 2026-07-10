@@ -1,5 +1,5 @@
 {
-  "last_scan": "2026-07-09T05:46:18Z",
+  "last_scan": "2026-07-10T05:43:50Z",
   "targets": {
     "hackerone": [
       {
@@ -1373,10 +1373,6 @@
       {
         "name": "PayPal",
         "url": "https://hackerone.com/paypal"
-      },
-      {
-        "name": "MariaDB",
-        "url": "https://hackerone.com/mariadb"
       },
       {
         "name": "Chaturbate",
@@ -2771,10 +2767,6 @@
       {
         "name": "Zola Managed Bug Bounty ",
         "url": "https://bugcrowd.com/engagements/zola-mbb-og"
-      },
-      {
-        "name": "Bugcrowd Bug Bounty",
-        "url": "https://gov.bugcrowd.net/engagements/bugcrowd-mbb-og"
       }
     ],
     "intigriti": [
@@ -2887,6 +2879,10 @@
         "url": "https://www.intigriti.com/programs/dashlane/dashlanevulnerabilitydisclosureprogram/detail"
       },
       {
+        "name": "DataCamp",
+        "url": "https://www.intigriti.com/programs/datacamp/datacamp/detail"
+      },
+      {
         "name": "De Morgen",
         "url": "https://www.intigriti.com/programs/dpgm/demorgen/detail"
       },
@@ -2997,10 +2993,6 @@
       {
         "name": "Kruidvat",
         "url": "https://www.intigriti.com/programs/aswatson/kruidvat/detail"
-      },
-      {
-        "name": "Lansweeper Bug Bounty Program",
-        "url": "https://www.intigriti.com/programs/lansweeper/lansweeper1/detail"
       },
       {
         "name": "Libelle",
