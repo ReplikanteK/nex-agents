@@ -437,7 +437,7 @@ fetch_repo_batch() {
     fi
     
     # Parse response
-    lang=$(echo "$api_resp" | jq -r '.language // "unknown"')
+    lang=$(echo "$api_resp" | jq -r '.language // empty | if type == "string" then . else "unknown" end')
     size=$(echo "$api_resp" | jq -r '.size // 0')
     stars=$(echo "$api_resp" | jq -r '.stargazers_count // 0')
     pushed=$(echo "$api_resp" | jq -r '.pushed_at // ""')
