@@ -1,152 +1,172 @@
 [
   {
+    "name": "Doppler",
+    "platform": "hackerone",
+    "score_total": 66,
+    "score_breakdown": {
+      "fit": 19,
+      "track_record": 17,
+      "roi": 17,
+      "accessibility": 13
+    },
+    "metadata": {
+      "language": "Go",
+      "max_bounty": null,
+      "assets_count": 6,
+      "has_github": true
+    }
+  },
+  {
     "name": "Circle BBP",
     "platform": "hackerone",
-    "url": "https://hackerone.com/circle-bbp",
-    "repo": null,
-    "language": null,
-    "stars": 0,
-    "score": 65,
-    "base_score": 65,
-    "github_bonus": 0,
-    "max_bounty": null,
-    "has_github_urls": true,
-    "assets_count": 29,
-    "scored_at": "2026-07-12T04:57:27Z"
+    "score_total": 64,
+    "score_breakdown": {
+      "fit": 21,
+      "track_record": 17,
+      "roi": 13,
+      "accessibility": 13
+    },
+    "metadata": {
+      "language": "Go",
+      "max_bounty": null,
+      "assets_count": 29,
+      "has_github": true
+    }
   },
   {
-    "name": "Tools for Humanity",
+    "name": "Chia Network",
     "platform": "hackerone",
-    "url": "https://hackerone.com/toolsforhumanity",
-    "repo": null,
-    "language": null,
-    "stars": 0,
-    "score": 65,
-    "base_score": 65,
-    "github_bonus": 0,
-    "max_bounty": null,
-    "has_github_urls": true,
-    "assets_count": 22,
-    "scored_at": "2026-07-12T04:57:27Z"
-  },
-  {
-    "name": "Kubernetes",
-    "platform": "hackerone",
-    "url": "https://hackerone.com/kubernetes",
-    "repo": null,
-    "language": null,
-    "stars": 0,
-    "score": 65,
-    "base_score": 65,
-    "github_bonus": 0,
-    "max_bounty": null,
-    "has_github_urls": true,
-    "assets_count": 57,
-    "scored_at": "2026-07-12T04:57:27Z"
-  },
-  {
-    "name": "Spotify",
-    "platform": "hackerone",
-    "url": "https://hackerone.com/spotify",
-    "repo": null,
-    "language": null,
-    "stars": 0,
-    "score": 65,
-    "base_score": 65,
-    "github_bonus": 0,
-    "max_bounty": null,
-    "has_github_urls": true,
-    "assets_count": 45,
-    "scored_at": "2026-07-12T04:57:27Z"
-  },
-  {
-    "name": "Cloudflare Public Bug Bounty",
-    "platform": "hackerone",
-    "url": "https://hackerone.com/cloudflare",
-    "repo": null,
-    "language": null,
-    "stars": 0,
-    "score": 65,
-    "base_score": 65,
-    "github_bonus": 0,
-    "max_bounty": null,
-    "has_github_urls": true,
-    "assets_count": 52,
-    "scored_at": "2026-07-12T04:57:27Z"
-  },
-  {
-    "name": "Coinbase",
-    "platform": "hackerone",
-    "url": "https://hackerone.com/coinbase",
-    "repo": null,
-    "language": null,
-    "stars": 0,
-    "score": 65,
-    "base_score": 65,
-    "github_bonus": 0,
-    "max_bounty": null,
-    "has_github_urls": true,
-    "assets_count": 28,
-    "scored_at": "2026-07-12T04:57:27Z"
+    "score_total": 64,
+    "score_breakdown": {
+      "fit": 20,
+      "track_record": 14,
+      "roi": 17,
+      "accessibility": 13
+    },
+    "metadata": {
+      "language": "Python",
+      "max_bounty": null,
+      "assets_count": 9,
+      "has_github": true
+    }
   },
   {
     "name": "HackerOne",
     "platform": "hackerone",
-    "url": "https://hackerone.com/security",
-    "repo": null,
-    "language": null,
-    "stars": 0,
-    "score": 65,
-    "base_score": 65,
-    "github_bonus": 0,
-    "max_bounty": null,
-    "has_github_urls": true,
-    "assets_count": 24,
-    "scored_at": "2026-07-12T04:57:27Z"
+    "score_total": 64,
+    "score_breakdown": {
+      "fit": 21,
+      "track_record": 17,
+      "roi": 13,
+      "accessibility": 13
+    },
+    "metadata": {
+      "language": "TypeScript",
+      "max_bounty": null,
+      "assets_count": 24,
+      "has_github": true
+    }
+  },
+  {
+    "name": "Chainlink",
+    "platform": "hackerone",
+    "score_total": 63,
+    "score_breakdown": {
+      "fit": 19,
+      "track_record": 14,
+      "roi": 17,
+      "accessibility": 13
+    },
+    "metadata": {
+      "language": "Go",
+      "max_bounty": null,
+      "assets_count": 6,
+      "has_github": true
+    }
   },
   {
     "name": "Vercel Open Source",
     "platform": "hackerone",
-    "url": "https://hackerone.com/vercel-open-source",
-    "repo": null,
-    "language": null,
-    "stars": 0,
-    "score": 60,
-    "base_score": 60,
-    "github_bonus": 0,
-    "max_bounty": null,
-    "has_github_urls": true,
-    "assets_count": 17,
-    "scored_at": "2026-07-12T04:57:27Z"
+    "score_total": 62,
+    "score_breakdown": {
+      "fit": 19,
+      "track_record": 17,
+      "roi": 13,
+      "accessibility": 13
+    },
+    "metadata": {
+      "language": "TypeScript",
+      "max_bounty": null,
+      "assets_count": 17,
+      "has_github": true
+    }
   },
   {
-    "name": "Lightspark BBP",
+    "name": "Slack",
     "platform": "hackerone",
-    "url": "https://hackerone.com/lightspark_bbp",
-    "repo": null,
-    "language": null,
-    "stars": 0,
-    "score": 60,
-    "base_score": 60,
-    "github_bonus": 0,
-    "max_bounty": null,
-    "has_github_urls": true,
-    "assets_count": 12,
-    "scored_at": "2026-07-12T04:57:27Z"
+    "score_total": 62,
+    "score_breakdown": {
+      "fit": 19,
+      "track_record": 17,
+      "roi": 13,
+      "accessibility": 13
+    },
+    "metadata": {
+      "language": "Go",
+      "max_bounty": null,
+      "assets_count": 19,
+      "has_github": true
+    }
+  },
+  {
+    "name": "Node.js",
+    "platform": "hackerone",
+    "score_total": 61,
+    "score_breakdown": {
+      "fit": 17,
+      "track_record": 14,
+      "roi": 17,
+      "accessibility": 13
+    },
+    "metadata": {
+      "language": "JavaScript",
+      "max_bounty": null,
+      "assets_count": 1,
+      "has_github": true
+    }
   },
   {
     "name": "Cosmos",
     "platform": "hackerone",
-    "url": "https://hackerone.com/cosmos",
-    "repo": null,
-    "language": null,
-    "stars": 0,
-    "score": 60,
-    "base_score": 60,
-    "github_bonus": 0,
-    "max_bounty": null,
-    "has_github_urls": true,
-    "assets_count": 11,
-    "scored_at": "2026-07-12T04:57:27Z"
+    "score_total": 59,
+    "score_breakdown": {
+      "fit": 19,
+      "track_record": 14,
+      "roi": 13,
+      "accessibility": 13
+    },
+    "metadata": {
+      "language": "Go",
+      "max_bounty": null,
+      "assets_count": 11,
+      "has_github": true
+    }
+  },
+  {
+    "name": "Spotify",
+    "platform": "hackerone",
+    "score_total": 59,
+    "score_breakdown": {
+      "fit": 21,
+      "track_record": 17,
+      "roi": 8,
+      "accessibility": 13
+    },
+    "metadata": {
+      "language": "TypeScript",
+      "max_bounty": null,
+      "assets_count": 45,
+      "has_github": true
+    }
   }
 ]
