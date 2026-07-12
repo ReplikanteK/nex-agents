@@ -125,7 +125,7 @@ jobs:
           fi
           
           echo "[agent3] Running entrypoint (execute only)..."
-          timeout 2700 gh codespace ssh -c "$CS" -- "cd /workspaces/nex-agents && git fetch origin && git reset --hard origin/main && bash setup/execute.sh $GH_PAT" 2>&1
+          timeout 3600 gh codespace ssh -c "$CS" -- "cd /workspaces/nex-agents && git fetch origin && git reset --hard origin/main && bash setup/execute.sh $GH_PAT" 2>&1
           echo "[agent3] Done"
 
       - name: Always cleanup
