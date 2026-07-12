@@ -1,192 +1,143 @@
 #!/usr/bin/env bash
 set -uo pipefail
 
-# execute.sh - Run on codespace (costs minutes)
-# Only handles task execution, enrichment is already done
+# execute.sh - Execute security analysis on selected target
+# Runs on Codespace (with opencode)
+# Uses personalized selection from agent3-latest.json
 
 GH_PAT="${1:-${GITHUB_TOKEN:-}}"
 [ -z "$GH_PAT" ] && echo "[execute] No token" && exit 1
 export GH_TOKEN="$GH_PAT"
-export GIT_TERMINAL_PROMPT=0
-export PATH="$HOME/.local/bin:$PATH"
 
 TS=$(date -u +%Y-%m-%dT%H:%M:%SZ)
-DATE=$(date +%Y-%m-%d)
-DOW=$(date +%u)
-echo "[execute] $TS - Execute starting... (day $DOW)"
+echo "[execute] $TS - Starting personalized execution..."
 
-# === Health ===
-# Install gh CLI if missing (binary download to ~/.local/bin - no sudo needed)
-if ! command -v gh &>/dev/null; then
-  echo "[execute] gh not installed. Installing..."
-  mkdir -p "$HOME/.local/bin"
-  curl -fsSL https://github.com/cli/cli/releases/download/v2.96.0/gh_2.96.0_linux_amd64.tar.gz | tar xz -C "$HOME/.local/bin" --strip-components=2 gh_2.96.0_linux_amd64/bin/gh 2>/dev/null
-fi
-
-for cmd in gh git curl jq; do
+# === Health check ===
+for cmd in gh git curl jq opencode; do
   command -v "$cmd" &>/dev/null || { echo "[execute] Missing: $cmd"; exit 1; }
 done
 
-OPENCODE_AVAIL=0
-command -v opencode &>/dev/null && OPENCODE_AVAIL=1
-if [ "$OPENCODE_AVAIL" -eq 0 ]; then
-  echo "[execute] opencode not installed. Installing..."
-  curl -fsSL https://opencode.ai/install | bash
-  export PATH="$HOME/.opencode/bin:$PATH"
-  command -v opencode &>/dev/null && OPENCODE_AVAIL=1
-  [ "$OPENCODE_AVAIL" -eq 0 ] && echo "[execute] WARNING: opencode install failed"
-fi
-
-# === Repo sync ===
-REPO_DIR="/workspaces/nex-agents"
-if [ ! -d "$REPO_DIR/.git" ]; then
-  [ -d "$HOME/nex-agents/.git" ] && REPO_DIR="$HOME/nex-agents" || {
-    gh repo clone ReplikanteK/nex-agents "$HOME/nex-agents" 2>/dev/null || true
-    [ -d "$HOME/nex-agents/.git" ] && REPO_DIR="$HOME/nex-agents" || { echo "[execute] FAIL: no repo"; exit 1; }
-  }
-fi
+# === Load configuration ===
+REPO_DIR="${GITHUB_WORKSPACE:-$(pwd)}"
 cd "$REPO_DIR" || exit 1
-gh auth setup-git 2>/dev/null || true
-git pull origin main 2>/dev/null || true
 
-# Sync opencode config
-export OPENCODE_HOME="$HOME/.opencode"
-mkdir -p "$OPENCODE_HOME"
-cp -r .opencode/* "$OPENCODE_HOME/" 2>/dev/null || true
+# Load K Profile
+K_PROFILE="memoria/k-profile.json"
+if [ ! -f "$K_PROFILE" ]; then
+  echo "[execute] ERROR: K-profile not found"
+  exit 1
+fi
 
-# === Load enrichment results ===
-RANKED_FILE="memoria/targets-ranked.json"
-TOP_CANDIDATES=$(jq -r '.[0] // empty' "$RANKED_FILE" 2>/dev/null)
-TOP_SCORE=$(echo "$TOP_CANDIDATES" | jq -r '.score // 0' 2>/dev/null)
+# Load agent3-latest.json
+AGENT3_FILE="memoria/agent3-latest.json"
+if [ ! -f "$AGENT3_FILE" ]; then
+  echo "[execute] ERROR: agent3-latest.json not found"
+  exit 1
+fi
 
-echo "[execute] Top candidate: $(echo "$TOP_CANDIDATES" | jq -r '.name // "none"') (score: $TOP_SCORE)"
+# === Check for pending manual tasks ===
+TASKS_DIR="tasks"
+PENDING_TASKS=$(find "$TASKS_DIR" -name "*.md" -not -path "*/done/*" 2>/dev/null | head -1)
 
-# === Task Selection ===
-TASKS_DONE=0
-MAX_TASKS_PER_RUN=1
-TASK_NAME=""
-TASK_FILE=""
-
-process_task() {
-  local file="$1"
-  TASK_FILE="$file"
-  TASK_NAME=$(basename "$file" .md)
-  echo "[execute] Task: $TASK_NAME"
-  sed -i 's/Estado: pending/Estado: in_progress/' "$file" 2>/dev/null || true
-  sed -i "s/Iniciado:.*/Iniciado: $TS/" "$file" 2>/dev/null || true
-}
-
-auto_create_task() {
-  local name="$1" desc="$2" output="$3"
-  TASK_NAME="$name"
-  TASK_FILE="tasks/${name}.md"
-  mkdir -p tasks
+if [ -n "$PENDING_TASKS" ]; then
+  echo "[execute] Found pending task: $PENDING_TASKS"
+  TASK_FILE="$PENDING_TASKS"
+else
+  echo "[execute] No pending tasks, checking selected targets..."
+  
+  # === Get selected target from personalized selection ===
+  SELECTED_TARGET=$(jq -r '.selected_targets[0] // empty' "$AGENT3_FILE" 2>/dev/null)
+  
+  if [ -z "$SELECTED_TARGET" ]; then
+    echo "[execute] No selected targets available"
+    echo "[execute] Light day - no work to do"
+    exit 0
+  fi
+  
+  # Extract target info
+  TARGET_NAME=$(echo "$SELECTED_TARGET" | jq -r '.name // ""')
+  TARGET_PLATFORM=$(echo "$SELECTED_TARGET" | jq -r '.platform // ""')
+  TARGET_SCORE=$(echo "$SELECTED_TARGET" | jq -r '.score_total // 0')
+  TARGET_WHY=$(echo "$SELECTED_TARGET" | jq -r '.justification.why // "Selected by personalized scoring"')
+  TARGET_SKILLS=$(echo "$SELECTED_TARGET" | jq -r '.justification.skills_to_apply | join(", ") // "auth_bypass,idor"')
+  TARGET_HOURS=$(echo "$SELECTED_TARGET" | jq -r '.justification.estimated_hours // 4')
+  TARGET_BOUNTY=$(echo "$SELECTED_TARGET" | jq -r '.justification.estimated_bounty // 1000')
+  
+  echo "[execute] Selected target: $TARGET_NAME ($TARGET_PLATFORM)"
+  echo "[execute] Score: $TARGET_SCORE"
+  echo "[execute] Why: $TARGET_WHY"
+  echo "[execute] Skills to apply: $TARGET_SKILLS"
+  echo "[execute] Estimated hours: $TARGET_HOURS"
+  echo "[execute] Estimated bounty: \$$TARGET_BOUNTY"
+  
+  # Create task file
+  TASK_FILE="tasks/$(date +%Y%m%d)-${TARGET_NAME// /-}.md"
   cat > "$TASK_FILE" << TASKEOF
-# Task: $desc
-### Origen: agent3 (auto)
-### Prioridad: alta
-### Estado: in_progress
-### Iniciado: $TS
+# Task: $TARGET_NAME
 
-$output
+## Target Information
+- **Name**: $TARGET_NAME
+- **Platform**: $TARGET_PLATFORM
+- **Personalized Score**: $TARGET_SCORE
+- **Why Selected**: $TARGET_WHY
+- **Skills to Apply**: $TARGET_SKILLS
+- **Estimated Hours**: $TARGET_HOURS
+- **Estimated Bounty**: \$$TARGET_BOUNTY
+
+## Task Objectives
+1. Reconnaissance and scope verification
+2. Security code review (if open source)
+3. Dynamic testing (API/web application)
+4. Vulnerability identification and PoC development
+
+## Personalized Context
+This target was selected based on K's profile:
+- Skills fit: Language and vulnerability class match
+- Track record: Similar successful patterns
+- ROI: Bounty potential vs time investment
+- Accessibility: Code availability and testability
+
+## Expected Deliverables
+- Reconnaissance report
+- Vulnerability findings with severity ratings
+- PoC for any confirmed vulnerabilities
+- Submission-ready report (if applicable)
+
+## Time Budget
+- **Total**: $TARGET_HOURS hours
+- **Phase 1 (Recon)**: 1 hour
+- **Phase 2 (Analysis)**: 2 hours
+- **Phase 3 (Testing)**: 1 hour
 TASKEOF
-  echo "[execute] Created: $name"
-}
+  
+  echo "[execute] Task created: $TASK_FILE"
+fi
 
-# Check pending backlog first
-PENDING_TASK=$(find tasks/ -maxdepth 1 -name "*.md" ! -name "template.md" -exec grep -L 'Estado:.*completed' {} \; 2>/dev/null | head -1)
-if [ -n "$PENDING_TASK" ]; then
-  process_task "$PENDING_TASK"
-elif [ "$TOP_SCORE" -ge 65 ] && [ "$OPENCODE_AVAIL" -eq 1 ]; then
-  TARGET_NAME=$(echo "$TOP_CANDIDATES" | jq -r '.name')
-  TARGET_REPO=$(echo "$TOP_CANDIDATES" | jq -r '.repo')
-  TARGET_LANG=$(echo "$TOP_CANDIDATES" | jq -r '.language')
-  TARGET_URL=$(echo "$TOP_CANDIDATES" | jq -r '.url // empty')
+# === Execute task with opencode ===
+echo "[execute] Running opencode on task..."
+TIMEOUT=1200  # 20 minutes
 
-  # Validate repo exists and is cloneable
-  HAS_REPO="false"
-  if [ "$TARGET_REPO" != "null" ] && [ -n "$TARGET_REPO" ]; then
-    if git ls-remote "https://github.com/$TARGET_REPO.git" &>/dev/null; then
-      HAS_REPO="true"
-    fi
+if timeout $TIMEOUT opencode run --dangerously-skip-permissions "$TASK_FILE" 2>&1; then
+  echo "[execute] Task completed successfully"
+  
+  # Move to done
+  mv "$TASK_FILE" "tasks/done/$(basename "$TASK_FILE")" 2>/dev/null || true
+  
+  # Git commit
+  git add tasks/ memoria/ reports/ 2>/dev/null || true
+  if ! git diff --cached --quiet 2>/dev/null; then
+    git -c user.name="execute-bot" -c user.email="execute@nex.local" commit -m "execute: completed task $(basename "$TASK_FILE")" 2>/dev/null || true
+    git push origin main 2>/dev/null && echo "[execute] Pushed" || echo "[execute] Push failed"
   fi
-
-  if [ "$HAS_REPO" = "true" ]; then
-    # Phase 1: Scout triage (repo-based)
-    SCOUT_FILE="reports/scout-${DATE}-${TARGET_NAME// /-}.md"
-    echo "[execute] Phase 1: Scout triage on $TARGET_NAME (repo: $TARGET_REPO)..."
-    OPENCODE_DANGEROUSLY_SKIP_PERMISSIONS=true timeout 300 opencode run --dangerously-skip-permissions \
-      "Use the scout subagent to perform reconnaissance on this target. Repo: $TARGET_REPO, Language: $TARGET_LANG. Produce a structured recon report with: tech stack, key modules, auth mechanisms, API surface, and recommended test vectors. Output to: $SCOUT_FILE" \
-      -f "$SCOUT_FILE" 2>&1 || true
-
-    # Phase 2: Code review
-    REVIEW_FILE="reports/codereview-${DATE}-${TARGET_NAME// /-}.md"
-    echo "[execute] Phase 2: Code review on $TARGET_NAME..."
-    auto_create_task "codereview-${DATE}-${TARGET_NAME// /-}" "Code review of $TARGET_NAME" \
-"### Objetivo
-Clona https://github.com/$TARGET_REPO y realiza un code review de seguridad.
-Enfoque: input parsing, auth logic, trust boundary crossings, logging de datos sensibles.
-Lenguaje: $TARGET_LANG. Aplica patrones del skill correspondiente.
-Output: $REVIEW_FILE
-
-### Nota
-Si el repo no es clonable, haz web recon en su lugar y guarda en $SCOUT_FILE"
-  else
-    # No repo available - web recon only
-    SCOUT_FILE="reports/webrecon-${DATE}-${TARGET_NAME// /-}.md"
-    echo "[execute] No repo for $TARGET_NAME. Running web recon instead..."
-    OPENCODE_DANGEROUSLY_SKIP_PERMISSIONS=true timeout 300 opencode run --dangerously-skip-permissions \
-      "Perform web reconnaissance on this bounty target: $TARGET_NAME. Analyze their public-facing applications, API endpoints, technology stack (via HTTP headers, JS files, etc.), and identify potential attack surface. Check for common misconfigs, exposed panels, and interesting endpoints. Output to: $SCOUT_FILE" \
-      -f "$SCOUT_FILE" 2>&1 || true
-    
-    echo "[execute] Skipping code review (no repo available). Web recon saved."
-  fi
-
-elif [ "$OPENCODE_AVAIL" -eq 1 ]; then
-  echo "[execute] No target with score ≥65. Light day."
-  case "$DOW" in
-    5)
-      auto_create_task "maintenance-${DATE}" "Weekly maintenance" \
-"### Objetivo
-1. Revisa reportes activos pendientes
-2. Resume cambios semanales en bounty landscape
-3. Deja brief para agent1
-Output: reports/maintenance-${DATE}.md" ;;
-    *) echo "[execute] No task created." ;;
-  esac
+  
+  echo "[execute] Done"
+  exit 0
+else
+  echo "[execute] Task failed or timed out"
+  
+  # Create failure issue
+  FAIL_MSG="Task failed: $(basename "$TASK_FILE") at $TS"
+  gh issue create --title "Execute Failure: $(basename "$TASK_FILE")" --body "$FAIL_MSG" 2>/dev/null || true
+  
+  exit 1
 fi
-
-# === Execute task ===
-run_opencode_task() {
-  local file="$1"
-  local max_time="${2:-1200}"
-  local objective
-  objective=$(awk '/### Objetivo/{found=1; next} found && /^###/{exit} found' "$file" | head -30)
-  [ -z "$objective" ] && echo "[execute] No objective in $file" && return 1
-  echo "[execute] Running opencode (${max_time}s timeout)..."
-  echo "[execute] Objective: ${objective:0:120}..."
-  [ -f "$file" ] && opencode run --dangerously-skip-permissions \
-    "Execute this task: $objective" \
-    -f "$file" 2>&1 || true
-  sed -i 's/Estado: in_progress/Estado: completed/' "$file" 2>/dev/null || true
-  mv "$file" tasks/done/ 2>/dev/null || true
-  TASKS_DONE=$((TASKS_DONE + 1))
-}
-
-if [ -n "$TASK_FILE" ] && [ "$OPENCODE_AVAIL" -eq 1 ]; then
-  run_opencode_task "$TASK_FILE"
-elif [ -n "$TASK_FILE" ] && [ "$OPENCODE_AVAIL" -eq 0 ]; then
-  echo "[execute] Task pending but opencode not available"
-  sed -i 's/Estado: in_progress/Estado: completed/' "$TASK_FILE" 2>/dev/null || true
-  mv "$TASK_FILE" tasks/done/ 2>/dev/null || true
-fi
-
-# === Commit and push ===
-git add reports/ memoria/ tasks/ .opencode/ setup/ 2>/dev/null || true
-if ! git diff --cached --quiet 2>/dev/null; then
-  git -c user.name="agent3" -c user.email="agent3@nex.local" commit -m "agent3: execute ${DATE}" 2>/dev/null || true
-  git push origin main 2>/dev/null && echo "[execute] Pushed" || echo "[execute] Push failed"
-fi
-
-echo "[execute] Done"
-exit 0
