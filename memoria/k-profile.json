@@ -1,0 +1,106 @@
+{
+  "version": "1.0",
+  "last_updated": "2026-07-12",
+  
+  "skills": {
+    "languages": {
+      "python": {"level": "advanced", "weight": 0.9},
+      "go": {"level": "advanced", "weight": 0.85},
+      "rust": {"level": "intermediate", "weight": 0.7},
+      "c_cpp": {"level": "intermediate", "weight": 0.65},
+      "javascript_typescript": {"level": "advanced", "weight": 0.8},
+      "java": {"level": "intermediate", "weight": 0.6}
+    },
+    "vuln_classes": {
+      "ssrf": {"success_rate": 0.8, "instances": 3},
+      "idor": {"success_rate": 0.7, "instances": 2},
+      "auth_bypass": {"success_rate": 0.85, "instances": 4},
+      "path_traversal": {"success_rate": 0.75, "instances": 2},
+      "injection": {"success_rate": 0.6, "instances": 1},
+      "memory_corruption": {"success_rate": 0.5, "instances": 1},
+      "logic_flaws": {"success_rate": 0.7, "instances": 3},
+      "auto_creation_abuse": {"success_rate": 0.9, "instances": 2}
+    },
+    "attack_surfaces": {
+      "web_api": {"preference": "high", "success_rate": 0.8},
+      "web_app": {"preference": "high", "success_rate": 0.75},
+      "mobile_app": {"preference": "medium", "success_rate": 0.6},
+      "cli_tool": {"preference": "low", "success_rate": 0.4},
+      "infrastructure": {"preference": "medium", "success_rate": 0.5}
+    }
+  },
+  
+  "track_record": {
+    "successful_patterns": [
+      {"pattern": "SSRF via dependency URL", "target": "Dependabot", "bounty": 0, "date": "2026-04"},
+      {"pattern": "Symlink traversal", "target": "GitHub Actions", "bounty": 0, "date": "2026-05"},
+      {"pattern": "Auto-creation abuse", "target": "Mozilla Relay", "bounty": 1000, "date": "2026-06"},
+      {"pattern": "PAT Scope Injection", "target": "GitLab Shell", "bounty": 0, "date": "2026-05"},
+      {"pattern": "JWT Hardcoded Secret", "target": "SecuTix", "bounty": null, "date": "2026-06"},
+      {"pattern": "IDOR PII Disclosure", "target": "SecuTix", "bounty": null, "date": "2026-06"}
+    ],
+    "failed_patterns": [
+      {"pattern": "Open Redirect", "reason": "Low severity, often not bounty-eligible", "instances": 2},
+      {"pattern": "Debug logging", "reason": "Needs real deployment to demonstrate impact", "instances": 1},
+      {"pattern": "Functional bugs", "reason": "Not security, no bounty", "instances": 1}
+    ],
+    "platform_status": {
+      "hackerone": {
+        "signal_score": -1.00,
+        "trial_reports_exhausted": true,
+        "reports_in_triage": 5,
+        "cooldown_until": null,
+        "can_submit": false
+      },
+      "bugcrowd": {
+        "signal_score": -1.00,
+        "trial_reports_exhausted": true,
+        "cooldown_until": "2026-08-10",
+        "suspension_reason": "Multiple low-quality reports",
+        "can_submit": false
+      },
+      "intigriti": {
+        "submission_limit_reached": true,
+        "cooldown_until": null,
+        "can_submit": false
+      },
+      "yeswehack": {
+        "kyc_completed": true,
+        "reports_pending": 2,
+        "cooldown_until": null,
+        "can_submit": true
+      }
+    }
+  },
+  
+  "preferences": {
+    "max_concurrent_targets": 5,
+    "timebox_per_target_hours": 4,
+    "min_bounty_usd": 500,
+    "prefer_open_source": true,
+    "prefer_new_programs": true,
+    "avoid_governments": true,
+    "avoid_saturated_programs": true,
+    "max_reports_per_month": 4,
+    "preferred_platforms": ["yeswehack"],
+    "avoid_platforms": ["bugcrowd"]
+  },
+  
+  "successful_target_patterns": {
+    "program_characteristics": [
+      "Open source with accessible codebase",
+      "Active triaging (response < 7 days)",
+      "Bounty range $500-$10,000",
+      "Less than 200 reports/90 days",
+      "Security-focused (not just informational)",
+      "Python/Go/Rust codebases"
+    ],
+    "code_characteristics": [
+      "REST APIs with authentication",
+      "File upload/processing",
+      "Third-party integrations",
+      "Authentication/authorization logic",
+      "Auto-creation/registration flows"
+    ]
+  }
+}
