@@ -140,11 +140,11 @@ for platform_data in "hackerone:$H1_JSON:H1" "bugcrowd:$BC_JSON:BC" "intigriti:$
      {name: .name, url: .url, platform: $platform,
       offers_bounties: (.offers_bounties // false),
       managed: (.managed_program // .managed_by_bugcrowd // false),
-      max_bounty: (.max_bounty.value // .max_payout // null),
-      assets_count: ([.targets.in_scope[] | select(.eligible_for_bounty == true)] | length),
+      max_bounty: (if (.max_bounty | type) == "object" then .max_bounty.value else .max_bounty end),
+      assets_count: ([.targets.in_scope[] | select(.eligible_for_bounty == true or .eligible_for_bounty == null)] | length),
       github_urls: [.targets.in_scope[] |
         (.asset_identifier // .target // .uri // .endpoint // "") |
-        select(test("github\\.com/[A-Za-z0-9_.-]+/[A-Za-z0-9_*.+-]+"))]}]
+        select(length > 0 and test("github\\.com/[A-Za-z0-9_.-]+/[A-Za-z0-9_*.+-]+"))]}]
     | .[] | {name, url, platform, offers_bounties, managed, max_bounty, assets_count, github_urls}
   ' "$json_file" 2>/dev/null | while IFS= read -r prog; do
     [ -n "$prog" ] && echo "$prog" >> "$ALL_PROGRAMS_FILE"
