@@ -2,7 +2,7 @@ name: agent3 daily wake
 
 on:
   schedule:
-    - cron: '33 1 * * *'
+    - cron: '33 1 * * 1,3,5'  # Mon/Wed/Fri only (saves 40% compute)
   workflow_dispatch:
 
 env:
@@ -36,7 +36,7 @@ jobs:
           echo "top_score=$TOP_SCORE" >> "$GITHUB_OUTPUT"
           echo "top_name=$TOP_NAME" >> "$GITHUB_OUTPUT"
           
-          if [ "$TOP_SCORE" -ge 50 ]; then
+          if [ "$TOP_SCORE" -ge 65 ]; then
             echo "has_target=true" >> "$GITHUB_OUTPUT"
           else
             echo "has_target=false" >> "$GITHUB_OUTPUT"
@@ -44,7 +44,7 @@ jobs:
           
           echo "[enrich] Score: $TOP_SCORE, Target: $TOP_NAME"
 
-  # Job 2: Execute (runs on codespace - only if target ≥ 65)
+  # Job 2: Execute (runs on codespace - only if target >= 65)
   execute:
     needs: enrich
     if: needs.enrich.outputs.has_target == 'true'
@@ -125,7 +125,7 @@ jobs:
           fi
           
           echo "[agent3] Running entrypoint (execute only)..."
-          timeout 1200 gh codespace ssh -c "$CS" -- "cd /workspaces/nex-agents && git fetch origin && git reset --hard origin/main && bash setup/execute.sh $GH_PAT" 2>&1
+          timeout 2700 gh codespace ssh -c "$CS" -- "cd /workspaces/nex-agents && git fetch origin && git reset --hard origin/main && bash setup/execute.sh $GH_PAT" 2>&1
           echo "[agent3] Done"
 
       - name: Always cleanup
@@ -179,7 +179,7 @@ jobs:
           Output: reports/maintenance-${DATE}.md
           EOF
           else
-            echo "[light-day] No target with score ≥65. Light day."
+            echo "[light-day] No target with score >= 65. Light day."
           fi
           
           git add tasks/ 2>/dev/null || true
