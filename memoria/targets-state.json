@@ -1,5 +1,5 @@
 {
-  "last_scan": "2026-07-11T04:45:53Z",
+  "last_scan": "2026-07-12T04:57:27Z",
   "targets": {
     "hackerone": [
       {
@@ -3061,10 +3061,6 @@
       {
         "name": "Orbia Responsible Disclosure",
         "url": "https://www.intigriti.com/programs/orbia/orbiavdp/detail"
-      },
-      {
-        "name": "PDQ bug bounty program",
-        "url": "https://www.intigriti.com/programs/pdq/pdqcomprivate/detail"
       },
       {
         "name": "PeopleCert VDP",
