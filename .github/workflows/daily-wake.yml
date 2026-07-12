@@ -2,7 +2,7 @@ name: agent3 daily wake
 
 on:
   schedule:
-    - cron: '33 1 * * 1,3,5'  # Mon/Wed/Fri only (saves 40% compute)
+    - cron: '33 1 * * 1-5'  # Mon-Fri (22 runs/month, ~37% of compute budget)
   workflow_dispatch:
 
 env:
@@ -29,7 +29,6 @@ jobs:
           chmod +x setup/enrich.sh
           bash setup/enrich.sh "$GH_PAT"
           
-          # Extract outputs
           TOP_SCORE=$(jq -r '.top_candidate.score // 0' memoria/agent3-latest.json 2>/dev/null || echo 0)
           TOP_NAME=$(jq -r '.top_candidate.name // ""' memoria/agent3-latest.json 2>/dev/null || echo "")
           
@@ -70,14 +69,12 @@ jobs:
           REPO_ID=1246782009
           CS=$(gh api /user/codespaces --jq '.codespaces[] | select(.repository.name == "nex-agents") | .name' | head -1)
           
-          # Function to create a new codespace
           create_codespace() {
             echo "[agent3] Creating new codespace..."
             CS=$(echo "{\"repository_id\":$REPO_ID,\"ref\":\"main\",\"geo\":\"EuropeWest\",\"machine\":\"basicLinux32gb\",\"idle_timeout_minutes\":10}" | gh api /user/codespaces --input - -X POST --jq '.name')
             echo "[agent3] Created: $CS"
           }
           
-          # Function to wait for codespace to be available
           wait_available() {
             local cs="$1"
             echo "[agent3] Waiting for Available..."
@@ -91,13 +88,11 @@ jobs:
             return 1
           }
           
-          # Function to test SSH availability
           test_ssh() {
             local cs="$1"
             timeout 30 gh codespace ssh -c "$cs" -- "echo ssh_ok" 2>&1 | grep -q "ssh_ok"
           }
           
-          # Get or create codespace
           if [ -z "$CS" ]; then
             create_codespace
           else
@@ -106,10 +101,8 @@ jobs:
             [ "$ST" = "Shutdown" ] && gh api -X POST "/user/codespaces/$CS/start" > /dev/null
           fi
           
-          # Wait for available
           wait_available "$CS" || exit 1
           
-          # Test SSH - if it fails, recreate codespace (old config without sshd)
           if ! test_ssh "$CS"; then
             echo "[agent3] SSH not available, recreating codespace..."
             gh api -X POST "/user/codespaces/$CS/delete" > /dev/null 2>&1 || true
@@ -117,14 +110,13 @@ jobs:
             create_codespace
             wait_available "$CS" || exit 1
             
-            # Verify SSH works on new codespace
             if ! test_ssh "$CS"; then
               echo "[agent3] FATAL: SSH still not available after recreation"
               exit 1
             fi
           fi
           
-          echo "[agent3] Running entrypoint (execute only)..."
+          echo "[agent3] Running execute..."
           timeout 3600 gh codespace ssh -c "$CS" -- "cd /workspaces/nex-agents && git fetch origin && git reset --hard origin/main && bash setup/execute.sh $GH_PAT" 2>&1
           echo "[agent3] Done"
 
