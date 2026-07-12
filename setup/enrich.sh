@@ -16,12 +16,10 @@ DATE=$(date +%Y-%m-%d)
 DOW=$(date +%u)
 echo "[enrich] $TS - Personalized enrichment starting... (day $DOW)"
 
-# === Health check ===
 for cmd in gh git curl jq; do
   command -v "$cmd" &>/dev/null || { echo "[enrich] Missing: $cmd"; exit 1; }
 done
 
-# === Validate token ===
 echo "[enrich] Validating GitHub token..."
 HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" -H "Authorization: token $GH_PAT" "https://api.github.com/user" 2>/dev/null)
 if [ "$HTTP_CODE" != "200" ]; then
@@ -34,7 +32,6 @@ RATE_REMAINING=$(curl -s -H "Authorization: token $GH_PAT" "https://api.github.c
 echo "[enrich] GitHub API rate limit: $RATE_REMAINING remaining"
 [ "$RATE_REMAINING" -lt 50 ] && echo "[enrich] WARNING: Very low rate limit"
 
-# === Setup ===
 REPO_DIR="${GITHUB_WORKSPACE:-$(pwd)}"
 cd "$REPO_DIR" || exit 1
 gh auth setup-git 2>/dev/null || true
@@ -47,7 +44,6 @@ if [ ! -f "$K_PROFILE" ]; then
 fi
 echo "[enrich] K-profile loaded"
 
-# === Fetch bounty data ===
 BOUNTY_DIR="/tmp/bounty-targets-data"
 if [ ! -d "$BOUNTY_DIR/.git" ]; then
   echo "[enrich] Cloning bounty-targets-data..."
@@ -79,25 +75,16 @@ IT_COUNT=$(count_targets "$IT_JSON")
 YWH_COUNT=$(count_targets "$YWH_JSON")
 echo "[enrich] Targets: H1=$H1_COUNT BC=$BC_COUNT IT=$IT_COUNT YWH=$YWH_COUNT"
 
-# =====================================================================
-# Helper: detect language from GitHub URL via API (cached)
-# =====================================================================
 detect_language() {
   local urls="$1"
   local first_url
   first_url=$(echo "$urls" | jq -r '.[0] // empty' 2>/dev/null)
   [ -z "$first_url" ] && echo "unknown" && return
-
   local repo_path
   repo_path=$(echo "$first_url" | grep -oP 'github\.com/\K[A-Za-z0-9_.-]+/[A-Za-z0-9_*.+-]+' | head -1)
   [ -z "$repo_path" ] && echo "unknown" && return
-
   local cache_file="/tmp/lang-${repo_path//\//_}"
-  if [ -f "$cache_file" ]; then
-    cat "$cache_file"
-    return
-  fi
-
+  if [ -f "$cache_file" ]; then cat "$cache_file"; return; fi
   local lang
   lang=$(curl -sf -H "Authorization: token $GH_PAT" "https://api.github.com/repos/$repo_path" 2>/dev/null | jq -r '.language // "unknown"' 2>/dev/null)
   [ -z "$lang" ] || [ "$lang" = "null" ] && lang="unknown"
@@ -105,35 +92,22 @@ detect_language() {
   echo "$lang"
 }
 
-# =====================================================================
-# Helper: Map GitHub language name to K-profile key
-# =====================================================================
 map_language() {
   case "$1" in
-    Python) echo "python" ;;
-    Go) echo "go" ;;
-    Rust) echo "rust" ;;
-    C) echo "c_cpp" ;;
-    "C++") echo "c_cpp" ;;
-    JavaScript) echo "javascript_typescript" ;;
-    TypeScript) echo "javascript_typescript" ;;
-    Java) echo "java" ;;
-    *) echo "unknown" ;;
+    Python) echo "python" ;; Go) echo "go" ;; Rust) echo "rust" ;;
+    C) echo "c_cpp" ;; "C++") echo "c_cpp" ;;
+    JavaScript) echo "javascript_typescript" ;; TypeScript) echo "javascript_typescript" ;;
+    Java) echo "java" ;; *) echo "unknown" ;;
   esac
 }
 
-# =====================================================================
-# STEP 1: Extract all programs
-# =====================================================================
 echo "[enrich] Step 1: Extracting programs..."
-
 ALL_PROGRAMS_FILE="/tmp/all-programs.json"
 > "$ALL_PROGRAMS_FILE"
 
 for platform_data in "hackerone:$H1_JSON:H1" "bugcrowd:$BC_JSON:BC" "intigriti:$IT_JSON:IT" "yeswehack:$YWH_JSON:YWH"; do
   IFS=':' read -r platform json_file label <<< "$platform_data"
   [ ! -f "$json_file" ] && { echo "[enrich] SKIP: $label"; continue; }
-
   echo "[enrich] Extracting from $label..."
   jq -rc --arg platform "$platform" '
     [.[] | select(.targets.in_scope != null) |
@@ -162,41 +136,29 @@ if [ "$TOTAL_PROGRAMS" -eq 0 ]; then
   exit 0
 fi
 
-# =====================================================================
-# STEP 2: Hard filters
-# =====================================================================
 echo "[enrich] Step 2: Filtering..."
-
 FILTERED_FILE="/tmp/filtered-programs.json"
 > "$FILTERED_FILE"
-FILTER_LOG="/tmp/filter-log.txt"
-> "$FILTER_LOG"
 
 while IFS= read -r prog; do
   [ -z "$prog" ] && continue
-
   name=$(echo "$prog" | jq -r '.name // ""')
   platform=$(echo "$prog" | jq -r '.platform // ""')
   max_bounty=$(echo "$prog" | jq -r '.max_bounty // "null"')
   assets_count=$(echo "$prog" | jq -r '.assets_count // 0')
   passed="true"
   reject_reason=""
-
-  # Government
   name_lower=$(echo "$name" | tr '[:upper:]' '[:lower:]')
+
   if echo "$name_lower" | grep -qiE '(government|military|gov\.|army|navy|police|defense)'; then
     passed="false"; reject_reason="government"
   fi
-
-  # Platform availability
   if [ "$passed" = "true" ]; then
     can_submit=$(jq -r --arg p "$platform" '.track_record.platform_status[$p].can_submit // false' "$K_PROFILE" 2>/dev/null)
     if [ "$can_submit" != "true" ]; then
       passed="false"; reject_reason="platform_unavailable($platform)"
     fi
   fi
-
-  # Minimum bounty
   if [ "$passed" = "true" ] && [ "$max_bounty" != "null" ] && [ "$max_bounty" != "0" ] && [ "$max_bounty" != "" ]; then
     min_req=$(jq -r '.preferences.min_bounty_usd // 500' "$K_PROFILE" 2>/dev/null)
     if echo "$max_bounty" | grep -qP '^\d+$'; then
@@ -205,24 +167,16 @@ while IFS= read -r prog; do
       fi
     fi
   fi
-
-  # Saturated
   if [ "$passed" = "true" ]; then
     if echo "$name_lower" | grep -qiE '(lightspark|uber|airbnb|shopify|gitlab)'; then
       passed="false"; reject_reason="saturated"
     fi
   fi
-
-  # No testable assets
   if [ "$passed" = "true" ] && [ "$assets_count" -eq 0 ] 2>/dev/null; then
     passed="false"; reject_reason="no_assets"
   fi
-
   if [ "$passed" = "true" ]; then
     echo "$prog" >> "$FILTERED_FILE"
-    echo "PASS: $name ($platform)" >> "$FILTER_LOG"
-  else
-    echo "REJECT: $name ($platform) - $reject_reason" >> "$FILTER_LOG"
   fi
 done < "$ALL_PROGRAMS_FILE"
 
@@ -230,8 +184,7 @@ FILTERED_COUNT=$(wc -l < "$FILTERED_FILE" 2>/dev/null || echo 0)
 echo "[enrich] After filter: $FILTERED_COUNT"
 
 if [ "$FILTERED_COUNT" -eq 0 ]; then
-  echo "[enrich] All filtered out:"
-  cat "$FILTER_LOG"
+  echo "[enrich] All filtered out"
   jq -n --arg ts "$TS" --arg date "$DATE" \
     --argjson h1 "$H1_COUNT" --argjson bc "$BC_COUNT" --argjson it "$IT_COUNT" --argjson yw "$YWH_COUNT" \
     '{scan_date: $ts, date: $date, platforms: {hackerone: $h1, bugcrowd: $bc, intigriti: $it, yeswehack: $yw}, stats: {filtered: 0, scored: 0, selected: 0}, top_candidate: {name: "", score: 0}, ranked_targets: [], selected_targets: []}' \
@@ -239,17 +192,12 @@ if [ "$FILTERED_COUNT" -eq 0 ]; then
   exit 0
 fi
 
-# =====================================================================
-# STEP 3: Score
-# =====================================================================
 echo "[enrich] Step 3: Scoring..."
-
 SCORED_FILE="/tmp/scored-programs.json"
 > "$SCORED_FILE"
 
 while IFS= read -r prog; do
   [ -z "$prog" ] && continue
-
   name=$(echo "$prog" | jq -r '.name // ""')
   platform=$(echo "$prog" | jq -r '.platform // ""')
   max_bounty=$(echo "$prog" | jq -r '.max_bounty // "null"')
@@ -261,7 +209,6 @@ while IFS= read -r prog; do
   if [ "$has_github" = "true" ]; then
     language=$(detect_language "$github_urls")
   fi
-
   lang_key=$(map_language "$language")
 
   # FIT (0-30)
@@ -274,10 +221,13 @@ while IFS= read -r prog; do
   [ "$assets_count" -le 5 ] && fit_score=$((fit_score + 1))
   [ "$fit_score" -gt 30 ] && fit_score=30
 
-  # TRACK (0-25)
+  # TRACK (0-25) - HackerOne gets highest priority
   track_score=0
   case "$platform" in
-    yeswehack) track_score=8 ;; hackerone) track_score=6 ;; intigriti) track_score=2 ;; *) track_score=0 ;;
+    hackerone) track_score=10 ;;
+    yeswehack) track_score=7 ;;
+    intigriti) track_score=2 ;;
+    *) track_score=0 ;;
   esac
   managed=$(echo "$prog" | jq -r '.managed // false')
   [ "$managed" = "true" ] && track_score=$((track_score + 3))
@@ -329,21 +279,14 @@ while IFS= read -r prog; do
       score_breakdown:{fit:$fit, track_record:$track, roi:$roi, accessibility:$access},
       metadata:{language:$language, max_bounty:$max_bounty, assets_count:$assets_count, has_github:$has_github}}' \
     >> "$SCORED_FILE"
-
-  echo "SCORED: $name ($platform) -> $total lang=$language" >> /tmp/score-log.txt
 done < "$FILTERED_FILE"
 
 SCORED_COUNT=$(wc -l < "$SCORED_FILE" 2>/dev/null || echo 0)
 echo "[enrich] Scored: $SCORED_COUNT"
 
-# =====================================================================
-# STEP 4: Rank and select
-# =====================================================================
 echo "[enrich] Step 4: Ranking..."
-
 RANKED_FILE="memoria/targets-ranked.json"
 SELECTED_FILE="memoria/selected-targets.json"
-
 jq -s 'sort_by(-.score_total) | .[:10]' "$SCORED_FILE" 2>/dev/null > "$RANKED_FILE" || echo '[]' > "$RANKED_FILE"
 jq -s 'sort_by(-.score_total) | .[:5]' "$SCORED_FILE" 2>/dev/null > "$SELECTED_FILE" || echo '[]' > "$SELECTED_FILE"
 
@@ -352,11 +295,7 @@ TOP_SCORE=$(echo "$TOP_CANDIDATE" | jq -r '.score_total // 0' 2>/dev/null)
 TOP_NAME=$(echo "$TOP_CANDIDATE" | jq -r '.name // ""' 2>/dev/null)
 echo "[enrich] Top: $TOP_NAME ($TOP_SCORE)"
 
-# =====================================================================
-# STEP 5: Output
-# =====================================================================
 echo "[enrich] Step 5: Writing output..."
-
 RANKED_JSON=$(jq '.[:5] | map({name, platform, score_total, score_breakdown, metadata})' "$RANKED_FILE" 2>/dev/null || echo '[]')
 SELECTED_JSON=$(jq '.' "$SELECTED_FILE" 2>/dev/null || echo '[]')
 
@@ -373,9 +312,6 @@ jq -n \
     ranked_targets:$candidates, selected_targets:$selected}' \
   > "memoria/agent3-latest.json" 2>/dev/null || echo '{"error":"output_failed"}' > "memoria/agent3-latest.json"
 
-# =====================================================================
-# STEP 6: Report
-# =====================================================================
 REPORT="reports/scanner-${DATE}.md"
 cat > "$REPORT" << REPORTEOF
 # Scanner Report - ${DATE}
@@ -400,7 +336,6 @@ Generated: $TS
 $(jq -r '.[] | "\(.score_total) | \(.score_breakdown.fit) | \(.score_breakdown.track_record) | \(.score_breakdown.roi) | \(.score_breakdown.accessibility) | \(.platform) | \(.name) | \(.metadata.language) | \(.metadata.max_bounty // "-")"' "$RANKED_FILE" 2>/dev/null | head -10 | while IFS='|' read -r s f t r a p n l b; do printf "| %s | %s | %s | %s | %s | %s | %s | %s | %s |\n" "$s" "$f" "$t" "$r" "$a" "$p" "$n" "$l" "$b"; done || echo "*None*")
 REPORTEOF
 
-# === Commit and push ===
 git add reports/ memoria/ tasks/ 2>/dev/null || true
 if ! git diff --cached --quiet 2>/dev/null; then
   git -c user.name="enrich-bot" -c user.email="enrich@nex.local" commit -m "enrich: scan ${DATE}" 2>/dev/null || true
