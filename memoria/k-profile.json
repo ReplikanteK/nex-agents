@@ -50,7 +50,8 @@
         "trial_reports_exhausted": true,
         "reports_in_triage": 5,
         "cooldown_until": null,
-        "can_submit": false
+        "can_submit": true,
+        "note": "Preferred platform - best treatment historically"
       },
       "bugcrowd": {
         "signal_score": -1.00,
@@ -82,7 +83,7 @@
     "avoid_governments": true,
     "avoid_saturated_programs": true,
     "max_reports_per_month": 4,
-    "preferred_platforms": ["yeswehack"],
+    "preferred_platforms": ["hackerone", "yeswehack"],
     "avoid_platforms": ["bugcrowd"]
   },
   
