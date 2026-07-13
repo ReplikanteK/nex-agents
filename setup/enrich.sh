@@ -269,7 +269,7 @@ while IFS= read -r prog; do
 
   total_score=$((fit_score + track_score + roi_score + access_score))
 
-  jq -n \
+  jq -nc \
     --arg name "$name" --arg platform "$platform" --arg language "$language" \
     --argjson total "$total_score" --argjson fit "$fit_score" \
     --argjson track "$track_score" --argjson roi "$roi_score" --argjson access "$access_score" \
