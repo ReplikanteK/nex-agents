@@ -284,20 +284,30 @@ done < "$FILTERED_FILE"
 SCORED_COUNT=$(wc -l < "$SCORED_FILE" 2>/dev/null || echo 0)
 echo "[enrich] Scored: $SCORED_COUNT"
 
-echo "[enrich] Step 4: Ranking..."
+echo "[enrich] Step 4: Ranking + Selection..."
 RANKED_FILE="memoria/targets-ranked.json"
-SELECTED_FILE="memoria/selected-targets.json"
 jq -s 'sort_by(-.score_total) | .[:10]' "$SCORED_FILE" 2>/dev/null > "$RANKED_FILE" || echo '[]' > "$RANKED_FILE"
-jq -s 'sort_by(-.score_total) | .[:5]' "$SCORED_FILE" 2>/dev/null > "$SELECTED_FILE" || echo '[]' > "$SELECTED_FILE"
+
+SCORED_ARRAY="/tmp/scored-array.json"
+jq -s '.' "$SCORED_FILE" 2>/dev/null > "$SCORED_ARRAY"
+SELECTOR_OUTPUT="/tmp/selector-output.json"
+if [ -f "setup/selector.sh" ]; then
+  bash setup/selector.sh "$SCORED_ARRAY" 2>/dev/null > "$SELECTOR_OUTPUT"
+fi
+SELECTED_JSON=$(jq '.selected_targets // []' "$SELECTOR_OUTPUT" 2>/dev/null || echo '[]')
+SELECTED_COUNT=$(echo "$SELECTED_JSON" | jq 'length' 2>/dev/null || echo 0)
+if [ "$SELECTED_COUNT" -eq 0 ]; then
+  SELECTED_JSON=$(jq '.[:5]' "$RANKED_FILE" 2>/dev/null || echo '[]')
+fi
 
 TOP_CANDIDATE=$(jq -r '.[0] // empty' "$RANKED_FILE" 2>/dev/null)
 TOP_SCORE=$(echo "$TOP_CANDIDATE" | jq -r '.score_total // 0' 2>/dev/null)
 TOP_NAME=$(echo "$TOP_CANDIDATE" | jq -r '.name // ""' 2>/dev/null)
 echo "[enrich] Top: $TOP_NAME ($TOP_SCORE)"
+echo "[enrich] Selected: $(echo "$SELECTED_JSON" | jq 'length' 2>/dev/null || echo 0) targets with justification"
 
 echo "[enrich] Step 5: Writing output..."
 RANKED_JSON=$(jq '.[:5] | map({name, platform, score_total, score_breakdown, metadata})' "$RANKED_FILE" 2>/dev/null || echo '[]')
-SELECTED_JSON=$(jq '.' "$SELECTED_FILE" 2>/dev/null || echo '[]')
 
 jq -n \
   --arg ts "$TS" --arg date "$DATE" \
