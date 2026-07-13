@@ -157,7 +157,7 @@ jobs:
           
           if [ "$DOW" -eq 5 ]; then
             echo "[light-day] Friday - creating maintenance task"
-            cat > "tasks/maintenance-${DATE}.md" << 'EOF'
+            cat > "tasks/maintenance-${DATE}.md" << EOF
           # Task: Weekly maintenance
           ### Origen: agent3 (auto)
           ### Prioridad: media
