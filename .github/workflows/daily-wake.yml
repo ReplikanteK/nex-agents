@@ -58,7 +58,7 @@ jobs:
         run: |
           echo "[agent3] Cleaning orphan codespaces..."
           gh api /user/codespaces --jq '.codespaces[] | select(.repository.name == "nex-agents" and (.state == "Available" or .state == "Queued")) | .name' 2>/dev/null | while read CS; do
-            [ -n "$CS" ] && gh api -X POST "/user/codespaces/$CS/stop" > /dev/null && echo "[agent3] Stopped orphan: $CS"
+            [ -n "$CS" ] && gh api -X DELETE "/user/codespaces/$CS" > /dev/null && echo "[agent3] Deleted orphan: $CS"
           done
 
       - name: Run agent3 execute
@@ -78,7 +78,7 @@ jobs:
           wait_available() {
             local cs="$1"
             echo "[agent3] Waiting for Available..."
-            for i in $(seq 1 60); do
+            for i in $(seq 1 90); do
               ST=$(gh api "/user/codespaces/$cs" --jq '.state')
               echo "[agent3] $i: $ST"
               [ "$ST" = "Available" ] && return 0
@@ -105,7 +105,7 @@ jobs:
           
           if ! test_ssh "$CS"; then
             echo "[agent3] SSH not available, recreating codespace..."
-            gh api -X POST "/user/codespaces/$CS/delete" > /dev/null 2>&1 || true
+            gh api -X DELETE "/user/codespaces/$CS" > /dev/null 2>&1 || true
             sleep 5
             create_codespace
             wait_available "$CS" || exit 1
@@ -126,9 +126,9 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GH_PAT }}
         run: |
-          echo "[agent3] Final cleanup..."
-          gh api /user/codespaces --jq '.codespaces[] | select(.repository.name == "nex-agents" and (.state == "Available" or .state == "Queued")) | .name' 2>/dev/null | while read CS; do
-            [ -n "$CS" ] && gh api -X POST "/user/codespaces/$CS/stop" > /dev/null && echo "[agent3] Cleaned: $CS"
+          echo "[agent3] Deleting codespace..."
+          gh api /user/codespaces --jq '.codespaces[] | select(.repository.name == "nex-agents" and (.state == "Available" or .state == "Queued" or .state == "Shutdown")) | .name' 2>/dev/null | while read CS; do
+            [ -n "$CS" ] && gh api -X DELETE "/user/codespaces/$CS" > /dev/null && echo "[agent3] Deleted: $CS"
           done
 
       - name: Create failure issue
