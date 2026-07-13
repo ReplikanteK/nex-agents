@@ -128,7 +128,7 @@ fi
 
 # === Execute task with opencode ===
 echo "[execute] Running opencode on task..."
-TIMEOUT=1200  # 20 minutes
+TIMEOUT=1800  # 30 minutes
 
 if timeout $TIMEOUT opencode run --dangerously-skip-permissions "$TASK_FILE" 2>&1; then
   echo "[execute] Task completed successfully"
