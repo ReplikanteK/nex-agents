@@ -15,9 +15,11 @@ echo "[execute] $TS - Starting personalized execution..."
 # === Auto-install gh CLI ===
 if ! command -v gh &>/dev/null; then
   echo "[execute] Installing gh CLI..."
-  curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg 2>/dev/null
-  echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | tee /etc/apt/sources.list.d/github-cli.list > /dev/null
-  apt-get update -qq && apt-get install gh -y -qq 2>&1 | tail -3
+  SUDO=""
+  [ "$(id -u)" -ne 0 ] && SUDO="sudo"
+  curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg 2>/dev/null | $SUDO dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg 2>/dev/null
+  echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | $SUDO tee /etc/apt/sources.list.d/github-cli.list > /dev/null
+  $SUDO apt-get update -qq 2>/dev/null && $SUDO apt-get install gh -y -qq 2>&1 | tail -3
 fi
 
 # === Health check ===
