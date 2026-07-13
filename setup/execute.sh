@@ -12,6 +12,9 @@ export GH_TOKEN="$GH_PAT"
 TS=$(date -u +%Y-%m-%dT%H:%M:%SZ)
 echo "[execute] $TS - Starting personalized execution..."
 
+# === Ensure opencode is in PATH (SSH non-interactive shells don't source .bashrc) ===
+export PATH="$HOME/.opencode/bin:$PATH"
+
 # === Auto-install gh CLI ===
 if ! command -v gh &>/dev/null; then
   echo "[execute] Installing gh CLI..."
