@@ -346,7 +346,8 @@ Generated: $TS
 $(jq -r '.[] | "\(.score_total) | \(.score_breakdown.fit) | \(.score_breakdown.track_record) | \(.score_breakdown.roi) | \(.score_breakdown.accessibility) | \(.platform) | \(.name) | \(.metadata.language) | \(.metadata.max_bounty // "-")"' "$RANKED_FILE" 2>/dev/null | head -10 | while IFS='|' read -r s f t r a p n l b; do printf "| %s | %s | %s | %s | %s | %s | %s | %s | %s |\n" "$s" "$f" "$t" "$r" "$a" "$p" "$n" "$l" "$b"; done || echo "*None*")
 REPORTEOF
 
-git add reports/ memoria/ tasks/ 2>/dev/null || true
+git add memoria/k-profile.json tasks/ 2>/dev/null || true
+git add -f "reports/scanner-${DATE}.md" "memoria/agent3-latest.json" "memoria/targets-ranked.json" 2>/dev/null || true
 if ! git diff --cached --quiet 2>/dev/null; then
   git -c user.name="enrich-bot" -c user.email="enrich@nex.local" commit -m "enrich: scan ${DATE}" 2>/dev/null || true
   git push origin main 2>/dev/null && echo "[enrich] Pushed" || echo "[enrich] Push failed"
