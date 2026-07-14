@@ -1,16 +1,16 @@
 {
-  "scan_date": "2026-07-13T04:59:44Z",
-  "date": "2026-07-13",
+  "scan_date": "2026-07-14T04:27:05Z",
+  "date": "2026-07-14",
   "platforms": {
     "hackerone": 453,
     "bugcrowd": 238,
-    "intigriti": 126,
+    "intigriti": 129,
     "yeswehack": 63
   },
   "stats": {
-    "filtered": 281,
-    "scored": 4777,
-    "selected": 5
+    "filtered": 282,
+    "scored": 282,
+    "selected": 1
   },
   "top_candidate": {
     "name": "Doppler",
@@ -105,6 +105,7 @@
   ],
   "selected_targets": [
     {
+      "rank": 1,
       "name": "Doppler",
       "platform": "hackerone",
       "score_total": 66,
@@ -114,80 +115,21 @@
         "roi": 17,
         "accessibility": 13
       },
-      "metadata": {
-        "language": "Go",
-        "max_bounty": null,
-        "assets_count": 6,
-        "has_github": true
-      }
-    },
-    {
-      "name": "Circle BBP",
-      "platform": "hackerone",
-      "score_total": 64,
-      "score_breakdown": {
-        "fit": 21,
-        "track_record": 17,
-        "roi": 13,
-        "accessibility": 13
+      "justification": {
+        "why": "Buen track record en plataforma hackerone",
+        "skills_to_apply": [
+          "logic_flaws",
+          "injection"
+        ],
+        "estimated_hours": 4,
+        "estimated_bounty": 1000,
+        "confidence": 0.75
       },
-      "metadata": {
-        "language": "Go",
-        "max_bounty": null,
-        "assets_count": 29,
-        "has_github": true
-      }
-    },
-    {
-      "name": "Chia Network",
-      "platform": "hackerone",
-      "score_total": 64,
-      "score_breakdown": {
-        "fit": 20,
-        "track_record": 14,
-        "roi": 17,
-        "accessibility": 13
-      },
-      "metadata": {
-        "language": "Python",
-        "max_bounty": null,
-        "assets_count": 9,
-        "has_github": true
-      }
-    },
-    {
-      "name": "HackerOne",
-      "platform": "hackerone",
-      "score_total": 64,
-      "score_breakdown": {
-        "fit": 21,
-        "track_record": 17,
-        "roi": 13,
-        "accessibility": 13
-      },
-      "metadata": {
-        "language": "TypeScript",
-        "max_bounty": null,
-        "assets_count": 24,
-        "has_github": true
-      }
-    },
-    {
-      "name": "Chainlink",
-      "platform": "hackerone",
-      "score_total": 63,
-      "score_breakdown": {
-        "fit": 19,
-        "track_record": 14,
-        "roi": 17,
-        "accessibility": 13
-      },
-      "metadata": {
-        "language": "Go",
-        "max_bounty": null,
-        "assets_count": 6,
-        "has_github": true
-      }
+      "next_steps": [
+        "Code review",
+        "Dynamic testing",
+        "PoC development"
+      ]
     }
   ]
 }
