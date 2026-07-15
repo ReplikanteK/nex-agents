@@ -25,6 +25,10 @@ if ! command -v gh &>/dev/null; then
   $SUDO apt-get update -qq 2>/dev/null && $SUDO apt-get install gh -y -qq 2>&1 | tail -3
 fi
 
+# === Setup git auth ===
+gh auth setup-git 2>/dev/null || true
+git pull origin main 2>/dev/null || true
+
 # === Health check ===
 for cmd in gh git curl jq opencode; do
   command -v "$cmd" &>/dev/null || { echo "[execute] Missing: $cmd"; exit 1; }
