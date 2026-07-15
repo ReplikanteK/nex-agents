@@ -15,11 +15,16 @@ echo "[execute] $TS - Starting personalized execution..."
 # === Ensure opencode is in PATH (SSH non-interactive shells don't source .bashrc) ===
 export PATH="$HOME/.opencode/bin:$PATH"
 
-# === Auto-install gh CLI ===
+# === Auto-install gh CLI (wait for apt lock — bootstrap.sh may be running concurrently) ===
 if ! command -v gh &>/dev/null; then
   echo "[execute] Installing gh CLI..."
   SUDO=""
   [ "$(id -u)" -ne 0 ] && SUDO="sudo"
+  for i in $(seq 1 30); do
+    $SUDO apt-get check 2>/dev/null && break
+    echo "[execute] Waiting for apt lock (attempt $i)..."
+    sleep 2
+  done
   curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg 2>/dev/null | $SUDO dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg 2>/dev/null
   echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | $SUDO tee /etc/apt/sources.list.d/github-cli.list > /dev/null
   $SUDO apt-get update -qq 2>/dev/null && $SUDO apt-get install gh -y -qq 2>&1 | tail -3
@@ -28,6 +33,13 @@ fi
 # === Setup git auth ===
 gh auth setup-git 2>/dev/null || true
 git pull origin main 2>/dev/null || true
+
+# === Auto-install opencode (fallback — bootstrap.sh may not have finished) ===
+if ! command -v opencode &>/dev/null; then
+  echo "[execute] Installing opencode..."
+  curl -fsSL https://opencode.ai/install | bash
+  export PATH="$HOME/.opencode/bin:$PATH"
+fi
 
 # === Health check ===
 for cmd in gh git curl jq opencode; do
