@@ -56,6 +56,17 @@ select_targets() {
   echo "$selected"
 }
 
+skills_for_language() {
+  case "$1" in
+    Go|Python)         echo "code-review-pygo,web-security,api-testing" ;;
+    Rust)              echo "code-review-rust,web-security,api-testing" ;;
+    Java)              echo "code-review-java,web-security,api-testing" ;;
+    C|C++)             echo "code-review-c,code-fuzzing-c,web-security" ;;
+    JavaScript|TypeScript) echo "web-security,api-testing,code-review-pygo" ;;
+    *)                 echo "web-security,api-testing" ;;
+  esac
+}
+
 generate_justification() {
   local target="$1"
   local rank="$2"
@@ -69,25 +80,21 @@ generate_justification() {
   local max_bounty=$(echo "$target" | jq -r '.metadata.max_bounty // "null"')
   local estimated_hours=$(echo "$target" | jq -r '.metadata.estimated_hours // 4')
   
+  local skills_to_apply=$(skills_for_language "$language")
   local why=""
-  local skills_to_apply=""
   local confidence=""
   
   if [ "$fit" -ge 20 ]; then
     why="Excelente fit con nuestras skills de $language"
-    skills_to_apply="auth_bypass,idor,ssrf"
     confidence="0.8"
   elif [ "$roi" -ge 18 ]; then
     why="Alto ROI potencial (bounty $max_bounty)"
-    skills_to_apply="auth_bypass,path_traversal"
     confidence="0.7"
   elif [ "$track" -ge 15 ]; then
     why="Buen track record en plataforma $platform"
-    skills_to_apply="logic_flaws,injection"
     confidence="0.75"
   else
     why="Balance razonable entre fit, ROI y accesibilidad"
-    skills_to_apply="web_api,auth_bypass"
     confidence="0.65"
   fi
   
