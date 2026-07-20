@@ -1,15 +1,15 @@
 {
-  "scan_date": "2026-07-17T04:41:05Z",
-  "date": "2026-07-17",
+  "scan_date": "2026-07-20T05:05:38Z",
+  "date": "2026-07-20",
   "platforms": {
-    "hackerone": 453,
+    "hackerone": 451,
     "bugcrowd": 240,
-    "intigriti": 127,
+    "intigriti": 124,
     "yeswehack": 63
   },
   "stats": {
-    "filtered": 282,
-    "scored": 282,
+    "filtered": 280,
+    "scored": 280,
     "selected": 1
   },
   "top_candidate": {
@@ -118,8 +118,9 @@
       "justification": {
         "why": "Buen track record en plataforma hackerone",
         "skills_to_apply": [
-          "logic_flaws",
-          "injection"
+          "code-review-pygo",
+          "web-security",
+          "api-testing"
         ],
         "estimated_hours": 4,
         "estimated_bounty": 1000,
