@@ -85,23 +85,6 @@
     }
   },
   {
-    "name": "Kiwi.com",
-    "platform": "hackerone",
-    "score_total": 63,
-    "score_breakdown": {
-      "fit": 20,
-      "track_record": 17,
-      "roi": 13,
-      "accessibility": 13
-    },
-    "metadata": {
-      "language": "Python",
-      "max_bounty": null,
-      "assets_count": 20,
-      "has_github": true
-    }
-  },
-  {
     "name": "Vercel Open Source",
     "platform": "hackerone",
     "score_total": 62,
@@ -115,6 +98,23 @@
       "language": "TypeScript",
       "max_bounty": null,
       "assets_count": 17,
+      "has_github": true
+    }
+  },
+  {
+    "name": "Kiwi.com",
+    "platform": "hackerone",
+    "score_total": 62,
+    "score_breakdown": {
+      "fit": 19,
+      "track_record": 17,
+      "roi": 13,
+      "accessibility": 13
+    },
+    "metadata": {
+      "language": "TypeScript",
+      "max_bounty": null,
+      "assets_count": 19,
       "has_github": true
     }
   },
