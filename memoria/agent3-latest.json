@@ -1,15 +1,15 @@
 {
-  "scan_date": "2026-07-23T04:51:05Z",
-  "date": "2026-07-23",
+  "scan_date": "2026-07-24T04:47:34Z",
+  "date": "2026-07-24",
   "platforms": {
-    "hackerone": 451,
+    "hackerone": 449,
     "bugcrowd": 240,
-    "intigriti": 128,
+    "intigriti": 130,
     "yeswehack": 62
   },
   "stats": {
-    "filtered": 280,
-    "scored": 280,
+    "filtered": 278,
+    "scored": 278,
     "selected": 1
   },
   "top_candidate": {
