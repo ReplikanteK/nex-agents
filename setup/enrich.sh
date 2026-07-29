@@ -196,6 +196,9 @@ echo "[enrich] Step 3: Scoring..."
 SCORED_FILE="/tmp/scored-programs.json"
 > "$SCORED_FILE"
 
+echo "[enrich] Checking for previous execute failures..."
+FAILURE_ISSUES=$(gh issue list --repo "ReplikanteK/nex-agents" --state open --search "Execute Failure" --json title 2>/dev/null | jq -r '.[].title' 2>/dev/null || echo "")
+
 while IFS= read -r prog; do
   [ -z "$prog" ] && continue
   name=$(echo "$prog" | jq -r '.name // ""')
@@ -268,6 +271,17 @@ while IFS= read -r prog; do
   [ "$access_score" -gt 20 ] && access_score=20
 
   total_score=$((fit_score + track_score + roi_score + access_score))
+
+  # Penalty for previous execute failures (codespace compute waste)
+  fail_count=0
+  if [ -n "$FAILURE_ISSUES" ]; then
+    fail_count=$(echo "$FAILURE_ISSUES" | grep -c "$name" 2>/dev/null || echo 0)
+  fi
+  if [ "$fail_count" -gt 0 ]; then
+    penalty=$((fail_count * 5))
+    [ "$penalty" -gt 20 ] && penalty=20
+    total_score=$((total_score - penalty))
+  fi
 
   jq -nc \
     --arg name "$name" --arg platform "$platform" --arg language "$language" \

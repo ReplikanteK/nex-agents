@@ -99,44 +99,29 @@ else
   echo "[execute] Estimated hours: $TARGET_HOURS"
   echo "[execute] Estimated bounty: \$$TARGET_BOUNTY"
   
-  # Create task file
+  # Create task file (compact — 25 min budget, Codespace free tier)
   TASK_FILE="tasks/$(date +%Y%m%d)-${TARGET_NAME// /-}.md"
   cat > "$TASK_FILE" << TASKEOF
-# Task: $TARGET_NAME
+# Task: Quick Scan - $TARGET_NAME
 
-## Target Information
+## Target
 - **Name**: $TARGET_NAME
 - **Platform**: $TARGET_PLATFORM
-- **Personalized Score**: $TARGET_SCORE
-- **Why Selected**: $TARGET_WHY
-- **Skills to Apply**: $TARGET_SKILLS
-- **Estimated Hours**: $TARGET_HOURS
-- **Estimated Bounty**: \$$TARGET_BOUNTY
+- **Score**: $TARGET_SCORE
+- **Skills**: $TARGET_SKILLS
 
-## Task Objectives
-1. Reconnaissance and scope verification
-2. Security code review (if open source)
-3. Dynamic testing (API/web application)
-4. Vulnerability identification and PoC development
+## Goal (25 min)
+Find 1 confirmed vulnerability with PoC. Prioritize what you can do fastest: auth logic, URL validation, file handling, or API authorization.
 
-## Personalized Context
-This target was selected based on K's profile:
-- Skills fit: Language and vulnerability class match
-- Track record: Similar successful patterns
-- ROI: Bounty potential vs time investment
-- Accessibility: Code availability and testability
+## Steps
+1. Quick recon — identify attack surface (5 min)
+2. Targeted code review — 1-2 vulnerability classes (15 min)
+3. PoC if found — minimal reproduction (5 min)
 
-## Expected Deliverables
-- Reconnaissance report
-- Vulnerability findings with severity ratings
-- PoC for any confirmed vulnerabilities
-- Submission-ready report (if applicable)
-
-## Time Budget
-- **Total**: $TARGET_HOURS hours
-- **Phase 1 (Recon)**: 1 hour
-- **Phase 2 (Analysis)**: 2 hours
-- **Phase 3 (Testing)**: 1 hour
+## Output
+- Finding description and impact
+- PoC commands or code
+- Draft report ready for submission
 TASKEOF
   
   echo "[execute] Task created: $TASK_FILE"
