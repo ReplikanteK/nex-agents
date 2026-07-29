@@ -129,13 +129,19 @@ fi
 
 # === Execute task with opencode ===
 echo "[execute] Running opencode on task..."
-TIMEOUT=1800  # 30 minutes
+TIMEOUT=2700  # 45 minutes (codespace free tier: ~30h/mo, esto permite ~22 runs)
 
 if timeout $TIMEOUT opencode run --dangerously-skip-permissions "$TASK_FILE" 2>&1; then
   echo "[execute] Task completed successfully"
   
   # Move to done
   mv "$TASK_FILE" "tasks/done/$(basename "$TASK_FILE")" 2>/dev/null || true
+  
+  # Auto-close failure issues for this target (clean slate for recovery)
+  TASK_BASENAME=$(basename "$TASK_FILE")
+  gh issue list --repo "ReplikanteK/nex-agents" --state open --search "Execute Failure: $TASK_BASENAME" --json number 2>/dev/null | jq -r '.[].number' | while read num; do
+    [ -n "$num" ] && gh issue close "$num" --comment "Resolved: execute completed at $TS" 2>/dev/null || true
+  done
   
   # Git commit
   git add tasks/ memoria/ reports/ 2>/dev/null || true

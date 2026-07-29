@@ -196,8 +196,9 @@ echo "[enrich] Step 3: Scoring..."
 SCORED_FILE="/tmp/scored-programs.json"
 > "$SCORED_FILE"
 
-echo "[enrich] Checking for previous execute failures..."
-FAILURE_ISSUES=$(gh issue list --repo "ReplikanteK/nex-agents" --state open --search "Execute Failure" --json title 2>/dev/null | jq -r '.[].title' 2>/dev/null || echo "")
+echo "[enrich] Checking for previous execute failures (last 7 days)..."
+SINCE=$(date -d "7 days ago" +%Y-%m-%d)
+FAILURE_ISSUES=$(gh issue list --repo "ReplikanteK/nex-agents" --state open --search "created:>=$SINCE Execute Failure" --json title 2>/dev/null | jq -r '.[].title' 2>/dev/null || echo "")
 
 while IFS= read -r prog; do
   [ -z "$prog" ] && continue
@@ -272,14 +273,17 @@ while IFS= read -r prog; do
 
   total_score=$((fit_score + track_score + roi_score + access_score))
 
-  # Penalty for previous execute failures (codespace compute waste)
+  # Penalty for failures in last 7 days + circuit breaker
   fail_count=0
   if [ -n "$FAILURE_ISSUES" ]; then
     fail_count=$(echo "$FAILURE_ISSUES" | grep -c "$name" 2>/dev/null || echo 0)
   fi
-  if [ "$fail_count" -gt 0 ]; then
-    penalty=$((fail_count * 5))
-    [ "$penalty" -gt 20 ] && penalty=20
+  if [ "$fail_count" -ge 3 ]; then
+    # Circuit breaker: 3+ failures this week → skip entirely
+    total_score=0
+  elif [ "$fail_count" -gt 0 ]; then
+    penalty=$((fail_count * 8))
+    [ "$penalty" -gt 24 ] && penalty=24
     total_score=$((total_score - penalty))
   fi
 
