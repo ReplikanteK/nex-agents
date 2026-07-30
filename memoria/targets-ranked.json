@@ -1,22 +1,5 @@
 [
   {
-    "name": "Doppler",
-    "platform": "hackerone",
-    "score_total": 66,
-    "score_breakdown": {
-      "fit": 19,
-      "track_record": 17,
-      "roi": 17,
-      "accessibility": 13
-    },
-    "metadata": {
-      "language": "Go",
-      "max_bounty": null,
-      "assets_count": 6,
-      "has_github": true
-    }
-  },
-  {
     "name": "Circle BBP",
     "platform": "hackerone",
     "score_total": 64,
@@ -166,6 +149,23 @@
       "language": "TypeScript",
       "max_bounty": null,
       "assets_count": 51,
+      "has_github": true
+    }
+  },
+  {
+    "name": "Slack",
+    "platform": "hackerone",
+    "score_total": 59,
+    "score_breakdown": {
+      "fit": 19,
+      "track_record": 14,
+      "roi": 13,
+      "accessibility": 13
+    },
+    "metadata": {
+      "language": "Go",
+      "max_bounty": null,
+      "assets_count": 19,
       "has_github": true
     }
   }
