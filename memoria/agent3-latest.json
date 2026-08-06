@@ -1,22 +1,39 @@
 {
-  "scan_date": "2026-08-05T04:42:39Z",
-  "date": "2026-08-05",
+  "scan_date": "2026-08-06T04:43:08Z",
+  "date": "2026-08-06",
   "platforms": {
     "hackerone": 451,
     "bugcrowd": 242,
     "intigriti": 134,
-    "yeswehack": 63
+    "yeswehack": 64
   },
   "stats": {
-    "filtered": 279,
-    "scored": 279,
-    "selected": 2
+    "filtered": 280,
+    "scored": 280,
+    "selected": 1
   },
   "top_candidate": {
-    "name": "Circle BBP",
-    "score": 64
+    "name": "Doppler",
+    "score": 66
   },
   "ranked_targets": [
+    {
+      "name": "Doppler",
+      "platform": "hackerone",
+      "score_total": 66,
+      "score_breakdown": {
+        "fit": 19,
+        "track_record": 17,
+        "roi": 17,
+        "accessibility": 13
+      },
+      "metadata": {
+        "language": "Go",
+        "max_bounty": null,
+        "assets_count": 6,
+        "has_github": true
+      }
+    },
     {
       "name": "Circle BBP",
       "platform": "hackerone",
@@ -84,67 +101,22 @@
         "assets_count": 6,
         "has_github": true
       }
-    },
-    {
-      "name": "Vercel Open Source",
-      "platform": "hackerone",
-      "score_total": 62,
-      "score_breakdown": {
-        "fit": 19,
-        "track_record": 17,
-        "roi": 13,
-        "accessibility": 13
-      },
-      "metadata": {
-        "language": "TypeScript",
-        "max_bounty": null,
-        "assets_count": 19,
-        "has_github": true
-      }
     }
   ],
   "selected_targets": [
     {
       "rank": 1,
-      "name": "Circle BBP",
+      "name": "Doppler",
       "platform": "hackerone",
-      "score_total": 64,
+      "score_total": 66,
       "score_breakdown": {
-        "fit": 21,
+        "fit": 19,
         "track_record": 17,
-        "roi": 13,
-        "accessibility": 13
-      },
-      "justification": {
-        "why": "Excelente fit con nuestras skills de Go",
-        "skills_to_apply": [
-          "code-review-pygo",
-          "web-security",
-          "api-testing"
-        ],
-        "estimated_hours": 4,
-        "estimated_bounty": 1000,
-        "confidence": 0.8
-      },
-      "next_steps": [
-        "Code review",
-        "Dynamic testing",
-        "PoC development"
-      ]
-    },
-    {
-      "rank": 2,
-      "name": "Chia Network",
-      "platform": "hackerone",
-      "score_total": 64,
-      "score_breakdown": {
-        "fit": 20,
-        "track_record": 14,
         "roi": 17,
         "accessibility": 13
       },
       "justification": {
-        "why": "Excelente fit con nuestras skills de Python",
+        "why": "Buen track record en plataforma hackerone",
         "skills_to_apply": [
           "code-review-pygo",
           "web-security",
@@ -152,7 +124,7 @@
         ],
         "estimated_hours": 4,
         "estimated_bounty": 1000,
-        "confidence": 0.8
+        "confidence": 0.75
       },
       "next_steps": [
         "Code review",
