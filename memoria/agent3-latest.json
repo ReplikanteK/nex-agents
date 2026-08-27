@@ -1,31 +1,136 @@
 {
-  "scan_date": "2026-08-26",
-  "target": {
+  "scan_date": "2026-08-27T11:49:12Z",
+  "date": "2026-08-27",
+  "platforms": {
+    "hackerone": 449,
+    "bugcrowd": 265,
+    "intigriti": 138,
+    "yeswehack": 62
+  },
+  "stats": {
+    "filtered": 277,
+    "scored": 277,
+    "selected": 1
+  },
+  "top_candidate": {
     "name": "Doppler",
-    "platform": "hackerone",
     "score": 66
   },
-  "status": "completed",
-  "findings": [
+  "ranked_targets": [
     {
-      "type": "informational",
-      "title": "Unauthenticated Share Link Creation",
-      "endpoint": "POST /v1/share/secrets/plain",
-      "severity": "info",
-      "cvss": 0,
-      "description": "Share endpoint works without authentication, allowing public creation of share links. This is by design.",
-      "exploitable": false
+      "name": "Doppler",
+      "platform": "hackerone",
+      "score_total": 66,
+      "score_breakdown": {
+        "fit": 19,
+        "track_record": 17,
+        "roi": 17,
+        "accessibility": 13
+      },
+      "metadata": {
+        "language": "Go",
+        "max_bounty": null,
+        "assets_count": 6,
+        "has_github": true
+      }
+    },
+    {
+      "name": "Circle BBP",
+      "platform": "hackerone",
+      "score_total": 64,
+      "score_breakdown": {
+        "fit": 21,
+        "track_record": 17,
+        "roi": 13,
+        "accessibility": 13
+      },
+      "metadata": {
+        "language": "Go",
+        "max_bounty": null,
+        "assets_count": 29,
+        "has_github": true
+      }
+    },
+    {
+      "name": "Chia Network",
+      "platform": "hackerone",
+      "score_total": 64,
+      "score_breakdown": {
+        "fit": 20,
+        "track_record": 14,
+        "roi": 17,
+        "accessibility": 13
+      },
+      "metadata": {
+        "language": "Python",
+        "max_bounty": null,
+        "assets_count": 9,
+        "has_github": true
+      }
+    },
+    {
+      "name": "HackerOne",
+      "platform": "hackerone",
+      "score_total": 64,
+      "score_breakdown": {
+        "fit": 21,
+        "track_record": 17,
+        "roi": 13,
+        "accessibility": 13
+      },
+      "metadata": {
+        "language": "TypeScript",
+        "max_bounty": null,
+        "assets_count": 24,
+        "has_github": true
+      }
+    },
+    {
+      "name": "Chainlink",
+      "platform": "hackerone",
+      "score_total": 63,
+      "score_breakdown": {
+        "fit": 19,
+        "track_record": 14,
+        "roi": 17,
+        "accessibility": 13
+      },
+      "metadata": {
+        "language": "Go",
+        "max_bounty": null,
+        "assets_count": 6,
+        "has_github": true
+      }
     }
   ],
-  "security_controls": {
-    "cors": "properly_configured",
-    "csp": "present",
-    "hsts": "enabled",
-    "x_frame_options": "SAMEORIGIN",
-    "authentication": "required",
-    "rate_limiting": "implemented"
-  },
-  "past_vulnerabilities": 4,
-  "recommendation": "Deeper testing with valid auth tokens required for IDOR/authorization bypass testing",
-  "report_path": "reports/doppler-scan-20260826.md"
+  "selected_targets": [
+    {
+      "rank": 1,
+      "name": "Doppler",
+      "platform": "hackerone",
+      "score_total": 66,
+      "score_breakdown": {
+        "fit": 19,
+        "track_record": 17,
+        "roi": 17,
+        "accessibility": 13
+      },
+      "justification": {
+        "why": "Buen track record en plataforma hackerone",
+        "skills_to_apply": [
+          "code-review-pygo",
+          "web-security",
+          "api-testing"
+        ],
+        "estimated_hours": 4,
+        "estimated_bounty": 1000,
+        "confidence": 0.75
+      },
+      "next_steps": [
+        "Code review",
+        "Dynamic testing",
+        "PoC development"
+      ]
+    }
+  ]
 }
