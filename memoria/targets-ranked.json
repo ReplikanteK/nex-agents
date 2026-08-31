@@ -102,6 +102,23 @@
     }
   },
   {
+    "name": "OKG",
+    "platform": "hackerone",
+    "score_total": 62,
+    "score_breakdown": {
+      "fit": 19,
+      "track_record": 17,
+      "roi": 13,
+      "accessibility": 13
+    },
+    "metadata": {
+      "language": "Go",
+      "max_bounty": null,
+      "assets_count": 10,
+      "has_github": true
+    }
+  },
+  {
     "name": "Kiwi.com",
     "platform": "hackerone",
     "score_total": 62,
@@ -149,23 +166,6 @@
       "language": "JavaScript",
       "max_bounty": null,
       "assets_count": 1,
-      "has_github": true
-    }
-  },
-  {
-    "name": "Spotify",
-    "platform": "hackerone",
-    "score_total": 59,
-    "score_breakdown": {
-      "fit": 21,
-      "track_record": 17,
-      "roi": 8,
-      "accessibility": 13
-    },
-    "metadata": {
-      "language": "TypeScript",
-      "max_bounty": null,
-      "assets_count": 45,
       "has_github": true
     }
   }
