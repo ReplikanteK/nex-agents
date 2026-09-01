@@ -33,74 +33,6 @@
         "assets_count": 6,
         "has_github": true
       }
-    },
-    {
-      "name": "Circle BBP",
-      "platform": "hackerone",
-      "score_total": 64,
-      "score_breakdown": {
-        "fit": 21,
-        "track_record": 17,
-        "roi": 13,
-        "accessibility": 13
-      },
-      "metadata": {
-        "language": "Go",
-        "max_bounty": null,
-        "assets_count": 29,
-        "has_github": true
-      }
-    },
-    {
-      "name": "Chia Network",
-      "platform": "hackerone",
-      "score_total": 64,
-      "score_breakdown": {
-        "fit": 20,
-        "track_record": 14,
-        "roi": 17,
-        "accessibility": 13
-      },
-      "metadata": {
-        "language": "Python",
-        "max_bounty": null,
-        "assets_count": 9,
-        "has_github": true
-      }
-    },
-    {
-      "name": "HackerOne",
-      "platform": "hackerone",
-      "score_total": 64,
-      "score_breakdown": {
-        "fit": 21,
-        "track_record": 17,
-        "roi": 13,
-        "accessibility": 13
-      },
-      "metadata": {
-        "language": "TypeScript",
-        "max_bounty": null,
-        "assets_count": 25,
-        "has_github": true
-      }
-    },
-    {
-      "name": "Chainlink",
-      "platform": "hackerone",
-      "score_total": 63,
-      "score_breakdown": {
-        "fit": 19,
-        "track_record": 14,
-        "roi": 17,
-        "accessibility": 13
-      },
-      "metadata": {
-        "language": "Go",
-        "max_bounty": null,
-        "assets_count": 6,
-        "has_github": true
-      }
     }
   ],
   "selected_targets": [
@@ -116,7 +48,7 @@
         "accessibility": 13
       },
       "justification": {
-        "why": "Buen track record en plataforma hackerone",
+        "why": "Secrets management platform with active bug bounty",
         "skills_to_apply": [
           "code-review-pygo",
           "web-security",
@@ -132,5 +64,26 @@
         "PoC development"
       ]
     }
-  ]
+  ],
+  "scan_results": {
+    "findings": [
+      {
+        "id": "DOPPLER-001",
+        "title": "Token Theft via DOPPLER_BASE_URL Environment Variable",
+        "severity": "Medium-High",
+        "cvss": 7.5,
+        "component": "MCP Server",
+        "file": "src/auth.ts, src/token-cache.ts",
+        "description": "The DOPPLER_BASE_URL environment variable allows redirecting all API calls, including authentication token exchange, to an attacker-controlled server.",
+        "attack_surface": [
+          "api.doppler.com",
+          "dashboard.doppler.com",
+          "CLI binary",
+          "github.com/DopplerHQ/cli"
+        ]
+      }
+    ],
+    "report_path": "reports/doppler-scan-20260901.md",
+    "next_action": "Verify DOPPLER_BASE_URL validation bypass and test parameter injection"
+  }
 }
