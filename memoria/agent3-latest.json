@@ -1,5 +1,5 @@
 {
-  "scan_date": "2026-09-04T06:18:57Z",
+  "scan_date": "2026-09-04T06:45:00Z",
   "date": "2026-09-04",
   "platforms": {
     "hackerone": 448,
@@ -130,7 +130,10 @@
         "Code review",
         "Dynamic testing",
         "PoC development"
-      ]
+      ],
+      "scan_status": "completed",
+      "scan_result": "no_vuln_found",
+      "scan_report": "reports/scan-doppler-20260904.md"
     }
   ]
 }
