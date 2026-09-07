@@ -1,15 +1,15 @@
 {
-  "scan_date": "2026-09-04T06:45:00Z",
-  "date": "2026-09-04",
+  "scan_date": "2026-09-07T06:28:18Z",
+  "date": "2026-09-07",
   "platforms": {
-    "hackerone": 448,
+    "hackerone": 446,
     "bugcrowd": 270,
-    "intigriti": 136,
-    "yeswehack": 59
+    "intigriti": 135,
+    "yeswehack": 57
   },
   "stats": {
-    "filtered": 272,
-    "scored": 272,
+    "filtered": 268,
+    "scored": 268,
     "selected": 1
   },
   "top_candidate": {
@@ -130,10 +130,7 @@
         "Code review",
         "Dynamic testing",
         "PoC development"
-      ],
-      "scan_status": "completed",
-      "scan_result": "no_vuln_found",
-      "scan_report": "reports/scan-doppler-20260904.md"
+      ]
     }
   ]
 }
