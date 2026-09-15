@@ -1,15 +1,15 @@
 {
-  "scan_date": "2026-09-14T06:46:28Z",
-  "date": "2026-09-14",
+  "scan_date": "2026-09-15T06:28:23Z",
+  "date": "2026-09-15",
   "platforms": {
     "hackerone": 447,
     "bugcrowd": 278,
-    "intigriti": 137,
-    "yeswehack": 58
+    "intigriti": 140,
+    "yeswehack": 59
   },
   "stats": {
-    "filtered": 269,
-    "scored": 269,
+    "filtered": 271,
+    "scored": 271,
     "selected": 2
   },
   "top_candidate": {
@@ -30,7 +30,7 @@
       "metadata": {
         "language": "Go",
         "max_bounty": null,
-        "assets_count": 27,
+        "assets_count": 22,
         "has_github": true
       }
     },
