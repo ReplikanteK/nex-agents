@@ -37,7 +37,19 @@ git pull origin main 2>/dev/null || true
 # === Auto-install opencode (fallback — bootstrap.sh may not have finished) ===
 if ! command -v opencode &>/dev/null; then
   echo "[execute] Installing opencode..."
-  curl -fsSL https://opencode.ai/install | bash
+  # Retry with GH_TOKEN to avoid GitHub API rate-limit (Failed to fetch version information)
+  for i in 1 2 3; do
+    if GITHUB_TOKEN="$GH_PAT" GH_TOKEN="$GH_PAT" curl -fsSL https://opencode.ai/install | GITHUB_TOKEN="$GH_PAT" bash; then
+      break
+    fi
+    echo "[execute] opencode install attempt $i failed, retrying..."
+    sleep $((i*5))
+  done
+  # Fallback: pinned version if latest fetch keeps failing
+  if ! command -v opencode &>/dev/null; then
+    echo "[execute] Retrying with pinned version..."
+    curl -fsSL https://opencode.ai/install | bash -s -- --version 1.18.31 || true
+  fi
   export PATH="$HOME/.opencode/bin:$PATH"
 fi
 
