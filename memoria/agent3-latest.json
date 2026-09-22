@@ -1,15 +1,15 @@
 {
-  "scan_date": "2026-09-21T06:48:33Z",
-  "date": "2026-09-21",
+  "scan_date": "2026-09-22T06:35:27Z",
+  "date": "2026-09-22",
   "platforms": {
-    "hackerone": 450,
-    "bugcrowd": 278,
+    "hackerone": 451,
+    "bugcrowd": 279,
     "intigriti": 145,
-    "yeswehack": 57
+    "yeswehack": 58
   },
   "stats": {
-    "filtered": 270,
-    "scored": 270,
+    "filtered": 272,
+    "scored": 272,
     "selected": 1
   },
   "top_candidate": {
@@ -69,6 +69,23 @@
       }
     },
     {
+      "name": "Vercel",
+      "platform": "hackerone",
+      "score_total": 64,
+      "score_breakdown": {
+        "fit": 21,
+        "track_record": 17,
+        "roi": 13,
+        "accessibility": 13
+      },
+      "metadata": {
+        "language": "TypeScript",
+        "max_bounty": null,
+        "assets_count": 24,
+        "has_github": true
+      }
+    },
+    {
       "name": "HackerOne",
       "platform": "hackerone",
       "score_total": 64,
@@ -82,23 +99,6 @@
         "language": "TypeScript",
         "max_bounty": null,
         "assets_count": 25,
-        "has_github": true
-      }
-    },
-    {
-      "name": "Chainlink",
-      "platform": "hackerone",
-      "score_total": 63,
-      "score_breakdown": {
-        "fit": 19,
-        "track_record": 14,
-        "roi": 17,
-        "accessibility": 13
-      },
-      "metadata": {
-        "language": "Go",
-        "max_bounty": null,
-        "assets_count": 6,
         "has_github": true
       }
     }
