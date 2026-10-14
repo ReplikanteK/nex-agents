@@ -153,7 +153,7 @@
     }
   },
   {
-    "name": "Spotify",
+    "name": "Twilio",
     "platform": "hackerone",
     "score_total": 59,
     "score_breakdown": {
@@ -165,7 +165,7 @@
     "metadata": {
       "language": "TypeScript",
       "max_bounty": null,
-      "assets_count": 45,
+      "assets_count": 87,
       "has_github": true
     }
   }
