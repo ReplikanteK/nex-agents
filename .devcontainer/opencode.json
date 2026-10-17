@@ -1,6 +1,6 @@
 {
   "provider": "opencode",
-  "model": "opencode/hy3-free",
+  "model": "opencode/deepseek-v4.1-flash-free",
   "compaction": {
     "auto": true,
     "tail_turns": 15

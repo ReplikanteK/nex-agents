@@ -4,7 +4,7 @@ description: >-
   libFuzzer/AFL++/cargo-fuzz, triages crashes from sanitizer traces, and
   generates minimal PoCs. Works in parallel with code review.
 mode: subagent
-model: opencode/deepseek-v4-flash-free
+model: opencode/deepseek-v4.1-flash-free
 permission:
   edit: ask
   bash: ask

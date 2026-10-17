@@ -5,7 +5,7 @@ description: >-
   authentication mechanisms, and security-relevant configuration. Returns a
   structured reconnaissance report for use by other agents.
 mode: subagent
-model: opencode/deepseek-v4-flash-free
+model: opencode/deepseek-v4.1-flash-free
 permission:
   edit: deny
   bash: ask

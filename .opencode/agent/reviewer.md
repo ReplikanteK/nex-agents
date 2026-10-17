@@ -3,7 +3,7 @@ description: >-
   Reviews source code for security vulnerabilities. Delegate code analysis
   to this agent when you need a second pass on a specific file or module.
 mode: subagent
-model: opencode/deepseek-v4-flash-free
+model: opencode/deepseek-v4.1-flash-free
 permission:
   edit: deny
   bash: ask

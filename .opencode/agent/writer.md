@@ -4,7 +4,7 @@ description: >-
   posts, documentation, PR descriptions, and technical writing. Handles
   formatting, structure, and clarity while you focus on the technical work.
 mode: subagent
-model: opencode/deepseek-v4-flash-free
+model: opencode/deepseek-v4.1-flash-free
 permission:
   edit: ask
   bash: deny
