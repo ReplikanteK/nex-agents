@@ -9,6 +9,9 @@ GH_PAT="${1:-${GITHUB_TOKEN:-}}"
 [ -z "$GH_PAT" ] && echo "[execute] No token" && exit 1
 export GH_TOKEN="$GH_PAT"
 
+# opencode zen auth (passed from workflow secret OPENCODE_API_KEY)
+OPENCODE_API_KEY="${2:-${OPENCODE_API_KEY:-}}"
+
 TS=$(date -u +%Y-%m-%dT%H:%M:%SZ)
 echo "[execute] $TS - Starting personalized execution..."
 
@@ -57,6 +60,15 @@ fi
 for cmd in gh git curl jq opencode; do
   command -v "$cmd" &>/dev/null || { echo "[execute] Missing: $cmd"; exit 1; }
 done
+
+# === Setup opencode auth (zen API key from workflow secret) ===
+if [ -n "$OPENCODE_API_KEY" ]; then
+  mkdir -p "$HOME/.local/share/opencode"
+  ( umask 077; printf '{"opencode":{"type":"api","key":"%s"}}' "$OPENCODE_API_KEY" > "$HOME/.local/share/opencode/auth.json" )
+  echo "[execute] opencode auth configured"
+else
+  echo "[execute] WARNING: OPENCODE_API_KEY not set — opencode will fail to resolve zen models"
+fi
 
 # === Load configuration ===
 REPO_DIR="${GITHUB_WORKSPACE:-$(pwd)}"

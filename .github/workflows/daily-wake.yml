@@ -65,6 +65,7 @@ jobs:
         id: agent3
         env:
           GH_TOKEN: ${{ secrets.GH_PAT }}
+          OPENCODE_API_KEY: ${{ secrets.OPENCODE_API_KEY }}
         run: |
           REPO_ID=1246782009
           CS=$(gh api /user/codespaces --jq '.codespaces[] | select(.repository.name == "nex-agents") | .name' | head -1)
@@ -117,7 +118,7 @@ jobs:
           fi
           
           echo "[agent3] Running execute..."
-          timeout 3600 gh codespace ssh -c "$CS" -- "cd /workspaces/nex-agents && bash setup/execute.sh $GH_PAT" 2>&1
+          timeout 3600 gh codespace ssh -c "$CS" -- "cd /workspaces/nex-agents && bash setup/execute.sh $GH_PAT $OPENCODE_API_KEY" 2>&1
           echo "[agent3] Done"
 
       - name: Always cleanup
